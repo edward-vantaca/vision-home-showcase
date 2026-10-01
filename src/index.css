@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+@import 'tailwindcss';
+
+@font-face {
+  font-family: "Lexend:Regular";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://static.figma.com/font/Lexend_wght__1") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans:Regular";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://static.figma.com/font/DMSans_opsz_wght__1") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans:Medium";
+  font-style: normal;
+  font-weight: 500;
+  src: url("https://static.figma.com/font/DMSans_opsz_wght__1") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans:SemiBold";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://static.figma.com/font/DMSans_opsz_wght__1") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans:Bold";
+  font-style: normal;
+  font-weight: 700;
+  src: url("https://static.figma.com/font/DMSans_opsz_wght__1") format("woff2");
+}
+
+@font-face {
+  font-family: "Open Sans:Regular";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://static.figma.com/font/OpenSans_wdth_wght__2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist:Regular";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://static.figma.com/font/Geist_wght__1") format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Sans:Regular";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://static.figma.com/font/NotoSans-VF_3") format("woff2");
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}

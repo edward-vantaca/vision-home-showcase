@@ -1,0 +1,10 @@
+{
+  "description": "Manage and monitor election processes efficiently with a dedicated dashboard and easy navigation for streamlined community voting oversight.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
