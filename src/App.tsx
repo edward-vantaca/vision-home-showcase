@@ -162,7 +162,7 @@ function IconQuestion() {
 /* ─── Address / User Card ─── */
 function AddressCard() {
   return (
-    <div className="bg-white drop-shadow-[0px_2px_9px_rgba(18,17,48,0.09)] flex gap-[13px] items-center pl-[15px] pr-[21px] py-[12px] rounded-[18px] shrink-0 w-[380px]">
+    <div data-ux-id="address-card" className="bg-white drop-shadow-[0px_2px_9px_rgba(18,17,48,0.09)] flex gap-[13px] items-center pl-[15px] pr-[21px] py-[12px] rounded-[18px] shrink-0 w-[380px]">
       <div className="relative shrink-0 size-[52px]">
         <div className="absolute inset-0 rounded-full overflow-hidden">
           <img src="/Mask_group.png" alt="" className="w-full h-full object-cover" />
@@ -192,12 +192,14 @@ interface NavItemProps {
   badge?: number;
   active?: boolean;
   onClick?: () => void;
+  uxId: string;
 }
 
-function NavItem({ icon, label, badge, active, onClick }: NavItemProps) {
+function NavItem({ icon, label, badge, active, onClick, uxId }: NavItemProps) {
   return (
     <button
       onClick={onClick}
+      data-ux-id={`sidebar-nav-${uxId}`}
       className={`w-full rounded-[8px] flex items-center gap-[12px] pl-[10px] pr-[22px] py-[8px] cursor-pointer transition-colors ${
         active ? "bg-[#e8f1fd]" : "hover:bg-[#f2f6fa]"
       }`}
@@ -230,11 +232,12 @@ interface SidebarProps {
 
 function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
   return (
-    <div className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
+    <div data-ux-id="sidebar" className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
       <div className="flex flex-col gap-[42px] items-center px-[26px] py-[40px] flex-1 overflow-y-auto">
         {/* Mobile close button */}
         <button
           onClick={onClose}
+          data-ux-id="sidebar-close-button"
           className="md:hidden self-end -mt-[28px] -mr-[10px] w-[32px] h-[32px] flex items-center justify-center rounded-full text-[#262630] opacity-40 hover:opacity-70 transition-opacity"
           aria-label="Close menu"
         >
@@ -260,7 +263,7 @@ function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
         </div>
 
         {/* Quick Actions */}
-        <button className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0">
+        <button data-ux-id="sidebar-quick-actions" className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0">
           <span className="text-[#247ae4] font-bold text-[14px]">+</span>
           <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
             Quick Actions
@@ -268,22 +271,22 @@ function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
         </button>
 
         {/* Nav Items */}
-        <div className="flex flex-col gap-[13px] w-full shrink-0">
-          <NavItem icon={<IconInbox />} label="Inbox" active={false} />
-          <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} />
-          <NavItem icon={<IconPayments />} label="Payments" />
-          <NavItem icon={<IconVote active={activePage === "elections"} />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} />
-          <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} />
-          <NavItem icon={<IconRequests />} label="Requests" />
-          <NavItem icon={<IconDocuments />} label="Documents" />
-          <NavItem icon={<IconDirectory />} label="Directory" />
-          <NavItem icon={<IconCalendar />} label="Calendar" />
+        <div data-ux-id="sidebar-nav-list" className="flex flex-col gap-[13px] w-full shrink-0">
+          <NavItem icon={<IconInbox />} label="Inbox" active={false} uxId="inbox" />
+          <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" />
+          <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
+          <NavItem icon={<IconVote active={activePage === "elections"} />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
+          <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
+          <NavItem icon={<IconRequests />} label="Requests" uxId="requests" />
+          <NavItem icon={<IconDocuments />} label="Documents" uxId="documents" />
+          <NavItem icon={<IconDirectory />} label="Directory" uxId="directory" />
+          <NavItem icon={<IconCalendar />} label="Calendar" uxId="calendar" />
 
           {/* Divider */}
           <div className="w-full border-t border-[#d9e7f0] my-[9px]" />
 
-          <NavItem icon={<IconProfile />} label="My Profile" />
-          <NavItem icon={<IconLogout />} label="Log Out" />
+          <NavItem icon={<IconProfile />} label="My Profile" uxId="profile" />
+          <NavItem icon={<IconLogout />} label="Log Out" uxId="logout" />
         </div>
       </div>
     </div>
@@ -293,10 +296,10 @@ function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
 /* ─── Dashboard Page ─── */
 function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void }) {
   return (
-    <div className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
-        <button onClick={onOpenSidebar} className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
+        <button onClick={onOpenSidebar} data-ux-id="dashboard-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
         </button>
         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>Dashboard</p>
@@ -318,13 +321,13 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
         </div>
 
         {/* Election Alert Banner */}
-        <div className="bg-white rounded-[14px] md:rounded-[18px] shadow-[0px_2px_18px_0px_rgba(18,17,48,0.07)] w-full shrink-0 flex items-center">
+        <div data-ux-id="election-banner" className="bg-white rounded-[14px] md:rounded-[18px] shadow-[0px_2px_18px_0px_rgba(18,17,48,0.07)] w-full shrink-0 flex items-center">
           <div className="flex gap-[10px] items-start md:items-center px-[16px] md:px-[26px] py-[14px] md:py-[20px] w-full">
             <span className="text-[#247ae4] shrink-0 mt-[2px] md:mt-0"><IconBell width={14} height={14} /></span>
             <p className="flex-1 font-['DM_Sans:Regular',sans-serif] font-normal text-[14px] md:text-[15px] min-w-0 leading-snug" style={{ fontVariationSettings: '"opsz" 14' }}>
               <span className="text-[#262630]">You have </span>
               <span>a upcoming board election. Go to the </span>
-              <button onClick={() => onNavigate("elections")} className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline underline-offset-2 cursor-pointer" style={{ fontVariationSettings: '"opsz" 14' }}>Elections</button>
+              <button onClick={() => onNavigate("elections")} data-ux-id="election-banner-link" className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline underline-offset-2 cursor-pointer" style={{ fontVariationSettings: '"opsz" 14' }}>Elections</button>
               {" "}
               <span>page to submit your vote.</span>
             </p>
@@ -334,7 +337,7 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
         {/* Payments + Transactions row */}
         <div className="flex flex-col md:flex-row gap-[20px] md:gap-[32px] w-full shrink-0">
           {/* Payments widget */}
-          <div className="bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0">
+          <div data-ux-id="payments-widget" className="bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0">
             <div className="flex flex-col gap-[14px] pb-[18px] pt-[20px] md:pt-[24px] px-[16px] md:px-[26px]">
               <div className="flex items-center justify-between w-full gap-[8px]">
                 <p className="flex-1 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>Payments</p>
@@ -361,17 +364,17 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
                   </div>
                 </div>
                 <div className="flex flex-col gap-[12px] md:gap-[22px] md:items-end pb-0 md:pb-[11px] md:pt-[14px] md:shrink-0">
-                  <button className="bg-[#247ae4] flex items-center justify-center px-[24px] py-[10px] rounded-[8px] hover:bg-[#1a6ed0] transition-colors w-full md:w-auto">
+                  <button data-ux-id="payments-make-payment-button" className="bg-[#247ae4] flex items-center justify-center px-[24px] py-[10px] rounded-[8px] hover:bg-[#1a6ed0] transition-colors w-full md:w-auto">
                     <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[16px] text-center whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Make a Payment</span>
                   </button>
                   <div className="flex flex-row md:flex-col gap-[16px] md:gap-[10px] md:items-end items-center">
                     <div className="flex gap-[7px] items-center">
-                      <div className="bg-[#b8bec5] rounded-[8px] w-[34px] h-[18px] flex items-center px-[2px] shrink-0">
+                      <div data-ux-id="payments-autopay-toggle" className="bg-[#b8bec5] rounded-[8px] w-[34px] h-[18px] flex items-center px-[2px] shrink-0">
                         <div className="bg-white rounded-[6px] w-[14px] h-[14px]" />
                       </div>
                       <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px] md:text-[14px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Enroll in AutoPay</span>
                     </div>
-                    <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#247ae4] text-[13px] md:text-[14px] whitespace-nowrap cursor-pointer hover:underline" style={{ fontVariationSettings: '"opsz" 14' }}>Manage payments</p>
+                    <p data-ux-id="payments-manage-payments-link" className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#247ae4] text-[13px] md:text-[14px] whitespace-nowrap cursor-pointer hover:underline" style={{ fontVariationSettings: '"opsz" 14' }}>Manage payments</p>
                   </div>
                 </div>
               </div>
@@ -379,11 +382,11 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
           </div>
 
           {/* Recent Transactions widget */}
-          <div className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0">
+          <div data-ux-id="transactions-widget" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0">
             <div className="flex flex-col gap-[24px] px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
               <div className="flex gap-[14px] items-start w-full">
                 <p className="flex-1 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>Recent Transactions</p>
-                <div className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
+                <div data-ux-id="transactions-view-all-link" className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
                   <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>View All</span>
                   <IconChevronRight />
                 </div>
@@ -394,7 +397,7 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
                   { date: "Dec 5, 2025", desc: "Monthly HOA Fee", amount: "$425.00" },
                   { date: "Nov 5, 2025", desc: "Monthly HOA Fee", amount: "$425.00" },
                 ].map((tx, i) => (
-                  <div key={i}>
+                  <div key={i} data-ux-id={`transactions-row-${tx.date.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
                     <div className="flex gap-[22px] items-center w-full">
                       <div className="flex items-start opacity-65 w-[70px] shrink-0">
                         <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[12px] leading-normal whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>{tx.date}</p>
@@ -412,36 +415,36 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
         </div>
 
         {/* Inbox widget */}
-        <div className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full shrink-0">
+        <div data-ux-id="inbox-widget" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full shrink-0">
           <div className="flex flex-col gap-[20px] md:gap-[24px] px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
             <div className="flex gap-[14px] items-center w-full">
               <p className="flex-1 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>Inbox</p>
-              <div className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
+              <div data-ux-id="inbox-view-all-link" className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
                 <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>View All</span>
                 <IconChevronRight />
               </div>
             </div>
             {/* Filter chips */}
             <div className="flex flex-wrap gap-[9px] items-center">
-              <div className="bg-[#247ae4] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
+              <div data-ux-id="inbox-filter-all" className="bg-[#247ae4] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
                 <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>All</span>
                 <div className="bg-[rgba(255,255,255,0.3)] rounded-[50px] size-[19px] flex items-center justify-center">
                   <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>21</span>
                 </div>
               </div>
-              <div className="bg-[#fff0dd] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
+              <div data-ux-id="inbox-filter-needs-attention" className="bg-[#fff0dd] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
                 <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Needs Attention</span>
                 <div className="bg-[#f17d11] rounded-[50px] size-[19px] flex items-center justify-center">
                   <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>3</span>
                 </div>
               </div>
-              <div className="bg-[#dfeaf0] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
+              <div data-ux-id="inbox-filter-announcements" className="bg-[#dfeaf0] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
                 <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Announcements</span>
                 <div className="bg-white rounded-[50px] size-[19px] flex items-center justify-center">
                   <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>5</span>
                 </div>
               </div>
-              <div className="bg-[#dfeaf0] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
+              <div data-ux-id="inbox-filter-messages" className="bg-[#dfeaf0] rounded-[50px] flex items-center gap-[10px] pl-[15px] pr-[7px] py-[8px]">
                 <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Messages</span>
                 <div className="bg-white rounded-[50px] size-[19px] flex items-center justify-center">
                   <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>3</span>
@@ -457,7 +460,7 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
                 { unread: true, type: "Heads Up", title: "Package Delivery Changes", preview: "Effective immediately, all packages will be delivered to the front office. Please pick them up within 48 hours", tag: "Updated", tagBg: "transparent", date: "July 8" },
                 { unread: false, type: "Reminder", title: "Board Meeting Next Week", preview: "The next board meeting is scheduled for next Wednesday at 7 PM in the clubhouse. All residents are welcome", tag: "Scheduled", tagBg: "#d9ebfa", date: "July 7" },
               ].map((msg, i) => (
-                <div key={i} className="border-b border-[#d9d9d9] flex items-center cursor-pointer hover:bg-[#f9fbfd]">
+                <div key={i} data-ux-id={`inbox-row-${msg.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border-b border-[#d9d9d9] flex items-center cursor-pointer hover:bg-[#f9fbfd]">
                   <div className="flex gap-[12px] md:gap-[29px] items-center px-[14px] md:px-[22px] py-[12px] md:py-[14px] w-full">
                     <div className="shrink-0 size-[8px]">
                       {msg.unread && (
@@ -538,7 +541,7 @@ function CompletedElectionCard({ collapsed, onToggle }: { collapsed: boolean; on
   };
 
   return (
-    <div className="w-full bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] shrink-0">
+    <div data-ux-id="election-results-card" className="w-full bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] shrink-0">
       <div className={`px-[16px] md:px-[26px] pt-[20px] md:pt-[24px] flex flex-col gap-[20px] md:gap-[24px] ${collapsed ? "pb-[20px] md:pb-[24px]" : "pb-[24px] md:pb-[28px]"}`}>
 
         {/* Header */}
@@ -555,7 +558,7 @@ function CompletedElectionCard({ collapsed, onToggle }: { collapsed: boolean; on
             <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal flex-1 min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>
               {results.title}
             </p>
-            <CollapseButton collapsed={collapsed} onToggle={onToggle} />
+            <CollapseButton collapsed={collapsed} onToggle={onToggle} uxId="election-results-collapse-button" />
           </div>
           {!collapsed && (
             <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-65 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
@@ -584,7 +587,7 @@ function CompletedElectionCard({ collapsed, onToggle }: { collapsed: boolean; on
               icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="#ea8c1e" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 22V12h6v10" stroke="#ea8c1e" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>,
             },
           ].map((stat) => (
-            <div key={stat.label} className="bg-[#f8fafc] rounded-[12px] px-[16px] py-[14px] flex flex-col gap-[4px]">
+            <div key={stat.label} data-ux-id={`election-results-stat-${stat.label.toLowerCase().replace(/\s+/g, "-")}`} className="bg-[#f8fafc] rounded-[12px] px-[16px] py-[14px] flex flex-col gap-[4px]">
               <div className="flex items-center gap-[6px] mb-[2px]">
                 <span className="opacity-80">{stat.icon}</span>
                 <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[11px] uppercase tracking-wide" style={{ fontVariationSettings: '"opsz" 14' }}>{stat.label}</p>
@@ -626,7 +629,7 @@ function CompletedElectionCard({ collapsed, onToggle }: { collapsed: boolean; on
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px]">
             {results.elected.map((c) => (
-              <div key={c.name} className="border border-[#bbf7d0] bg-[#f0fdf4] rounded-[14px] px-[16px] py-[14px] flex flex-col gap-[10px]">
+              <div key={c.name} data-ux-id={`election-results-elected-${c.name.toLowerCase().replace(/\s+/g, "-")}`} className="border border-[#bbf7d0] bg-[#f0fdf4] rounded-[14px] px-[16px] py-[14px] flex flex-col gap-[10px]">
                 <div className="flex items-center gap-[12px]">
                   <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 text-white font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px]" style={{ backgroundColor: c.color, fontVariationSettings: '"opsz" 14' }}>
                     {c.initials}
@@ -658,7 +661,7 @@ function CompletedElectionCard({ collapsed, onToggle }: { collapsed: boolean; on
           <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Other Candidates</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px]">
             {results.runners.map((c) => (
-              <div key={c.name} className="border border-[#e8eff5] bg-white rounded-[12px] px-[16px] py-[14px] flex flex-col gap-[10px]">
+              <div key={c.name} data-ux-id={`election-results-runner-${c.name.toLowerCase().replace(/\s+/g, "-")}`} className="border border-[#e8eff5] bg-white rounded-[12px] px-[16px] py-[14px] flex flex-col gap-[10px]">
                 <div className="flex items-center gap-[12px]">
                   <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 text-white font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px] opacity-60" style={{ backgroundColor: c.color, fontVariationSettings: '"opsz" 14' }}>
                     {c.initials}
@@ -795,10 +798,11 @@ const campaigns: Campaign[] = [
   },
 ];
 
-function CollapseButton({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+function CollapseButton({ collapsed, onToggle, uxId = "collapse-button" }: { collapsed: boolean; onToggle: () => void; uxId?: string }) {
   return (
     <button
       onClick={onToggle}
+      data-ux-id={uxId}
       className="shrink-0 w-[30px] h-[30px] rounded-full flex items-center justify-center text-[#262630] opacity-35 hover:opacity-70 hover:bg-[#f0f5fa] transition-all"
       aria-label={collapsed ? "Expand section" : "Collapse section"}
     >
@@ -813,10 +817,10 @@ function CollapseButton({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   );
 }
 
-function ParticipationBar({ voted, total }: { voted: number; total: number }) {
+function ParticipationBar({ voted, total, uxId = "participation-bar" }: { voted: number; total: number; uxId?: string }) {
   const pct = Math.round((voted / total) * 100);
   return (
-    <div className="flex flex-col gap-[8px]">
+    <div data-ux-id={uxId} className="flex flex-col gap-[8px]">
       <div className="flex items-center justify-between">
         <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
           <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]">{voted}</span>{" of "}{total}{" units voted · "}<span className="text-[#247ae4]">{pct}%</span>
@@ -858,10 +862,10 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   ];
 
   return (
-    <div className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="elections-page" className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
-        <button onClick={onOpenSidebar} className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
+        <button onClick={onOpenSidebar} data-ux-id="elections-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
         </button>
         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>Governance</p>
@@ -884,12 +888,13 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         </div>
 
         {/* Tab bar */}
-        <div className="w-full shrink-0 border border-[#e2eaf0] -mb-[8px] bg-white rounded-[6px]">
+        <div data-ux-id="elections-tabs" className="w-full shrink-0 border border-[#e2eaf0] -mb-[8px] bg-white rounded-[6px]">
           <div className="flex gap-[0px] overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
+                data-ux-id={`elections-tab-${tab.id}`}
                 className={`relative shrink-0 px-[18px] py-[10px] font-['DM_Sans:Medium',sans-serif] font-medium text-[14px] whitespace-nowrap transition-colors ${
                   activeTab === tab.id
                     ? "text-[#247ae4]"
@@ -908,7 +913,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 
         {/* Consent capture — Consent tab only */}
         {activeTab === "consent" && consentSaved && !consentBannerDismissed ? (
-          <div className="w-full bg-white border border-[#e2eaf0] rounded-[18px] shrink-0 px-[16px] md:px-[26px] py-[16px] flex flex-col gap-[14px]">
+          <div data-ux-id="elections-consent-confirmation-banner" className="w-full bg-white border border-[#e2eaf0] rounded-[18px] shrink-0 px-[16px] md:px-[26px] py-[16px] flex flex-col gap-[14px]">
             <div className="flex items-start justify-between gap-[12px]">
               <div className="flex flex-col gap-[2px]">
                 <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
@@ -920,6 +925,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               </div>
               <button
                 onClick={() => { setConsentSaved(false); setConsentBannerDismissed(false); }}
+                data-ux-id="elections-consent-confirmation-dismiss-button"
                 className="shrink-0 text-[#262630] opacity-30 hover:opacity-60 transition-opacity mt-[2px]"
                 aria-label="Dismiss"
               >
@@ -940,7 +946,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
             </div>
           </div>
         ) : activeTab === "consent" && !consentSaved ? (
-          <div className="w-full bg-white border border-[#e2eaf0] rounded-[18px] shrink-0 px-[16px] md:px-[28px] py-[18px] md:py-[22px] flex flex-col gap-[18px]">
+          <div data-ux-id="elections-consent-form" className="w-full bg-white border border-[#e2eaf0] rounded-[18px] shrink-0 px-[16px] md:px-[28px] py-[18px] md:py-[22px] flex flex-col gap-[18px]">
             <div className="flex flex-col gap-[2px]">
               <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
                 Upcoming – 2026 Board of Directors Election
@@ -966,6 +972,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               <label className="flex items-start gap-[14px] cursor-pointer group">
                 <div
                   onClick={() => setConsentNotices(v => !v)}
+                  data-ux-id="elections-consent-notices-checkbox"
                   className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentNotices ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
                 >
                   {consentNotices && (
@@ -985,6 +992,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               <label className="flex items-start gap-[14px] cursor-pointer group">
                 <div
                   onClick={() => setConsentVoting(v => !v)}
+                  data-ux-id="elections-consent-voting-checkbox"
                   className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentVoting ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
                 >
                   {consentVoting && (
@@ -1005,6 +1013,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
             <div className="flex items-center gap-[12px] pt-[2px]">
               <button
                 onClick={() => setConsentSaved(true)}
+                data-ux-id="elections-consent-submit-button"
                 className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[20px] py-[9px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px]"
                 style={{ fontVariationSettings: '"opsz" 14' }}
               >
@@ -1017,7 +1026,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 
         {/* Nominations tab */}
         {activeTab === "nominations" && (
-          <div className="bg-white border border-[#d9e7f0] rounded-[18px] w-full flex items-center px-[24px] py-[18px] shrink-0">
+          <div data-ux-id="elections-nominations-card" className="bg-white border border-[#d9e7f0] rounded-[18px] w-full flex items-center px-[24px] py-[18px] shrink-0">
             <div className="flex items-center gap-[64px]">
               <div className="flex flex-col gap-[10px]">
                 <div className="flex flex-col w-full">
@@ -1039,7 +1048,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                 </div>
               </div>
               <div className="shrink-0">
-                <button className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                <button data-ux-id="elections-nominations-send-link-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
                   Send Link
                 </button>
               </div>
@@ -1048,7 +1057,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         )}
 
         {/* Proxy/Ballot/Meeting tab: open + upcoming elections */}
-        {activeTab === "proxy" && <><div className="border border-[#e2eaf0] rounded-[14px] md:rounded-[18px] w-full flex flex-col md:flex-row md:items-center justify-between gap-[14px] md:gap-[26px] px-[16px] md:px-[26px] py-[16px] md:py-[18px] bg-white shrink-0">
+        {activeTab === "proxy" && <><div data-ux-id="elections-ballot-card" className="border border-[#e2eaf0] rounded-[14px] md:rounded-[18px] w-full flex flex-col md:flex-row md:items-center justify-between gap-[14px] md:gap-[26px] px-[16px] md:px-[26px] py-[16px] md:py-[18px] bg-white shrink-0">
           <div className="flex flex-col md:flex-row md:items-center gap-[14px] md:gap-[64px] min-w-0 flex-1">
             <div className="flex flex-col gap-[3px] shrink-0">
               <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
@@ -1061,6 +1070,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
             {!ballotSent && (
               <button
                 onClick={() => setBallotSent(true)}
+                data-ux-id="elections-vote-now-button"
                 className="shrink-0 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
                 style={{ fontVariationSettings: '"opsz" 14' }}
               >
@@ -1069,7 +1079,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
             )}
           </div>
           {ballotSent && (
-            <div className="flex items-start justify-between gap-[12px] bg-white border border-[#e2eaf0] rounded-[12px] px-[14px] py-[12px] flex-1 min-w-0">
+            <div data-ux-id="elections-ballot-sent-confirmation" className="flex items-start justify-between gap-[12px] bg-white border border-[#e2eaf0] rounded-[12px] px-[14px] py-[12px] flex-1 min-w-0">
               <div className="flex items-start gap-[12px] min-w-0">
                 <div className="w-[34px] h-[34px] rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
@@ -1084,6 +1094,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                     A secure voting link has been sent to <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold opacity-100">username@email.com</span>. Open the email to cast your ballot before September 15, 2026 at 5:00PM.
                   </p>
                   <button
+                    data-ux-id="elections-ballot-resend-button"
                     className="self-start mt-[6px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[12px] hover:underline transition-opacity"
                     style={{ fontVariationSettings: '"opsz" 14' }}
                   >
@@ -1093,6 +1104,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               </div>
               <button
                 onClick={() => setBallotSent(false)}
+                data-ux-id="elections-ballot-dismiss-button"
                 className="shrink-0 text-[#262630] opacity-30 hover:opacity-60 transition-opacity mt-[1px]"
                 aria-label="Dismiss"
               >
@@ -1109,7 +1121,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           const isCollapsed = collapsedCards.has(campaign.id);
           return (
           <Fragment key={campaign.id}>
-          <div className="w-full bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] shrink-0">
+          <div data-ux-id={`election-campaign-${campaign.id}`} className="w-full bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] shrink-0">
             <div className={`px-[16px] md:px-[26px] pt-[20px] md:pt-[24px] flex flex-col gap-[16px] md:gap-[20px] ${isCollapsed ? "pb-[20px] md:pb-[24px]" : "pb-[24px] md:pb-[28px]"}`}>
               {/* Header */}
               <div className="flex flex-col gap-[6px]">
@@ -1135,7 +1147,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                   <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal flex-1 min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>
                     {campaign.title}
                   </p>
-                  <CollapseButton collapsed={isCollapsed} onToggle={() => toggleCard(campaign.id)} />
+                  <CollapseButton collapsed={isCollapsed} onToggle={() => toggleCard(campaign.id)} uxId={`election-campaign-${campaign.id}-collapse-button`} />
                 </div>
                 {!isCollapsed && (
                   <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-65 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
@@ -1145,14 +1157,14 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               </div>
 
               {!isCollapsed && campaign.participation && (
-                <ParticipationBar voted={campaign.participation.voted} total={campaign.participation.total} />
+                <ParticipationBar voted={campaign.participation.voted} total={campaign.participation.total} uxId={`election-campaign-${campaign.id}-participation`} />
               )}
 
               {/* Board election: candidate grid */}
               {!isCollapsed && campaign.candidates && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px]">
                   {campaign.candidates.map((c) => (
-                    <div key={c.name} className="border border-[#e8eff5] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
+                    <div key={c.name} data-ux-id={`election-candidate-${c.name.toLowerCase().replace(/\s+/g, "-")}`} className="border border-[#e8eff5] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
                       <div className="flex items-center gap-[14px]">
                         <div
                           className="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 text-white font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
@@ -1172,7 +1184,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                       <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-75 text-[13px] leading-[1.6]" style={{ fontVariationSettings: '"opsz" 14' }}>
                         {c.bio}
                       </p>
-                      <button className="self-start font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[13px] hover:underline" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      <button data-ux-id={`election-candidate-${c.name.toLowerCase().replace(/\s+/g, "-")}-bio-button`} className="self-start font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[13px] hover:underline" style={{ fontVariationSettings: '"opsz" 14' }}>
                         Read full bio
                       </button>
                     </div>
@@ -1182,7 +1194,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 
               {/* Election progress tracker — board campaign only */}
               {!isCollapsed && campaign.type === "board" && (
-                <div className="border-t border-[#e8eff5] pt-[20px] flex flex-col gap-[16px]">
+                <div data-ux-id={`election-campaign-${campaign.id}-progress-tracker`} className="border-t border-[#e8eff5] pt-[20px] flex flex-col gap-[16px]">
                   <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Election Progress</p>
                   <div className="flex items-start">
                     {[
@@ -1232,7 +1244,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               {!isCollapsed && campaign.options && (
                 <div className="flex flex-col gap-[10px]">
                   {campaign.options.map((opt) => (
-                    <div key={opt.label} className="border border-[#e8eff5] rounded-[12px] px-[18px] py-[14px] flex items-start gap-[14px]">
+                    <div key={opt.label} data-ux-id={`election-campaign-${campaign.id}-option-${opt.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border border-[#e8eff5] rounded-[12px] px-[18px] py-[14px] flex items-start gap-[14px]">
                       <div className={`mt-[2px] w-[18px] h-[18px] rounded-full border-2 shrink-0 ${campaign.status === "open" ? "border-[#c8d9e6]" : "border-[#dde8f0]"}`} />
                       <div className="flex flex-col gap-[2px] min-w-0">
                         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
@@ -1394,7 +1406,7 @@ function CreatePostModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#152331]/45 p-[12px] md:p-[24px]" role="presentation" onMouseDown={onClose}>
+    <div data-ux-id="community-feed-create-post-modal" className="fixed inset-0 z-[70] flex items-center justify-center bg-[#152331]/45 p-[12px] md:p-[24px]" role="presentation" onMouseDown={onClose}>
       <form
         className="flex max-h-[calc(100dvh-24px)] w-full max-w-[890px] flex-col overflow-hidden rounded-[6px] border border-[#e3e3e3] bg-white shadow-[0_20px_60px_rgba(18,17,48,0.22)] md:max-h-[calc(100dvh-48px)]"
         onSubmit={submit}
@@ -1405,7 +1417,7 @@ function CreatePostModal({
       >
         <div className="flex shrink-0 items-center justify-between border-b border-[#e1e9ef] px-[20px] py-[16px] md:px-[32px]">
           <p id="new-post-title" className="font-['DM_Sans:SemiBold',sans-serif] text-[20px] font-semibold leading-[24px] text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>New Post</p>
-          <button type="button" onClick={onClose} className="flex size-[32px] items-center justify-center rounded-[6px] text-[#262630] transition-colors hover:bg-[#f2f5f7]" aria-label="Close new post editor">
+          <button type="button" onClick={onClose} data-ux-id="community-feed-create-post-modal-close-button" className="flex size-[32px] items-center justify-center rounded-[6px] text-[#262630] transition-colors hover:bg-[#f2f5f7]" aria-label="Close new post editor">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
         </div>
@@ -1418,6 +1430,7 @@ function CreatePostModal({
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Community Post Title"
+              data-ux-id="community-feed-create-post-title-input"
               className="h-[45px] w-full rounded-[6px] border border-[#cfd3da] bg-white px-[20px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/50 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
               required
             />
@@ -1449,6 +1462,7 @@ function CreatePostModal({
               <textarea
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
+                data-ux-id="community-feed-create-post-body-textarea"
                 className="h-[180px] w-full resize-none p-[14px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal leading-[1.5] text-[#262630] outline-none"
                 aria-label="Post body"
                 required
@@ -1464,21 +1478,21 @@ function CreatePostModal({
               <span className="font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal text-black">{fileName || "Drag & Drop or "}<span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline">{fileName ? "" : "Choose file"}</span>{fileName ? "" : " to upload"}</span>
               <span className="font-['DM_Sans:Regular',sans-serif] text-[12px] font-normal uppercase text-[#54585e]">PDF, ZIP, PNG, JPEG</span>
               <span className="font-['DM_Sans:Regular',sans-serif] text-[12px] font-normal text-[#54585e]">MAX 25 MB total</span>
-              <input className="absolute inset-0 cursor-pointer opacity-0" type="file" accept=".pdf,.zip,.png,.jpg,.jpeg" onChange={(event) => setFileName(event.target.files?.[0]?.name ?? "")} />
+              <input data-ux-id="community-feed-create-post-attachment-input" className="absolute inset-0 cursor-pointer opacity-0" type="file" accept=".pdf,.zip,.png,.jpg,.jpeg" onChange={(event) => setFileName(event.target.files?.[0]?.name ?? "")} />
             </span>
           </label>
 
           <div className="flex flex-col gap-[7px]">
             <p className="font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold text-[#1a1a1a]">Citations</p>
-            <button type="button" className="flex w-fit items-center gap-[8px] rounded-[8px] border border-[#e0e0e0] px-[24px] py-[12px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold text-[#262530] hover:bg-[#f9fafb]">
+            <button type="button" data-ux-id="community-feed-create-post-add-caption-button" className="flex w-fit items-center gap-[8px] rounded-[8px] border border-[#e0e0e0] px-[24px] py-[12px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold text-[#262530] hover:bg-[#f9fafb]">
               <span className="text-[19px] font-normal leading-none">+</span> Add Caption
             </button>
           </div>
         </div>
 
         <div className="flex shrink-0 justify-end gap-[15px] border-t border-[#e1e9ef] px-[20px] py-[16px] md:px-[32px]">
-          <button type="button" onClick={onClose} className="rounded-[8px] bg-[#f6f6f6] px-[16px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-[#262630] hover:bg-[#ececec]">Cancel</button>
-          <button type="submit" className="rounded-[8px] bg-[#247ae4] px-[16px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-white hover:bg-[#176dcb] disabled:cursor-not-allowed disabled:opacity-50" disabled={!title.trim() || !body.trim()}>Publish Post</button>
+          <button type="button" onClick={onClose} data-ux-id="community-feed-create-post-cancel-button" className="rounded-[8px] bg-[#f6f6f6] px-[16px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-[#262630] hover:bg-[#ececec]">Cancel</button>
+          <button type="submit" data-ux-id="community-feed-create-post-publish-button" className="rounded-[8px] bg-[#247ae4] px-[16px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-white hover:bg-[#176dcb] disabled:cursor-not-allowed disabled:opacity-50" disabled={!title.trim() || !body.trim()}>Publish Post</button>
         </div>
       </form>
     </div>
@@ -1515,9 +1529,9 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   };
 
   return (
-    <div className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="community-feed-page" className="flex-1 min-w-0 h-full overflow-y-auto">
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
-        <button onClick={onOpenSidebar} className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
+        <button onClick={onOpenSidebar} data-ux-id="community-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
         </button>
         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
@@ -1534,9 +1548,9 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         </div>
 
         <div className="mx-auto flex w-full max-w-[673px] flex-col gap-[16px]">
-          <div className="flex items-center gap-[14px] rounded-[18px] bg-white px-[18px] py-[18px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:px-[26px] md:py-[24px]">
+          <div data-ux-id="community-feed-create-post-card" className="flex items-center gap-[14px] rounded-[18px] bg-white px-[18px] py-[18px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:px-[26px] md:py-[24px]">
             <p className="min-w-0 flex-1 font-['DM_Sans:SemiBold',sans-serif] text-[17px] font-semibold text-[#262630] md:text-[20px]" style={{ fontVariationSettings: '"opsz" 14' }}>What’s happening in the community?</p>
-            <button onClick={() => setCreatePostOpen(true)} className="flex shrink-0 items-center gap-[8px] rounded-[8px] bg-[#247ae4] px-[14px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-white shadow-sm transition-colors hover:bg-[#176dcb]">
+            <button onClick={() => setCreatePostOpen(true)} data-ux-id="community-feed-create-post-button" className="flex shrink-0 items-center gap-[8px] rounded-[8px] bg-[#247ae4] px-[14px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-white shadow-sm transition-colors hover:bg-[#176dcb]">
               <span className="text-[18px] font-normal leading-none">+</span>
               <span className="hidden sm:inline">Create Post</span>
               <span className="sm:hidden">Post</span>
@@ -1546,7 +1560,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           {posts.map((post) => {
             const liked = likedPosts.has(post.id);
             return (
-              <article key={post.id} className="flex w-full flex-col gap-[20px] rounded-[18px] border border-[#d9e7f0] bg-white px-[18px] pb-[16px] pt-[22px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:gap-[24px] md:px-[26px] md:pt-[24px]">
+              <article key={post.id} data-ux-id={`community-feed-post-${post.id}`} className="flex w-full flex-col gap-[20px] rounded-[18px] border border-[#d9e7f0] bg-white px-[18px] pb-[16px] pt-[22px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:gap-[24px] md:px-[26px] md:pt-[24px]">
                 <div className="flex items-start gap-[14px]">
                   <div className="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-[#247ae4] font-['Open_Sans:Regular',sans-serif] text-[13px] font-normal text-white" style={{ fontVariationSettings: '"wdth" 100' }}>{post.initials}</div>
                   <div className="min-w-0 flex-1">
@@ -1584,12 +1598,13 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                   {post.image && <img src={post.image} alt={post.imageAlt ?? ""} className="aspect-[621/316] w-full rounded-[16px] object-cover" />}
                   {post.links && post.links.length > 0 && (
                     <div className="flex flex-wrap gap-[9px]">
-                      {post.links.map((link) => (
+                      {post.links.map((link, linkIdx) => (
                         <a
                           key={link.href}
                           href={link.href}
                           target="_blank"
                           rel="noreferrer"
+                          data-ux-id={`community-feed-post-${post.id}-link-${linkIdx}`}
                           className="max-w-full truncate rounded-full bg-[#e8f1f6] px-[15px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[13px] font-semibold leading-[1.2] text-[#262630] transition-colors hover:bg-[#d9eaf3] hover:text-[#247ae4] md:px-[18px] md:text-[14px]"
                         >
                           {link.label}
@@ -1598,7 +1613,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                     </div>
                   )}
                   <div className="border-t border-[#d9e7f0]" />
-                  <button onClick={() => toggleLike(post.id)} aria-pressed={liked} className={`flex w-fit items-center gap-[7px] rounded-[6px] px-[2px] py-[2px] font-['DM_Sans:Regular',sans-serif] text-[13px] font-normal transition-colors ${liked ? "text-[#247ae4]" : "text-[#262630] hover:text-[#247ae4]"}`}>
+                  <button onClick={() => toggleLike(post.id)} aria-pressed={liked} data-ux-id={`community-feed-post-${post.id}-like-button`} className={`flex w-fit items-center gap-[7px] rounded-[6px] px-[2px] py-[2px] font-['DM_Sans:Regular',sans-serif] text-[13px] font-normal transition-colors ${liked ? "text-[#247ae4]" : "text-[#262630] hover:text-[#247ae4]"}`}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"}><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3m0 11V11l4-9a3 3 0 013 3v4h5.1a2.5 2.5 0 012.45 3l-1.5 7.5A3 3 0 0117.1 22H7z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     {liked ? "Liked" : "Like"} · {post.likes + (liked ? 1 : 0)}
                   </button>
@@ -1624,10 +1639,11 @@ export default function App() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#edf9f2] to-[#ddf2ff] flex h-full w-full overflow-hidden">
+    <div data-ux-id="app-shell" className="bg-gradient-to-b from-[#edf9f2] to-[#ddf2ff] flex h-full w-full overflow-hidden">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
+          data-ux-id="sidebar-mobile-backdrop"
           className="fixed inset-0 bg-black/30 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
