@@ -1,6 +1,7 @@
 import { Fragment, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
 import NewResidentFlow from "./onboarding/NewResidentFlow";
+import BoardTasksWidget from "./board/BoardTasksWidget";
 
 /* ─── Icons — outlined stroke style matching FA Regular weight ─── */
 
@@ -186,6 +187,7 @@ function AddressCard() {
 
 /* ─── Sidebar ─── */
 type Page = "dashboard" | "elections" | "community";
+type DashboardView = "homeowner" | "board";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -230,9 +232,11 @@ interface SidebarProps {
   onNavigate: (page: Page) => void;
   onClose?: () => void;
   onRestart: () => void;
+  dashboardView?: DashboardView;
 }
 
-function Sidebar({ activePage, onNavigate, onClose, onRestart }: SidebarProps) {
+function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView }: SidebarProps) {
+  const [boardActionsOpen, setBoardActionsOpen] = useState(true);
   return (
     <div data-ux-id="sidebar" className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
       <div className="flex flex-col gap-[42px] items-center px-[26px] py-[40px] flex-1 overflow-y-auto">
@@ -289,6 +293,49 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart }: SidebarProps) {
           <NavItem icon={<IconDirectory />} label="Directory" uxId="directory" />
           <NavItem icon={<IconCalendar />} label="Calendar" uxId="calendar" />
 
+          {/* Board Actions — board member view only */}
+          {dashboardView === "board" && <div className="w-full border-t border-[#d9e7f0] my-[9px]" />}
+          {dashboardView === "board" && (
+            <div className="flex flex-col gap-0 w-full">
+              {/* Section header */}
+              <button
+                type="button"
+                onClick={() => setBoardActionsOpen(o => !o)}
+                data-ux-id="sidebar-board-actions-toggle"
+                className="w-full flex items-center gap-[12px] pl-[10px] pr-[10px] py-[8px] rounded-[8px] hover:bg-[#f2f6fa] transition-colors cursor-pointer"
+              >
+                <span className="flex items-center justify-center size-[24px] text-[#262630] shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                  </svg>
+                </span>
+                <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[14px] flex-1 text-left text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Board Actions
+                </span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={`transition-transform duration-200 text-[#9ca3af] shrink-0 ${boardActionsOpen ? "" : "rotate-180"}`}>
+                  <path d="M18 15l-6-6-6 6"/>
+                </svg>
+              </button>
+
+              {/* Sub-items */}
+              {boardActionsOpen && (
+                <div className="flex flex-col mt-[2px] pl-[22px]">
+                  {["ARCs", "Invoices", "Work Orders", "Collections", "Homeowners", "Bank Accounts", "Reports", "Inspections", "Violations", "Board Tasks"].map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      data-ux-id={`sidebar-board-${item.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="w-full text-left px-[10px] py-[7px] text-[13px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] hover:text-[#247ae4] hover:bg-[#f2f6fa] rounded-[6px] transition-colors cursor-pointer"
+                      style={{ fontVariationSettings: '"opsz" 14' }}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Divider */}
           <div className="w-full border-t border-[#d9e7f0] my-[9px]" />
 
@@ -300,8 +347,49 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart }: SidebarProps) {
   );
 }
 
+/* ─── View Toggle ─── */
+function ViewToggle({ view, onChange }: { view: DashboardView; onChange: (v: DashboardView) => void }) {
+  return (
+    <div
+      data-ux-id="dashboard-view-toggle"
+      className="fixed bottom-6 left-6 z-50 flex items-center bg-[#1a1f2e] rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-[5px] gap-[2px]"
+    >
+      <button
+        onClick={() => onChange("homeowner")}
+        data-ux-id="dashboard-view-toggle-homeowner"
+        className={`flex items-center gap-[8px] px-[16px] py-[9px] rounded-full text-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold transition-all cursor-pointer ${
+          view === "homeowner" ? "bg-[#2d3550] text-white" : "text-[#8a95ab] hover:text-white"
+        }`}
+        style={{ fontVariationSettings: '"opsz" 14' }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+        Homeowner
+      </button>
+      <button
+        onClick={() => onChange("board")}
+        data-ux-id="dashboard-view-toggle-board"
+        className={`flex items-center gap-[8px] px-[16px] py-[9px] rounded-full text-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold transition-all cursor-pointer ${
+          view === "board" ? "bg-[#2d3550] text-white" : "text-[#8a95ab] hover:text-white"
+        }`}
+        style={{ fontVariationSettings: '"opsz" 14' }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8"/>
+        </svg>
+        Board Member
+      </button>
+    </div>
+  );
+}
+
 /* ─── Dashboard Page ─── */
-function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void }) {
+function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView }) {
   return (
     <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
@@ -340,6 +428,9 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
             </p>
           </div>
         </div>
+
+        {/* Board Actions widget — board member view only */}
+        {view === "board" && <BoardTasksWidget />}
 
         {/* Payments + Transactions row */}
         <div className="flex flex-col md:flex-row gap-[20px] md:gap-[32px] w-full shrink-0">
@@ -1697,6 +1788,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 function MainApp({ onRestart }: { onRestart: () => void }) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
 
   const navigate = (page: Page) => {
     setActivePage(page);
@@ -1715,14 +1807,18 @@ function MainApp({ onRestart }: { onRestart: () => void }) {
       )}
       {/* Sidebar — desktop always visible, mobile slides in as overlay */}
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} />
+        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} />
       </div>
       {activePage === "dashboard" ? (
-        <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} />
+        <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} />
       ) : activePage === "elections" ? (
         <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} />
       ) : (
         <CommunityFeedPage onOpenSidebar={() => setSidebarOpen(true)} />
+      )}
+      {/* Floating view toggle — only on dashboard */}
+      {activePage === "dashboard" && (
+        <ViewToggle view={dashboardView} onChange={setDashboardView} />
       )}
     </div>
   );
