@@ -1109,8 +1109,8 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                 </div>
               </div>
               <div className="shrink-0">
-                <button data-ux-id="elections-nominations-send-link-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Send Link
+                <button data-ux-id="elections-nominations-submit-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Submit Nomination
                 </button>
               </div>
             </div>
@@ -1304,9 +1304,13 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
               {/* Bylaw / budget: options list */}
               {!isCollapsed && campaign.options && (
                 <div className="flex flex-col gap-[10px]">
-                  {campaign.options.map((opt) => (
+                  {campaign.options.map((opt, idx) => (
                     <div key={opt.label} data-ux-id={`election-campaign-${campaign.id}-option-${opt.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border border-[#e8eff5] rounded-[12px] px-[18px] py-[14px] flex items-start gap-[14px]">
-                      <div className={`mt-[2px] w-[18px] h-[18px] rounded-full border-2 shrink-0 ${campaign.status === "open" ? "border-[#c8d9e6]" : "border-[#dde8f0]"}`} />
+                      <div className="mt-[1px] w-[20px] h-[20px] rounded-full bg-[#f0f5fa] flex items-center justify-center shrink-0">
+                        <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] opacity-60 text-[11px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          {idx + 1}
+                        </span>
+                      </div>
                       <div className="flex flex-col gap-[2px] min-w-0">
                         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
                           {opt.label}
