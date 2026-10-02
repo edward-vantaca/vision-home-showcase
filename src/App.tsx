@@ -1039,29 +1039,6 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           <AddressCard />
         </div>
 
-        {/* Tab bar */}
-        <div data-ux-id="elections-tabs" className="w-full shrink-0 border border-[#e2eaf0] -mb-[8px] bg-white rounded-[6px]">
-          <div className="flex gap-[0px] overflow-x-auto no-scrollbar">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                data-ux-id={`elections-tab-${tab.id}`}
-                className={`relative shrink-0 px-[18px] py-[10px] font-['DM_Sans:Medium',sans-serif] font-medium text-[14px] whitespace-nowrap transition-colors ${
-                  activeTab === tab.id
-                    ? "text-[#247ae4]"
-                    : "text-[#262630] opacity-50 hover:opacity-80"
-                }`}
-                style={{ fontVariationSettings: '"opsz" 14' }}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#247ae4] rounded-t-full" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Consent capture — Consent tab only */}
         {activeTab === "consent" && consentSaved && !consentBannerDismissed ? (
@@ -1428,6 +1405,26 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         {/* Results tab: closed election card */}
         {activeTab === "results" && <CompletedElectionCard collapsed={collapsedCards.has("completed-2025")} onToggle={() => toggleCard("completed-2025")} />}
 
+      </div>
+
+      {/* Floating elections tab pill — bottom-left */}
+      <div
+        data-ux-id="elections-tab-toggle"
+        className="fixed bottom-6 left-6 z-50 flex items-center bg-[#1a1f2e] rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-[5px] gap-[2px]"
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            data-ux-id={`elections-tab-${tab.id}`}
+            className={`px-[14px] py-[8px] rounded-full text-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === tab.id ? "bg-[#2d3550] text-white" : "text-[#8a95ab] hover:text-white"
+            }`}
+            style={{ fontVariationSettings: '"opsz" 14' }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
     </div>
   );
