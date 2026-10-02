@@ -421,6 +421,60 @@ function DashboardPage({ onNavigate, onOpenSidebar }: { onNavigate: (page: Page)
           </div>
         </div>
 
+        {/* Community Feed widget */}
+        <div data-ux-id="dashboard-community-feed-widget" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full shrink-0">
+          <div className="flex flex-col gap-[18px] md:gap-[22px] px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
+            <div className="flex gap-[14px] items-center w-full">
+              <p className="flex-1 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
+              <button onClick={() => onNavigate("community")} data-ux-id="dashboard-community-feed-view-all-link" className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
+                <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>View All Posts</span>
+                <IconChevronRight />
+              </button>
+            </div>
+            <div className="flex flex-col gap-[18px] md:gap-[22px]">
+              {initialCommunityPosts
+                .filter((post) => post.image && post.links && post.links.length > 0)
+                .slice(0, 2)
+                .map((post, i, arr) => (
+                  <div key={post.id}>
+                    <div data-ux-id={`dashboard-community-feed-post-${post.id}`} className="flex gap-[14px] md:gap-[18px] items-start w-full">
+                      <img
+                        src={post.image}
+                        alt={post.imageAlt ?? ""}
+                        className="w-[120px] h-[90px] md:w-[160px] md:h-[110px] rounded-[12px] object-cover shrink-0"
+                      />
+                      <div className="flex flex-col gap-[6px] min-w-0 flex-1">
+                        <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px] leading-[1.25]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          {post.title}
+                        </p>
+                        <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-65 text-[13px] leading-[1.4] line-clamp-2" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          {post.body}
+                        </p>
+                        {post.links && post.links.length > 0 && (
+                          <div className="flex flex-wrap gap-[7px] mt-[2px]">
+                            {post.links.map((link, linkIdx) => (
+                              <a
+                                key={link.href}
+                                href={link.href}
+                                target="_blank"
+                                rel="noreferrer"
+                                data-ux-id={`dashboard-community-feed-post-${post.id}-link-${linkIdx}`}
+                                className="max-w-full truncate rounded-full bg-[#e8f1f6] px-[12px] py-[5px] font-['DM_Sans:SemiBold',sans-serif] text-[12px] font-semibold leading-[1.2] text-[#262630] transition-colors hover:bg-[#d9eaf3] hover:text-[#247ae4]"
+                              >
+                                {link.label}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {i < arr.length - 1 && <div className="bg-[#d9d9d9] h-px w-full mt-[18px] md:mt-[22px]" />}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+
         {/* Inbox widget */}
         <div data-ux-id="inbox-widget" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full shrink-0">
           <div className="flex flex-col gap-[20px] md:gap-[24px] px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
