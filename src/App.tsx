@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
+import NewResidentFlow from "./onboarding/NewResidentFlow";
 
 /* ─── Icons — outlined stroke style matching FA Regular weight ─── */
 
@@ -228,9 +229,10 @@ interface SidebarProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
   onClose?: () => void;
+  onRestart: () => void;
 }
 
-function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
+function Sidebar({ activePage, onNavigate, onClose, onRestart }: SidebarProps) {
   return (
     <div data-ux-id="sidebar" className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
       <div className="flex flex-col gap-[42px] items-center px-[26px] py-[40px] flex-1 overflow-y-auto">
@@ -246,7 +248,12 @@ function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
           </svg>
         </button>
         {/* Branding */}
-        <div className="flex flex-col items-center shrink-0 w-[165.907px]">
+        <button
+          onClick={onRestart}
+          data-ux-id="sidebar-logo-restart"
+          className="flex flex-col items-center shrink-0 w-[165.907px] cursor-pointer"
+          aria-label="Restart prototype"
+        >
           <div className="flex flex-col justify-center">
             <svg width="44" height="42" viewBox="0 0 100 92" fill="none">
               <path d="M50 6L6 46h10v42h68V46h10L50 6z" stroke="#1a8ffb" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" fill="none"/>
@@ -260,7 +267,7 @@ function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
           <div className="font-['Lexend:Regular',sans-serif] font-normal text-[#043b59] text-[9.757px] tracking-[-0.1px] uppercase whitespace-nowrap">
             Community Estates
           </div>
-        </div>
+        </button>
 
         {/* Quick Actions */}
         <button data-ux-id="sidebar-quick-actions" className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0">
@@ -286,7 +293,7 @@ function Sidebar({ activePage, onNavigate, onClose }: SidebarProps) {
           <div className="w-full border-t border-[#d9e7f0] my-[9px]" />
 
           <NavItem icon={<IconProfile />} label="My Profile" uxId="profile" />
-          <NavItem icon={<IconLogout />} label="Log Out" uxId="logout" />
+          <NavItem icon={<IconLogout />} label="Log Out" onClick={onRestart} uxId="logout" />
         </div>
       </div>
     </div>
@@ -1628,8 +1635,8 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   );
 }
 
-/* ─── Root App ─── */
-export default function App() {
+/* ─── Main Portal (post-onboarding) ─── */
+function MainApp({ onRestart }: { onRestart: () => void }) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -1650,7 +1657,7 @@ export default function App() {
       )}
       {/* Sidebar — desktop always visible, mobile slides in as overlay */}
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} />
+        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} />
       </div>
       {activePage === "dashboard" ? (
         <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} />
@@ -1661,4 +1668,17 @@ export default function App() {
       )}
     </div>
   );
+}
+
+/* ─── Root App — gates onboarding before the resident portal ─── */
+type AppPhase = "onboarding" | "portal";
+
+export default function App() {
+  const [phase, setPhase] = useState<AppPhase>("onboarding");
+
+  if (phase === "onboarding") {
+    return <NewResidentFlow onComplete={() => setPhase("portal")} />;
+  }
+
+  return <MainApp onRestart={() => setPhase("onboarding")} />;
 }
