@@ -98,7 +98,7 @@ function Sidebar({ screen, skipped, onStep, onBypass }: { screen: Screen; skippe
   const total = STEPS.length;
 
   return (
-    <aside data-ux-id="onboarding-sidebar" className="w-64 shrink-0 flex flex-col gap-6 bg-[#f5f7fa] border-r border-[#e5eaf0] px-4 py-8">
+    <aside data-ux-id="onboarding-sidebar" className="w-64 shrink-0 hidden md:flex flex-col gap-6 bg-[#f5f7fa] border-r border-[#e5eaf0] px-4 py-8">
       {/* Logo */}
       <button
         type="button"
@@ -498,11 +498,25 @@ export default function NewResidentFlow({ onComplete }: { onComplete: () => void
   return (
     <div data-ux-id="onboarding-flow" className="min-h-screen w-full flex bg-white">
       <Sidebar screen={screen} skipped={skipped} onStep={(s) => setScreen(s)} onBypass={onComplete} />
-      <main className="flex-1 flex items-center justify-center px-8 py-12 bg-white overflow-y-auto">
+      <main className="flex-1 flex flex-col items-center px-8 py-12 bg-white overflow-y-auto">
+        {/* Mobile-only logo */}
+        <div className="md:hidden self-start mb-8">
+          <button
+            type="button"
+            onClick={onComplete}
+            data-ux-id="onboarding-mobile-logo-bypass"
+            className="cursor-pointer"
+            aria-label="Skip to dashboard"
+          >
+            <img src={imgWordmark} alt="Pinecrest Valley" className="object-contain" style={{ height: "48px" }} />
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center w-full">
         {screen === "account"  && <StepAccount   data={data} onChange={(k, v) => change(k, v)} onNext={() => setScreen("confirm")} />}
         {screen === "confirm"  && <ScreenConfirm data={data} onChange={change} onEnable={() => { setSkipped(false); setScreen("done"); }} onSkip={() => { setSkipped(true); setScreen("done"); }} />}
         {screen === "autopay"  && <StepAutoPay   data={data} onChange={change} onBack={() => setScreen("confirm")} onFinish={() => { setSkipped(false); setScreen("done"); }} onSkip={() => { setSkipped(true); setScreen("done"); }} />}
         {screen === "done"     && <ScreenDone    data={data} skipped={skipped} onPortal={onComplete} />}
+        </div>
       </main>
     </div>
   );
