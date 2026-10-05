@@ -401,7 +401,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0">
+      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0">
         {/* Header — desktop only */}
         <div className="hidden md:flex items-center justify-between w-full shrink-0">
           <div className="flex flex-col flex-1 min-w-0">
@@ -955,11 +955,11 @@ function CollapseButton({ collapsed, onToggle, uxId = "collapse-button" }: { col
     <button
       onClick={onToggle}
       data-ux-id={uxId}
-      className="shrink-0 w-[30px] h-[30px] rounded-full flex items-center justify-center text-[#262630] opacity-35 hover:opacity-70 hover:bg-[#f0f5fa] transition-all"
+      className="shrink-0 w-[36px] h-[36px] rounded-full flex items-center justify-center text-[#262630] opacity-35 hover:opacity-70 hover:bg-[#f0f5fa] transition-all"
       aria-label={collapsed ? "Expand section" : "Collapse section"}
     >
       <svg
-        width="20" height="20" viewBox="0 0 24 24" fill="none"
+        width="22" height="22" viewBox="0 0 24 24" fill="none"
         className="transition-transform duration-200"
         style={{ transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
       >
@@ -1003,11 +1003,11 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
       return next;
     });
 
-  const [activeTab, setActiveTab] = useState<"consent" | "nominations" | "proxy" | "results">("consent");
+  const [activeTab, setActiveTab] = useState<"nominations" | "proxy" | "results">("proxy");
+  const [showConsentModal, setShowConsentModal] = useState(!consentSaved);
   const daysLeft = 5;
 
   const tabs: { id: typeof activeTab; label: string }[] = [
-    { id: "consent", label: "Consent" },
     { id: "nominations", label: "Nominations" },
     { id: "proxy", label: "Voting / Campaigns" },
     { id: "results", label: "Results" },
@@ -1024,7 +1024,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0 rounded-[6px]">
+      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0 rounded-[6px]">
 
         {/* Header — desktop only */}
         <div className="hidden md:flex items-center justify-between w-full shrink-0">
@@ -1040,11 +1040,15 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         </div>
 
 
-        {/* Consent capture — Consent tab only */}
-        {activeTab === "consent" && consentSaved && !consentBannerDismissed ? (
-          <div data-ux-id="elections-consent-confirmation-banner" className="w-full bg-white border border-[#e2eaf0] rounded-[18px] shrink-0 px-[16px] md:px-[26px] py-[16px] flex flex-col gap-[14px]">
-            <div className="flex items-start justify-between gap-[12px]">
-              <div className="flex flex-col gap-[2px]">
+        {/* Electronic Consent modal */}
+        {showConsentModal && (
+          <div
+            data-ux-id="elections-consent-modal-backdrop"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
+          >
+            <div data-ux-id="elections-consent-modal" className="w-full max-w-[560px] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] flex flex-col gap-[0px] overflow-hidden">
+              {/* Modal header */}
+              <div className="px-[28px] pt-[26px] pb-[20px] flex flex-col gap-[2px]">
                 <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
                   Upcoming – 2026 Board of Directors Election
                 </p>
@@ -1052,161 +1056,128 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                   Voting open Aug 28 – Sep 15, 2026
                 </p>
               </div>
-              <button
-                onClick={() => { setConsentSaved(false); setConsentBannerDismissed(false); }}
-                data-ux-id="elections-consent-confirmation-dismiss-button"
-                className="shrink-0 text-[#262630] opacity-30 hover:opacity-60 transition-opacity mt-[2px]"
-                aria-label="Dismiss"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
-            </div>
-            <div className="w-full h-px bg-[#e2eaf0]" />
-            <div className="flex items-center gap-[10px]">
-              <div className="shrink-0 flex items-center gap-[6px] bg-[#f0fdf4] border border-[#bbf7d0] rounded-[50px] px-[12px] py-[5px]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#166534] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>Confirmed</span>
+              <div className="w-full h-px bg-[#e2eaf0]" />
+              {/* Modal body */}
+              <div className="px-[28px] py-[22px] flex flex-col gap-[18px]">
+                <div className="flex flex-col gap-[4px]">
+                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Electronic Consent
+                  </p>
+                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Your association requires consent to send election notices and accept votes electronically.
+                  </p>
+                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[12px] uppercase tracking-wide mt-[6px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Review &amp; Agree
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-[14px]">
+                  <label className="flex items-start gap-[14px] cursor-pointer group">
+                    <div
+                      onClick={() => setConsentNotices(v => !v)}
+                      data-ux-id="elections-consent-notices-checkbox"
+                      className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentNotices ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
+                    >
+                      {consentNotices && (
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-[2px] min-w-0" onClick={() => setConsentNotices(v => !v)}>
+                      <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        I agree to receive legal notices and documents electronically.
+                      </p>
+                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        Receive meeting notices, agendas, and ballots via email instead of postal mail.
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-[14px] cursor-pointer group">
+                    <div
+                      onClick={() => setConsentVoting(v => !v)}
+                      data-ux-id="elections-consent-voting-checkbox"
+                      className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentVoting ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
+                    >
+                      {consentVoting && (
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-[2px] min-w-0" onClick={() => setConsentVoting(v => !v)}>
+                      <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        I agree to vote and submit proxies electronically for future elections.
+                      </p>
+                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        Cast your official ballot online. Your vote is encrypted and verified by a neutral third-party.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="pt-[2px]">
+                  <button
+                    onClick={() => { setConsentSaved(true); setShowConsentModal(false); setActiveTab("proxy"); }}
+                    data-ux-id="elections-consent-submit-button"
+                    className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
+                    style={{ fontVariationSettings: '"opsz" 14' }}
+                  >
+                    Yes, I Consent
+                  </button>
+                </div>
               </div>
-              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Your electronic consent preferences have been saved.
-              </p>
             </div>
           </div>
-        ) : activeTab === "consent" && !consentSaved ? (
-          <div data-ux-id="elections-consent-form" className="w-full bg-white border border-[#e2eaf0] rounded-[18px] shrink-0 px-[16px] md:px-[28px] py-[18px] md:py-[22px] flex flex-col gap-[18px]">
-            <div className="flex flex-col gap-[2px]">
-              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Upcoming – 2026 Board of Directors Election
-              </p>
-              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Voting open Aug 28 – Sep 15, 2026
-              </p>
-            </div>
-            <div className="w-full h-px bg-[#e2eaf0]" />
-            <div className="flex flex-col gap-[4px]">
-              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Electronic Consent
-              </p>
-              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Your association requires consent to send election notices and accept votes electronically.
-              </p>
-              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[12px] uppercase tracking-wide mt-[6px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Review &amp; Agree
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-[12px]">
-              <label className="flex items-start gap-[14px] cursor-pointer group">
-                <div
-                  onClick={() => setConsentNotices(v => !v)}
-                  data-ux-id="elections-consent-notices-checkbox"
-                  className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentNotices ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
-                >
-                  {consentNotices && (
-                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  )}
-                </div>
-                <div className="flex flex-col gap-[1px] min-w-0" onClick={() => setConsentNotices(v => !v)}>
-                  <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    I agree to receive legal notices and documents electronically.
-                  </p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Receive meeting notices, agendas, and ballots via email instead of postal mail.
-                  </p>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-[14px] cursor-pointer group">
-                <div
-                  onClick={() => setConsentVoting(v => !v)}
-                  data-ux-id="elections-consent-voting-checkbox"
-                  className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentVoting ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
-                >
-                  {consentVoting && (
-                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  )}
-                </div>
-                <div className="flex flex-col gap-[1px] min-w-0" onClick={() => setConsentVoting(v => !v)}>
-                  <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    I agree to vote and submit proxies electronically for future elections.
-                  </p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Cast your official ballot online. Your vote is encrypted and verified by a neutral third-party.
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div className="flex items-center gap-[12px] pt-[2px]">
-              <button
-                onClick={() => setConsentSaved(true)}
-                data-ux-id="elections-consent-submit-button"
-                className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[20px] py-[9px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px]"
-                style={{ fontVariationSettings: '"opsz" 14' }}
-              >
-                Yes, I Consent
-              </button>
-
-            </div>
-          </div>
-        ) : null}
+        )}
 
         {/* Nominations tab */}
         {activeTab === "nominations" && (
-          <div data-ux-id="elections-nominations-card" className="bg-white border border-[#d9e7f0] rounded-[18px] w-full flex items-center px-[24px] py-[18px] shrink-0">
-            <div className="flex items-center gap-[64px]">
-              <div className="flex flex-col gap-[10px]">
-                <div className="flex flex-col w-full">
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Want to run in the upcoming elections?
-                  </p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[14px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Unit 120A – Madison Green
-                  </p>
-                </div>
-                <div className="flex flex-col w-full">
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Lakestone HOA - Consent Campaign 2026
-                  </p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>End Date:</span>
-                    {" December 18, 2026 7:00PM ET"}
-                  </p>
-                </div>
+          <div data-ux-id="elections-nominations-card" className="bg-white border border-[#d9e7f0] rounded-[18px] w-full flex items-center justify-between px-[24px] py-[18px] shrink-0">
+            <div className="flex flex-col gap-[10px] min-w-0">
+              <div className="flex flex-col w-full">
+                <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Want to run in the upcoming elections?
+                </p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[14px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Unit 120A – Madison Green
+                </p>
               </div>
-              <div className="shrink-0">
-                <button data-ux-id="elections-nominations-submit-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Submit Nomination
-                </button>
+              <div className="flex flex-col w-full">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Lakestone HOA - Consent Campaign 2026
+                </p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>End Date:</span>
+                  {" December 18, 2026 7:00PM ET"}
+                </p>
               </div>
+            </div>
+            <div className="shrink-0 pl-[24px]">
+              <button data-ux-id="elections-nominations-submit-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Submit Nomination
+              </button>
             </div>
           </div>
         )}
 
         {/* Proxy/Ballot/Meeting tab: open + upcoming elections */}
         {activeTab === "proxy" && <><div data-ux-id="elections-ballot-card" className="border border-[#e2eaf0] rounded-[14px] md:rounded-[18px] w-full flex flex-col md:flex-row md:items-center justify-between gap-[14px] md:gap-[26px] px-[16px] md:px-[26px] py-[16px] md:py-[18px] bg-white shrink-0">
-          <div className="flex flex-col md:flex-row md:items-center gap-[14px] md:gap-[64px] min-w-0 flex-1">
-            <div className="flex flex-col gap-[3px] shrink-0">
-              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                2026 Board of Directors Election – Submit your ballot
-              </p>
-              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Voting closes on September 15, 2026 at 5:00PM
-              </p>
-            </div>
-            {!ballotSent && (
-              <button
-                onClick={() => setBallotSent(true)}
-                data-ux-id="elections-vote-now-button"
-                className="shrink-0 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
-                style={{ fontVariationSettings: '"opsz" 14' }}
-              >
-                Vote Now
-              </button>
-            )}
+          <div className="flex flex-col gap-[3px] shrink-0 min-w-0">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              2026 Board of Directors Election – Submit your ballot
+            </p>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Voting closes on September 15, 2026 at 5:00PM
+            </p>
           </div>
+          {!ballotSent && (
+            <button
+              onClick={() => setBallotSent(true)}
+              data-ux-id="elections-vote-now-button"
+              className="shrink-0 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
+              style={{ fontVariationSettings: '"opsz" 14' }}
+            >
+              Vote Now
+            </button>
+          )}
           {ballotSent && (
             <div data-ux-id="elections-ballot-sent-confirmation" className="flex items-start justify-between gap-[12px] bg-white border border-[#e2eaf0] rounded-[12px] px-[14px] py-[12px] flex-1 min-w-0">
               <div className="flex items-start gap-[12px] min-w-0">
@@ -1691,7 +1662,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex w-full flex-col gap-[24px] px-[16px] pb-[44px] pt-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px]">
+      <div className="flex w-full max-w-[1280px] mx-auto flex-col gap-[24px] px-[16px] pb-[44px] pt-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px]">
         <div className="hidden w-full items-center justify-between gap-[28px] md:flex">
           <div className="min-w-0 flex-1">
             <p className="font-['DM_Sans:SemiBold',sans-serif] text-[28px] font-semibold leading-normal text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
