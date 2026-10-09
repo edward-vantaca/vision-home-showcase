@@ -1,5 +1,7 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+// @vitest-environment jsdom
+// @vitest-environment-options {"url": "http://localhost/"}
+import { render, screen, act } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useEffect } from "react";
 import { WalkthroughLauncher } from "../WalkthroughLauncher";
 import { WalkthroughProvider, useWalkthrough } from "../WalkthroughProvider";
@@ -19,17 +21,28 @@ function Probe() {
   return null;
 }
 
-function setLocationSearch(url: string) {
-  const u = new URL(`http://localhost/${url}`);
-  Object.defineProperty(window, "location", {
-    writable: true,
-    configurable: true,
-    value: { href: u.href, search: u.search },
-  });
+// The component reads: new URLSearchParams(window.location.search)
+// Mocking URLSearchParams constructor avoids triggering jsdom navigation
+// (which hangs when history.replaceState is called with a query string in jsdom 29).
+const RealURLSearchParams = globalThis.URLSearchParams;
+
+function mockSearchOnce(search: string) {
+  const preset = new RealURLSearchParams(search);
+  let called = false;
+  return vi.spyOn(globalThis, "URLSearchParams").mockImplementation(function (
+    this: URLSearchParams,
+    init?: string | URLSearchParams | Record<string, string> | string[][],
+  ) {
+    if (!called) {
+      called = true;
+      return preset;
+    }
+    return new RealURLSearchParams(init as string);
+  } as unknown as typeof URLSearchParams);
 }
 
-function renderWith(url: string) {
-  setLocationSearch(url);
+function renderWith(search: string) {
+  const spy = mockSearchOnce(search);
   capturedApi = null;
   const utils = render(
     <WalkthroughProvider sequences={sequences}>
@@ -37,31 +50,42 @@ function renderWith(url: string) {
       <Probe />
     </WalkthroughProvider>,
   );
+  spy.mockRestore();
   return { ...utils, getApi: () => capturedApi! };
 }
 
 beforeEach(() => {
-  setLocationSearch("");
+  capturedApi = null;
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("WalkthroughLauncher", () => {
   it("auto-starts sequence when ?demo=<id>", async () => {
     const { getApi } = renderWith("?demo=demoseq");
-    await new Promise((r) => setTimeout(r, 10));
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
     expect(getApi().state.active).toBe(true);
     expect(getApi().state.sequenceId).toBe("demoseq");
   });
 
   it("renders picker when ?demo=true", async () => {
     renderWith("?demo=true");
-    await new Promise((r) => setTimeout(r, 10));
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
     expect(screen.getByTestId("walkthrough-launcher")).toBeInTheDocument();
   });
 
   it("logs warning for unknown sequence id", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { getApi } = renderWith("?demo=does-not-exist");
-    await new Promise((r) => setTimeout(r, 10));
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
     expect(warn).toHaveBeenCalled();
     expect(getApi().state.active).toBe(false);
     warn.mockRestore();
@@ -69,8 +93,11 @@ describe("WalkthroughLauncher", () => {
 
   it("Cmd+Shift+W opens picker", async () => {
     renderWith("");
-    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "w", metaKey: true, shiftKey: true, bubbles: true }));
-    await new Promise((r) => setTimeout(r, 10));
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "w", metaKey: true, shiftKey: true, bubbles: true }),
+      );
+    });
     expect(screen.getByTestId("walkthrough-launcher")).toBeInTheDocument();
   });
 });
