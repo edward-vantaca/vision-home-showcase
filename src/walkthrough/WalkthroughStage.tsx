@@ -15,8 +15,6 @@ export function registerBeatRenderer<K extends Beat["kind"]>(
   beatRenderers[kind] = renderer as BeatRenderer;
 }
 
-// Dynamic import runs after module initialization completes, when beatRenderers is initialized
-void import("./beats");
 
 function BeatDispatcher({ beat, onComplete }: BeatProps) {
   const Renderer = beatRenderers[beat.kind];
@@ -53,3 +51,5 @@ export function WalkthroughStage() {
     document.body,
   );
 }
+
+import "./beats";
