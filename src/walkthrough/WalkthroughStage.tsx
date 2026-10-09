@@ -15,10 +15,8 @@ export function registerBeatRenderer<K extends Beat["kind"]>(
   beatRenderers[kind] = renderer as BeatRenderer;
 }
 
-// Import after registerBeatRenderer is defined so side-effect registrations work
-import("./beats").catch(() => {
-  // Silently ignore if beats module fails to load (shouldn't happen)
-});
+// Dynamic import runs after module initialization completes, when beatRenderers is initialized
+void import("./beats");
 
 function BeatDispatcher({ beat, onComplete }: BeatProps) {
   const Renderer = beatRenderers[beat.kind];
