@@ -9,7 +9,12 @@ const sequences: Record<string, Sequence> = {
   s1: {
     id: "s1",
     title: "T",
-    beats: [{ kind: "highlight", target: "a", caption: "hello" }],
+    // Two beats: highlight auto-advances (target missing), then return holds for 800 ms.
+    // This keeps the stage visible after userEvent.click() resolves, without flushing setTimeout.
+    beats: [
+      { kind: "highlight", target: "a", caption: "hello" },
+      { kind: "return" },
+    ],
   },
 };
 

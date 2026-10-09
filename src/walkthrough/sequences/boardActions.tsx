@@ -18,6 +18,7 @@ export const boardActionsSequence: Sequence = {
     },
     {
       kind: "expand",
+      target: "board-task-current",
       content: <BoardActionStageDetail actionId="VIO-1804" />,
       caption:
         "Every action carries its full history — notices sent, owner response window, prior board comments.",

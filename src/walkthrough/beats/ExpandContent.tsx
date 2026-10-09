@@ -15,6 +15,7 @@ export function ExpandContent({ beat }: BeatProps<ExpandBeat>) {
       data-testid="expand-beat"
       className="absolute bg-white rounded-2xl shadow-2xl overflow-hidden"
       layout
+      layoutId={beat.target ? `walkthrough-target-${beat.target}` : undefined}
       initial={{
         width: width * 0.6,
         height: height * 0.6,

@@ -19,6 +19,7 @@ export const amenitySequence: Sequence = {
     },
     {
       kind: "expand",
+      target: "amenity-tile-pool",
       content: <AmenityReservationStage amenityId="pool" />,
       caption:
         "Pick a day. Pick a time. The amenity knows the household rules — pool caps at 6 guests on weekends.",

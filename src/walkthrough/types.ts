@@ -12,7 +12,7 @@ export type AnnotateTrack =
 export type Beat =
   | { kind: "highlight"; target: string; caption?: string; durationMs?: number }
   | { kind: "lift"; target: string; scale?: number; position?: "center" | Point; caption?: string }
-  | { kind: "expand"; content: ReactNode; caption?: string }
+  | { kind: "expand"; content: ReactNode; caption?: string; target?: string }
   | { kind: "annotate"; tracks: AnnotateTrack[]; durationMs?: number }
   | { kind: "return"; caption?: string }
   | { kind: "navigate"; to: string; caption?: string };

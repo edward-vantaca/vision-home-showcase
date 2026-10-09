@@ -1,4 +1,5 @@
 import { createPortal } from "react-dom";
+import { AnimatePresence } from "motion/react";
 import { useWalkthrough } from "./WalkthroughProvider";
 import { useWalkthroughKeyboard } from "./keyboard";
 import { WalkthroughHUD } from "./WalkthroughHUD";
@@ -42,11 +43,16 @@ export function WalkthroughStage() {
     >
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
-        onClick={() => {}}
         aria-hidden
       />
       <div className="relative pointer-events-auto" style={{ zIndex: 110 }}>
-        <BeatDispatcher beat={beat} onComplete={advance} />
+        <AnimatePresence mode="popLayout">
+          <BeatDispatcher
+            key={`beat-${state.currentBeatIndex}`}
+            beat={beat}
+            onComplete={advance}
+          />
+        </AnimatePresence>
       </div>
       <WalkthroughHUD />
     </div>,
