@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
 import NewResidentFlow from "./onboarding/NewResidentFlow";
 import BoardTasksWidget from "./board/BoardTasksWidget";
@@ -1765,10 +1765,29 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 }
 
 /* ─── Main Portal (post-onboarding) ─── */
-function MainApp({ onRestart }: { onRestart: () => void }) {
+type MainAppProps = {
+  onRestart: () => void;
+  externalNavRequest?: string | null;
+  onExternalNavConsumed?: () => void;
+};
+
+function MainApp({ onRestart, externalNavRequest, onExternalNavConsumed }: MainAppProps) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
+
+  useEffect(() => {
+    if (!externalNavRequest) return;
+    if (
+      externalNavRequest === "dashboard" ||
+      externalNavRequest === "elections" ||
+      externalNavRequest === "community" ||
+      externalNavRequest === "amenities"
+    ) {
+      setActivePage(externalNavRequest);
+    }
+    onExternalNavConsumed?.();
+  }, [externalNavRequest, onExternalNavConsumed]);
 
   const navigate = (page: Page) => {
     setActivePage(page);
@@ -1809,12 +1828,23 @@ function MainApp({ onRestart }: { onRestart: () => void }) {
 /* ─── Root App — gates onboarding before the resident portal ─── */
 type AppPhase = "onboarding" | "portal";
 
-export default function App() {
+type AppProps = {
+  externalNavRequest?: string | null;
+  onExternalNavConsumed?: () => void;
+};
+
+export default function App({ externalNavRequest, onExternalNavConsumed }: AppProps = {}) {
   const [phase, setPhase] = useState<AppPhase>("onboarding");
 
   if (phase === "onboarding") {
     return <NewResidentFlow onComplete={() => setPhase("portal")} />;
   }
 
-  return <MainApp onRestart={() => setPhase("onboarding")} />;
+  return (
+    <MainApp
+      onRestart={() => setPhase("onboarding")}
+      externalNavRequest={externalNavRequest}
+      onExternalNavConsumed={onExternalNavConsumed}
+    />
+  );
 }
