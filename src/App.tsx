@@ -2,6 +2,9 @@ import { Fragment, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
 import NewResidentFlow from "./onboarding/NewResidentFlow";
 import BoardTasksWidget from "./board/BoardTasksWidget";
+import AmenitiesPage from "./amenities/AmenitiesPage";
+
+const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
 /* ─── Icons — outlined stroke style matching FA Regular weight ─── */
 
@@ -186,7 +189,7 @@ function AddressCard() {
 }
 
 /* ─── Sidebar ─── */
-type Page = "dashboard" | "elections" | "community";
+type Page = "dashboard" | "elections" | "community" | "amenities";
 type DashboardView = "homeowner" | "board";
 
 interface NavItemProps {
@@ -288,6 +291,15 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView }: 
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
           <NavItem icon={<IconVote active={activePage === "elections"} />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
           <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
+          {isDemoMode() ? (
+            <NavItem
+              icon={<IconHome />}
+              label="Amenities"
+              active={activePage === "amenities"}
+              onClick={() => onNavigate("amenities")}
+              uxId="amenities"
+            />
+          ) : null}
           <NavItem icon={<IconRequests />} label="Requests" uxId="requests" />
           <NavItem icon={<IconDocuments />} label="Documents" uxId="documents" />
           <NavItem icon={<IconDirectory />} label="Directory" uxId="directory" />
@@ -1781,6 +1793,8 @@ function MainApp({ onRestart }: { onRestart: () => void }) {
         <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} />
       ) : activePage === "elections" ? (
         <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} />
+      ) : activePage === "amenities" ? (
+        <AmenitiesPage onOpenSidebar={() => setSidebarOpen(true)} />
       ) : (
         <CommunityFeedPage onOpenSidebar={() => setSidebarOpen(true)} />
       )}
