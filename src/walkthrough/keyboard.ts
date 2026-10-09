@@ -15,7 +15,7 @@ export function useWalkthroughKeyboard(): void {
       const target = event.target as HTMLElement | null;
       const isTypingTarget =
         target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
-      if (isTypingTarget && event.key !== "Escape") return;
+      if (isTypingTarget) return;
 
       switch (event.key) {
         case "ArrowRight":
@@ -45,7 +45,7 @@ export function useWalkthroughKeyboard(): void {
       }
     };
 
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [state.active, advance, back, exit, toggleHud, replayBeat, skipToEnd]);
 }
