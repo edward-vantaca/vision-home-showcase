@@ -8,6 +8,7 @@ type LiftBeat = Extract<Beat, { kind: "lift" }>;
 
 export function LiftToStage({ beat, onComplete }: BeatProps<LiftBeat>) {
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
+  const [originHTML, setOriginHTML] = useState<string>("");
   const firedRef = useRef(false);
 
   useEffect(() => {
@@ -22,6 +23,11 @@ export function LiftToStage({ beat, onComplete }: BeatProps<LiftBeat>) {
     }
     el.scrollIntoView({ block: "center", behavior: "smooth" });
     setOriginRect(el.getBoundingClientRect());
+    setOriginHTML(el.innerHTML);
+    el.style.visibility = "hidden";
+    return () => {
+      el.style.visibility = "";
+    };
   }, [beat.target, onComplete]);
 
   const scale = beat.scale ?? 1.4;
@@ -37,7 +43,7 @@ export function LiftToStage({ beat, onComplete }: BeatProps<LiftBeat>) {
       {originRect ? (
         <motion.div
           layoutId={`walkthrough-target-${beat.target}`}
-          className="absolute bg-white rounded-2xl shadow-2xl overflow-hidden"
+          className="absolute overflow-hidden"
           initial={{
             top: originRect.top,
             left: originRect.left,
@@ -54,6 +60,7 @@ export function LiftToStage({ beat, onComplete }: BeatProps<LiftBeat>) {
           onAnimationComplete={() => {
             /* Lift stays visible until advance; onComplete fires only when user advances */
           }}
+          dangerouslySetInnerHTML={{ __html: originHTML }}
         />
       ) : null}
     </div>

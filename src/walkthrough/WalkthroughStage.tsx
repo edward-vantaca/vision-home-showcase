@@ -41,10 +41,12 @@ export function WalkthroughStage() {
       className="fixed inset-0 pointer-events-none"
       style={{ zIndex: 100 }}
     >
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
-        aria-hidden
-      />
+      {beat.kind !== "highlight" && (
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
+          aria-hidden
+        />
+      )}
       <div className="relative pointer-events-auto" style={{ zIndex: 110 }}>
         <AnimatePresence mode="popLayout">
           <BeatDispatcher

@@ -37,7 +37,7 @@ export function HighlightTarget({ beat, onComplete }: BeatProps<HighlightBeat>) 
             left: rect.left - 8,
             width: rect.width + 16,
             height: rect.height + 16,
-            boxShadow: "0 0 0 9999px rgba(0,0,0,0.4)",
+            boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
           }}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
