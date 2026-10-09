@@ -43,7 +43,7 @@ export function WalkthroughStage() {
     >
       {beat.kind !== "highlight" && (
         <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
+          className="absolute inset-0 bg-black/70 pointer-events-auto"
           aria-hidden
         />
       )}
