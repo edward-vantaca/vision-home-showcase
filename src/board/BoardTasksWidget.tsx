@@ -29,17 +29,17 @@ const tasksByFilter: Record<FilterKey, BoardTask[]> = {
     { id: "XN 128379", typeLabel: "ARC. REQUEST", title: "Exterior Paint", description: "Repainting exterior of home from beige to light gray. HOA approved color palette variant #3.", address: "88 Oak Lane, Rose City, VA 23232", accountNumber: "HGWL31320" },
   ],
   invoices: [
-    { id: "XN 324157", typeLabel: "INVOICE", title: "Green Lawn Co.", description: "Landscaping services — June maintenance", address: "Common Areas — Madison Green", accountNumber: "4292026113", amount: "$3,200", date: "8/06/2026", glAccount: "2001 Operating Expenses", fund: "Operating" },
-    { id: "INV-10043", typeLabel: "INVOICE", title: "AquaClean Services", description: "Pool chemical treatment and filter cleaning", address: "Community Pool — 1 Madison Green Dr", accountNumber: "4292026114", amount: "$5,300", date: "8/06/2026", glAccount: "2002 Retained Earning", fund: "Operating" },
+    { id: "XN 324157", typeLabel: "INVOICE", title: "Green Lawn Co.", description: "Landscaping services — June maintenance", address: "Common Areas — Waterfront", accountNumber: "4292026113", amount: "$3,200", date: "8/06/2026", glAccount: "2001 Operating Expenses", fund: "Operating" },
+    { id: "INV-10043", typeLabel: "INVOICE", title: "AquaClean Services", description: "Pool chemical treatment and filter cleaning", address: "Community Pool — 1 Waterfront Dr", accountNumber: "4292026114", amount: "$5,300", date: "8/06/2026", glAccount: "2002 Retained Earning", fund: "Operating" },
   ],
   "work-orders": [
-    { id: "WO-2201", typeLabel: "WORK ORDER", title: "HVAC Unit Repair", description: "Clubhouse HVAC unit producing excessive noise. Requires inspection and likely compressor replacement.", address: "Clubhouse — 1 Madison Green Dr", accountNumber: "WO31318" },
+    { id: "WO-2201", typeLabel: "WORK ORDER", title: "HVAC Unit Repair", description: "Clubhouse HVAC unit producing excessive noise. Requires inspection and likely compressor replacement.", address: "Clubhouse — 1 Waterfront Dr", accountNumber: "WO31318" },
   ],
   collections: [
     { id: "COL-0091", typeLabel: "COLLECTION", title: "Delinquent Assessment", description: "Homeowner is 90+ days past due on monthly assessments. Sent to collections per board policy.", address: "88 Oak Lane, Rose City, VA 23232", accountNumber: "HGWL31325" },
   ],
   inspections: [
-    { id: "INS-0441", typeLabel: "INSPECTION", title: "Annual Property Inspection", description: "Routine annual inspection of all common areas, building exteriors, and shared amenities.", address: "All Common Areas — Madison Green", accountNumber: "INS31318" },
+    { id: "INS-0441", typeLabel: "INSPECTION", title: "Annual Property Inspection", description: "Routine annual inspection of all common areas, building exteriors, and shared amenities.", address: "All Common Areas — Waterfront", accountNumber: "INS31318" },
   ],
   violations: [
     { id: "VIO-1801", typeLabel: "VIOLATION", title: "Unapproved Fence Install", description: "Homeowner installed a 6ft wood fence without ARC approval. Requires removal or retroactive submission.", address: "227 Silver Creek, Unit 120, Rose City, VA 23232", accountNumber: "HGWL31330" },

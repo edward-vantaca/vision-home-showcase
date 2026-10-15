@@ -1140,7 +1140,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                   Want to run in the upcoming elections?
                 </p>
                 <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[14px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Unit 120A – Madison Green
+                  Unit 120A – Waterfront
                 </p>
               </div>
               <div className="flex flex-col w-full">

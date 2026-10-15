@@ -12,7 +12,7 @@ function Paragraph1() {
   return (
     <div className="content-stretch flex flex-col h-[28px] items-start relative shrink-0 w-full" data-name="Paragraph">
       <p className="[word-break:break-word] font-['DM_Sans:Regular',sans-serif] font-normal leading-[22.5px] relative shrink-0 text-[#4b5563] text-[16px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>
-        Unit 120A - Madison Green
+        Unit 120A - Waterfront
       </p>
     </div>
   );

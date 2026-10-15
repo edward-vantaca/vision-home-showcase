@@ -351,7 +351,7 @@ function Frame17() {
   return (
     <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[3px] items-start min-w-px relative text-[#262630]">
       <p className="font-['DM_Sans:Bold',sans-serif] font-bold leading-[normal] relative shrink-0 text-[16px] w-full" style={{ fontVariationSettings: '"opsz" 14' }}>
-        Madison Green
+        Waterfront
       </p>
       <div className="font-['DM_Sans:Medium',sans-serif] font-medium leading-[0] opacity-65 relative shrink-0 text-[14px] w-full" style={{ fontVariationSettings: '"opsz" 14' }}>
         <p className="leading-[16px] mb-0">151225 77th Rd N</p>
