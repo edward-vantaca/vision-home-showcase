@@ -1,35 +1,22 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { LiftToStage } from "../beats/LiftToStage";
-import { ReturnToOrigin } from "../beats/ReturnToOrigin";
+import { describe, it, expect } from "vitest";
+import { render, cleanup } from "@testing-library/react";
+import { LiftBeat } from "../beats/LiftBeat";
 
-describe("Lift / Return beats", () => {
-  it("Lift renders without crashing", () => {
-    render(
-      <LiftToStage
-        beat={{ kind: "lift", target: "nope", scale: 1.4, position: "center" }}
-        onComplete={vi.fn()}
-      />,
-    );
-    expect(screen.getByTestId("lift-beat")).toBeInTheDocument();
+describe("LiftBeat", () => {
+  it("renders a stage slot with the matching data-vt-name", () => {
+    render(<LiftBeat target="wt-x" />);
+    const slot = document.querySelector("[data-vt-name='wt-x'].wt-stage-slot");
+    expect(slot).not.toBeNull();
   });
 
-  it("does NOT auto-invoke onComplete when target missing", async () => {
-    const onComplete = vi.fn();
-    render(
-      <LiftToStage
-        beat={{ kind: "lift", target: "nope", scale: 1.4, position: "center" }}
-        onComplete={onComplete}
-      />,
-    );
-    await new Promise((r) => setTimeout(r, 10));
-    expect(onComplete).not.toHaveBeenCalled();
-  });
-
-  it("Return renders without crashing", () => {
-    render(
-      <ReturnToOrigin beat={{ kind: "return" }} onComplete={vi.fn()} />,
-    );
-    expect(screen.getByTestId("return-beat")).toBeInTheDocument();
+  it("hides the scene-side element while mounted", () => {
+    const scene = document.createElement("div");
+    scene.setAttribute("data-vt-name", "wt-x");
+    document.body.appendChild(scene);
+    render(<LiftBeat target="wt-x" />);
+    expect(scene.style.visibility).toBe("hidden");
+    cleanup();
+    expect(scene.style.visibility).toBe("");
+    scene.remove();
   });
 });
