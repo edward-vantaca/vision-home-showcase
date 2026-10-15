@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, UserPlus, RefreshCw, Eye, EyeOff } from "lucide-react";
 import svgPaths from "@/imports/NewAccount/svg-0it9rwg11a";
-import imgWordmark from "@/imports/Pincrest.png";
+import imgWordmark from "@/assets/Branding.svg";
 import imgCreditCardSelected from "@/imports/credit-card.png";
 import imgCreditCardUnselected from "@/imports/credit-card_unselected.png";
 import imgBankSelected from "@/imports/bank_selected.png";
@@ -107,7 +107,7 @@ function Sidebar({ screen, skipped, onStep, onBypass }: { screen: Screen; skippe
         className="px-1 mb-2 self-start cursor-pointer"
         aria-label="Skip to dashboard"
       >
-        <img src={imgWordmark} alt="Pinecrest Valley" className="object-contain" style={{ height: "54px" }} />
+        <img src={imgWordmark} alt="Waterfront Community Estates" className="object-contain" style={{ height: "54px" }} />
       </button>
 
       {/* Progress */}
@@ -508,7 +508,7 @@ export default function NewResidentFlow({ onComplete }: { onComplete: () => void
             className="cursor-pointer"
             aria-label="Skip to dashboard"
           >
-            <img src={imgWordmark} alt="Pinecrest Valley" className="object-contain" style={{ height: "48px" }} />
+            <img src={imgWordmark} alt="Waterfront Community Estates" className="object-contain" style={{ height: "48px" }} />
           </button>
         </div>
         <div className="flex-1 flex items-center justify-center w-full">

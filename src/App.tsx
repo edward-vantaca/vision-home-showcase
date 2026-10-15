@@ -4,6 +4,7 @@ import NewResidentFlow from "./onboarding/NewResidentFlow";
 import InboxPage from "./inbox/InboxPage";
 import BoardTasksWidget from "./board/BoardTasksWidget";
 import AmenitiesPage from "./amenities/AmenitiesPage";
+import imgBranding from "@/assets/Branding.svg";
 import { useCursor } from "./walkthrough/cursor";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
@@ -260,22 +261,10 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView }: 
         <button
           onClick={onRestart}
           data-ux-id="sidebar-logo-restart"
-          className="flex flex-col items-center shrink-0 w-[165.907px] cursor-pointer"
+          className="flex flex-col items-center shrink-0 cursor-pointer"
           aria-label="Restart prototype"
         >
-          <div className="flex flex-col justify-center">
-            <svg width="44" height="42" viewBox="0 0 100 92" fill="none">
-              <path d="M50 6L6 46h10v42h68V46h10L50 6z" stroke="#1a8ffb" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" fill="none"/>
-              <rect x="38" y="60" width="24" height="28" rx="3" fill="#1a8ffb"/>
-              <rect x="68" y="4" width="10" height="22" rx="2" fill="#1a8ffb"/>
-            </svg>
-          </div>
-          <div className="font-['Lexend:Regular',sans-serif] font-normal text-[#043b59] text-[19.514px] tracking-[0.1951px] uppercase mt-1">
-            Waterfront
-          </div>
-          <div className="font-['Lexend:Regular',sans-serif] font-normal text-[#043b59] text-[9.757px] tracking-[-0.1px] uppercase whitespace-nowrap">
-            Community Estates
-          </div>
+          <img src={imgBranding} alt="Waterfront Community Estates" className="object-contain" style={{ height: "80px" }} />
         </button>
 
         {/* Quick Actions */}
