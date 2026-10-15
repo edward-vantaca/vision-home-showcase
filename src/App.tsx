@@ -278,21 +278,6 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           </span>
         </button>
 
-        {/* Ask HOAi reopen pill — visible only when the right panel is collapsed */}
-        {!askHoaiOpen && (
-          <button
-            type="button"
-            data-ux-id="sidebar-askhoai-open"
-            onClick={onOpenAskHoai}
-            className="w-full flex items-center justify-center gap-2 px-[23px] py-[12px] rounded-full bg-[#1d70dc] hover:bg-[#165bb3] text-white transition-colors shrink-0"
-          >
-            <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Ask HOAi
-            </span>
-            <AskHoaiIcon className="h-4 w-auto" />
-          </button>
-        )}
-
         {/* Nav Items */}
         <div data-ux-id="sidebar-nav-list" className="flex flex-col gap-[13px] w-full shrink-0">
           <NavItem icon={<IconInbox />} label="Inbox" active={false} uxId="inbox" />
@@ -313,6 +298,21 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           <NavItem icon={<IconDocuments />} label="Documents" uxId="documents" />
           <NavItem icon={<IconDirectory />} label="Directory" uxId="directory" />
           <NavItem icon={<IconCalendar />} label="Calendar" uxId="calendar" />
+
+          {/* Ask HOAi reopen pill — visible only when the right panel is collapsed */}
+          {!askHoaiOpen && (
+            <button
+              type="button"
+              data-ux-id="sidebar-askhoai-open"
+              onClick={onOpenAskHoai}
+              className="w-full flex items-center justify-center gap-2 mt-[6px] px-[23px] py-[12px] rounded-full bg-[#1d70dc] hover:bg-[#165bb3] text-white transition-colors shrink-0"
+            >
+              <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Ask HOAi
+              </span>
+              <AskHoaiIcon className="h-4 w-auto" />
+            </button>
+          )}
 
           {/* Board Actions — board member view only */}
           {dashboardView === "board" && <div className="w-full border-t border-[#d9e7f0] my-[9px]" />}
