@@ -107,7 +107,7 @@ function Sidebar({ screen, skipped, onStep, onBypass }: { screen: Screen; skippe
         className="mb-4 self-center cursor-pointer"
         aria-label="Skip to dashboard"
       >
-        <img src={imgWordmark} alt="Waterfront Community Estates" className="object-contain mx-auto" style={{ height: "110px" }} />
+        <img src={imgWordmark} alt="Waterfront Community Estates" className="object-contain mx-auto" style={{ height: "80px" }} />
       </button>
 
       {/* Progress */}
