@@ -30,12 +30,27 @@ describe("WalkthroughOverlay", () => {
     expect(screen.getByText("hello")).toBeInTheDocument();
   });
 
-  it("renders the cutout div for a highlight beat", () => {
+  it("renders the cutout div for a highlight beat with target present", () => {
+    const target = document.createElement("div");
+    target.setAttribute("data-vt-name", "wt-board-task-current");
+    target.getBoundingClientRect = () => new DOMRect(10, 20, 100, 50);
+    target.scrollIntoView = () => {};
+    document.body.appendChild(target);
     render(
       <WalkthroughProvider sequence={seqHighlight}>
         <WalkthroughOverlay />
       </WalkthroughProvider>,
     );
     expect(document.querySelector(".wt-cutout")).not.toBeNull();
+    target.remove();
+  });
+
+  it("does not render the cutout div for a highlight beat when target is absent", () => {
+    render(
+      <WalkthroughProvider sequence={seqHighlight}>
+        <WalkthroughOverlay />
+      </WalkthroughProvider>,
+    );
+    expect(document.querySelector(".wt-cutout")).toBeNull();
   });
 });

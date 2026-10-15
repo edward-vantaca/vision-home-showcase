@@ -32,8 +32,8 @@ export function WalkthroughOverlay() {
   return (
     <div className="wt-root" aria-hidden={kind === "idle"}>
       <div className="wt-backdrop" data-beat-kind={kind} />
-      {kind === "highlight" && (
-        <div className="wt-cutout" style={rect ? { clipPath: cutoutClipPath(rect) } : undefined} />
+      {kind === "highlight" && rect && (
+        <div className="wt-cutout" style={{ clipPath: cutoutClipPath(rect) }} />
       )}
       {caption && <div className="wt-caption">{caption}</div>}
       {beat?.kind === "highlight" && <HighlightBeat target={beat.target} />}
