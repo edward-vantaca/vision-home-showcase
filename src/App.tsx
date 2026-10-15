@@ -180,7 +180,7 @@ function AddressCard() {
         </svg>
       </div>
       <div className="flex flex-[1_0_0] flex-col gap-[3px] items-start min-w-px">
-        <p className="font-['DM_Sans:Bold',sans-serif] font-bold leading-normal text-[#262630] text-[16px] w-full" style={{ fontVariationSettings: '"opsz" 14' }}>Madison Green</p>
+        <p className="font-['DM_Sans:Bold',sans-serif] font-bold leading-normal text-[#262630] text-[16px] w-full" style={{ fontVariationSettings: '"opsz" 14' }}>Waterfront</p>
         <div className="font-['DM_Sans:Medium',sans-serif] font-medium opacity-65 text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
           <p className="leading-[16px] mb-0">151225 77th Rd N</p>
           <p className="leading-[16px]">Loxahatchee, FL 33470</p>
