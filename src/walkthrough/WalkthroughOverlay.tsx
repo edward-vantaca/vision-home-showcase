@@ -2,6 +2,10 @@ import { useCursor } from "./cursor";
 import { useTargetRect } from "./useTargetRect";
 import type { Beat } from "./types.new";
 import "./walkthrough.css";
+import { HighlightBeat } from "./beats/HighlightBeat";
+import { LiftBeat } from "./beats/LiftBeat";
+import { ExpandBeat } from "./beats/ExpandBeat";
+import { AnnotateBeat } from "./beats/AnnotateBeat";
 
 function cutoutClipPath(rect: DOMRect | null): string | undefined {
   if (!rect) return undefined;
@@ -32,6 +36,10 @@ export function WalkthroughOverlay() {
         <div className="wt-cutout" style={rect ? { clipPath: cutoutClipPath(rect) } : undefined} />
       )}
       {caption && <div className="wt-caption">{caption}</div>}
+      {beat?.kind === "highlight" && <HighlightBeat target={beat.target} />}
+      {beat?.kind === "lift" && <LiftBeat target={beat.target} scale={beat.scale} position={beat.position} />}
+      {beat?.kind === "expand" && <ExpandBeat target={beat.target}>{beat.content}</ExpandBeat>}
+      {beat?.kind === "annotate" && <AnnotateBeat tracks={beat.tracks} durationMs={beat.durationMs} />}
     </div>
   );
 }

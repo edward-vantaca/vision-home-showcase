@@ -1,1 +1,62 @@
-/* Populated in Task 11 (overlay styling, VT group timing, reduced motion). */
+/* src/walkthrough/walkthrough.css */
+.wt-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.wt-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.wt-backdrop[data-beat-kind="idle"]      { opacity: 0; }
+.wt-backdrop[data-beat-kind="narrate"]   { opacity: 0.9; }
+.wt-backdrop[data-beat-kind="highlight"] { opacity: 0; } /* cutout handles the dim */
+.wt-backdrop[data-beat-kind="lift"]      { opacity: 0.6; }
+.wt-backdrop[data-beat-kind="expand"]    { opacity: 0.6; }
+.wt-backdrop[data-beat-kind="annotate"]  { opacity: 0.6; }
+
+.wt-cutout {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.wt-caption {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(820px, 90vw);
+  padding: 14px 22px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  font: 500 20px/1.35 "DM Sans", system-ui, sans-serif;
+  color: #262630;
+  text-align: center;
+}
+
+::view-transition-group(*) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wt-backdrop,
+  .wt-caption {
+    transition: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 1ms !important;
+  }
+}
