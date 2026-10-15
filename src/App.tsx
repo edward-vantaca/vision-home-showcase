@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
 import NewResidentFlow from "./onboarding/NewResidentFlow";
+import InboxPage from "./inbox/InboxPage";
 import BoardTasksWidget from "./board/BoardTasksWidget";
 import AmenitiesPage from "./amenities/AmenitiesPage";
 import { useCursor } from "./walkthrough/cursor";
@@ -1818,13 +1819,16 @@ function MainApp({ onRestart }: MainAppProps) {
   );
 }
 
-/* ─── Root App — gates onboarding before the resident portal ─── */
-type AppPhase = "onboarding" | "portal";
+/* ─── Root App — inbox → onboarding → resident portal ─── */
+type AppPhase = "inbox" | "onboarding" | "portal";
 
 export default function App() {
-  const [phase, setPhase] = useState<AppPhase>("onboarding");
+  const [phase, setPhase] = useState<AppPhase>("inbox");
+  if (phase === "inbox") {
+    return <InboxPage onRegister={() => setPhase("onboarding")} />;
+  }
   if (phase === "onboarding") {
     return <NewResidentFlow onComplete={() => setPhase("portal")} />;
   }
-  return <MainApp onRestart={() => setPhase("onboarding")} />;
+  return <MainApp onRestart={() => setPhase("inbox")} />;
 }
