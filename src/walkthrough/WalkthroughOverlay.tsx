@@ -22,9 +22,21 @@ function captionOf(beat: Beat | undefined): string | null {
 }
 
 export function WalkthroughOverlay() {
-  const { beat } = useCursor();
+  const { beat, cursor, scene } = useCursor();
+
+  // Sticky stage: when annotate is active, keep the preceding lift/expand mounted
+  // so the staged element stays on screen while GSAP paints annotations on top.
+  const prevBeat =
+    cursor.beatIndex > 0 ? scene?.beats[cursor.beatIndex - 1] : undefined;
+  const stageBeat: Beat | undefined =
+    beat?.kind === "annotate" && (prevBeat?.kind === "lift" || prevBeat?.kind === "expand")
+      ? prevBeat
+      : beat;
+
   const target =
-    beat && (beat.kind === "highlight" || beat.kind === "lift" || beat.kind === "expand") ? beat.target : null;
+    stageBeat && (stageBeat.kind === "highlight" || stageBeat.kind === "lift" || stageBeat.kind === "expand")
+      ? stageBeat.target
+      : null;
   const rect = useTargetRect(target);
   const kind = beat?.kind ?? "idle";
   const caption = captionOf(beat);
@@ -37,8 +49,12 @@ export function WalkthroughOverlay() {
       )}
       {caption && <div className="wt-caption">{caption}</div>}
       {beat?.kind === "highlight" && <HighlightBeat target={beat.target} />}
-      {beat?.kind === "lift" && <LiftBeat target={beat.target} scale={beat.scale} position={beat.position} />}
-      {beat?.kind === "expand" && <ExpandBeat target={beat.target}>{beat.content}</ExpandBeat>}
+      {stageBeat?.kind === "lift" && (
+        <LiftBeat target={stageBeat.target} scale={stageBeat.scale} position={stageBeat.position} />
+      )}
+      {stageBeat?.kind === "expand" && (
+        <ExpandBeat target={stageBeat.target}>{stageBeat.content}</ExpandBeat>
+      )}
       {beat?.kind === "annotate" && <AnnotateBeat tracks={beat.tracks} durationMs={beat.durationMs} />}
     </div>
   );
