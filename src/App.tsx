@@ -4,6 +4,7 @@ import NewResidentFlow from "./onboarding/NewResidentFlow";
 import InboxPage from "./inbox/InboxPage";
 import BoardTasksWidget from "./board/BoardTasksWidget";
 import AmenitiesPage from "./amenities/AmenitiesPage";
+import AskHoaiPanel from "./chat/AskHoaiPanel";
 import imgBranding from "@/assets/Branding.svg";
 import { useCursor } from "./walkthrough/cursor";
 
@@ -1800,6 +1801,7 @@ function MainApp({ onRestart }: MainAppProps) {
       ) : (
         <CommunityFeedPage onOpenSidebar={() => setSidebarOpen(true)} />
       )}
+      <AskHoaiPanel />
       {/* Floating view toggle — only on dashboard */}
       {activePage === "dashboard" && (
         <ViewToggle view={dashboardView} onChange={setDashboardView} />
