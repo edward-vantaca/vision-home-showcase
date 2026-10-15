@@ -15,20 +15,25 @@ export default function AmenitiesPage({ onOpenSidebar: _onOpenSidebar }: Props) 
           Amenities
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {amenities.map((a) => (
-            <div
-              key={a.slug}
-              data-ux-id={`amenity-tile-${a.slug}`}
-              className="bg-white rounded-2xl overflow-hidden shadow-[0px_2px_9px_rgba(18,17,48,0.07)] cursor-pointer hover:shadow-lg transition-shadow"
-            >
-              <img src={a.image} alt={a.title} className="w-full h-[260px] object-cover" />
-              <div className="p-5">
-                <p className="text-[20px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630]">
-                  {a.title}
-                </p>
+          {amenities.map((a) => {
+            const isLiftTarget = a.slug === "pool";
+            return (
+              <div
+                key={a.slug}
+                data-ux-id={`amenity-tile-${a.slug}`}
+                data-vt-name={isLiftTarget ? "wt-amenity-tile-pool" : undefined}
+                style={isLiftTarget ? { viewTransitionName: "wt-amenity-tile-pool" } : undefined}
+                className="bg-white rounded-2xl overflow-hidden shadow-[0px_2px_9px_rgba(18,17,48,0.07)] cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                <img src={a.image} alt={a.title} className="w-full h-[260px] object-cover" />
+                <div className="p-5">
+                  <p className="text-[20px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630]">
+                    {a.title}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
