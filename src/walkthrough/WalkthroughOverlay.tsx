@@ -1,6 +1,6 @@
 import { useCursor } from "./cursor";
 import { useTargetRect } from "./useTargetRect";
-import type { Beat } from "./types.new";
+import type { Beat } from "./types";
 import "./walkthrough.css";
 import { HighlightBeat } from "./beats/HighlightBeat";
 import { LiftBeat } from "./beats/LiftBeat";

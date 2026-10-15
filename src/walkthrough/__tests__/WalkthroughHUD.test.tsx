@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { WalkthroughProvider, useCursor } from "../cursor";
-import { WalkthroughHUD } from "../WalkthroughHUD.new";
-import type { Sequence } from "../types.new";
+import { WalkthroughHUD } from "../WalkthroughHUD";
+import type { Sequence } from "../types";
 import { useEffect } from "react";
 
 const seq: Sequence = [

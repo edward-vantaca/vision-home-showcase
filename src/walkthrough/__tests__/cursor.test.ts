@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { cursorReducer, withTransition } from "../cursor";
-import type { Sequence, WalkthroughState } from "../types.new";
+import type { Sequence, WalkthroughState } from "../types";
 
 const seq: Sequence = [
   { id: "a", page: "dashboard", beats: [{ kind: "idle" }, { kind: "idle" }] },

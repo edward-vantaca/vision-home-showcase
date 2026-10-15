@@ -1,9 +1,9 @@
 import { useEffect, type ReactNode } from "react";
 import { WalkthroughProvider } from "./cursor";
-import { useWalkthroughKeyboard } from "./keyboard.new";
+import { useWalkthroughKeyboard } from "./keyboard";
 import { WalkthroughOverlay } from "./WalkthroughOverlay";
-import { WalkthroughHUD } from "./WalkthroughHUD.new";
-import type { Sequence } from "./types.new";
+import { WalkthroughHUD } from "./WalkthroughHUD";
+import type { Sequence } from "./types";
 
 function useVTNameUniquenessGuard() {
   useEffect(() => {

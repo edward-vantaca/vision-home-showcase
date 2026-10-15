@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { homeVisionSequence } from "../scenes/index.new";
+import { homeVisionSequence } from "../scenes";
 import { VT } from "../viewTransitionNames";
 
 const vtValues = new Set(Object.values(VT));

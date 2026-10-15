@@ -3,6 +3,7 @@ import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
 import NewResidentFlow from "./onboarding/NewResidentFlow";
 import BoardTasksWidget from "./board/BoardTasksWidget";
 import AmenitiesPage from "./amenities/AmenitiesPage";
+import { useCursor } from "./walkthrough/cursor";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -1767,27 +1768,19 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 /* ─── Main Portal (post-onboarding) ─── */
 type MainAppProps = {
   onRestart: () => void;
-  externalNavRequest?: string | null;
-  onExternalNavConsumed?: () => void;
 };
 
-function MainApp({ onRestart, externalNavRequest, onExternalNavConsumed }: MainAppProps) {
+function MainApp({ onRestart }: MainAppProps) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
 
+  const { page: scenePage } = useCursor();
   useEffect(() => {
-    if (!externalNavRequest) return;
-    if (
-      externalNavRequest === "dashboard" ||
-      externalNavRequest === "elections" ||
-      externalNavRequest === "community" ||
-      externalNavRequest === "amenities"
-    ) {
-      setActivePage(externalNavRequest);
+    if (scenePage && scenePage !== activePage) {
+      setActivePage(scenePage);
     }
-    onExternalNavConsumed?.();
-  }, [externalNavRequest, onExternalNavConsumed]);
+  }, [scenePage, activePage]);
 
   const navigate = (page: Page) => {
     setActivePage(page);
@@ -1828,23 +1821,10 @@ function MainApp({ onRestart, externalNavRequest, onExternalNavConsumed }: MainA
 /* ─── Root App — gates onboarding before the resident portal ─── */
 type AppPhase = "onboarding" | "portal";
 
-type AppProps = {
-  externalNavRequest?: string | null;
-  onExternalNavConsumed?: () => void;
-};
-
-export default function App({ externalNavRequest, onExternalNavConsumed }: AppProps = {}) {
+export default function App() {
   const [phase, setPhase] = useState<AppPhase>("onboarding");
-
   if (phase === "onboarding") {
     return <NewResidentFlow onComplete={() => setPhase("portal")} />;
   }
-
-  return (
-    <MainApp
-      onRestart={() => setPhase("onboarding")}
-      externalNavRequest={externalNavRequest}
-      onExternalNavConsumed={onExternalNavConsumed}
-    />
-  );
+  return <MainApp onRestart={() => setPhase("onboarding")} />;
 }

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { WalkthroughProvider } from "../cursor";
 import { WalkthroughOverlay } from "../WalkthroughOverlay";
-import type { Sequence } from "../types.new";
+import type { Sequence } from "../types";
 import { VT } from "../viewTransitionNames";
 
 const seqIdle: Sequence = [{ id: "s", page: "dashboard", beats: [{ kind: "idle" }] }];

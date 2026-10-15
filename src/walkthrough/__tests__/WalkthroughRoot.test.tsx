@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render } from "@testing-library/react";
 import { WalkthroughRoot } from "../WalkthroughRoot";
-import type { Sequence } from "../types.new";
+import type { Sequence } from "../types";
 
 const seq: Sequence = [{ id: "s", page: "dashboard", beats: [{ kind: "idle" }] }];
 

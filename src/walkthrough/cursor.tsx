@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from "react";
-import type { Beat, Cursor, Scene, Sequence, WalkthroughAction, WalkthroughState } from "./types.new";
+import type { Beat, Cursor, Scene, Sequence, WalkthroughAction, WalkthroughState } from "./types";
 
 function prefersReducedMotion(): boolean {
   if (typeof matchMedia === "undefined") return false;

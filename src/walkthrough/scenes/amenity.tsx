@@ -1,4 +1,4 @@
-import type { Scene } from "../types.new";
+import type { Scene } from "../types";
 import { VT } from "../viewTransitionNames";
 import { AmenityReservationStage } from "../stage-content/AmenityReservationStage";
 

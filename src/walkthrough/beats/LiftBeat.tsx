@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { Point } from "../types.new";
+import type { Point } from "../types";
 
 type Props = {
   target: string;

@@ -1,46 +1,40 @@
 import type { ReactNode } from "react";
+import type { VTName } from "./viewTransitionNames";
+
+export type Page = "dashboard" | "elections" | "community" | "amenities";
 
 export type Point = { x: number; y: number };
 
-export type BeatKind = "highlight" | "lift" | "expand" | "annotate" | "return" | "navigate";
-
 export type AnnotateTrack =
-  | { type: "arrow"; from: string | Point; to: string | Point }
-  | { type: "pulse"; target: string; count?: number }
+  | { type: "arrow"; from: VTName | Point; to: VTName | Point }
+  | { type: "pulse"; target: VTName; count?: number }
   | { type: "typeCaption"; text: string; speedCps?: number };
 
 export type Beat =
-  | { kind: "highlight"; target: string; caption?: string; durationMs?: number }
-  | { kind: "lift"; target: string; scale?: number; position?: "center" | Point; caption?: string }
-  | { kind: "expand"; content: ReactNode; caption?: string; target?: string }
+  | { kind: "idle" }
+  | { kind: "highlight"; target: VTName; caption?: string }
+  | { kind: "lift"; target: VTName; scale?: number; position?: "center" | Point; caption?: string }
+  | { kind: "expand"; target: VTName; content: ReactNode; caption?: string }
   | { kind: "annotate"; tracks: AnnotateTrack[]; durationMs?: number }
-  | { kind: "return"; caption?: string }
-  | { kind: "navigate"; to: string; caption?: string };
+  | { kind: "narrate"; title?: string; body: string };
 
-export type Sequence = {
+export type Scene = {
   id: string;
-  title: string;
+  page: Page;
   beats: Beat[];
 };
 
+export type Sequence = Scene[];
+
+export type Cursor = { sceneIndex: number; beatIndex: number };
+
 export type WalkthroughState = {
-  active: boolean;
-  sequenceId: string | null;
-  currentBeatIndex: number;
+  cursor: Cursor;
   hudVisible: boolean;
-  history: number[];
 };
 
 export type WalkthroughAction =
-  | { type: "start"; sequenceId: string; hudVisible?: boolean }
   | { type: "advance" }
   | { type: "back" }
-  | { type: "exit" }
-  | { type: "toggleHud" }
-  | { type: "replayBeat" }
-  | { type: "skipToEnd" };
-
-export type BeatProps<B extends Beat = Beat> = {
-  beat: B;
-  onComplete: () => void;
-};
+  | { type: "jumpTo"; cursor: Cursor }
+  | { type: "toggleHud" };

@@ -1,65 +1,40 @@
-import { useWalkthrough } from "./WalkthroughProvider";
+import { useCursor } from "./cursor";
 
 export function WalkthroughHUD() {
-  const { state, advance, back, exit, getCurrentSequence, getCurrentBeat } = useWalkthrough();
-  if (!state.hudVisible) return null;
-
-  const seq = getCurrentSequence();
-  const beat = getCurrentBeat();
-  if (!seq || !beat) return null;
-
-  const total = seq.beats.length;
-  const current = state.currentBeatIndex;
-
+  const { cursor, scene, sequence, hudVisible, advance, back } = useCursor();
+  if (!hudVisible || !scene) return null;
+  const sceneCount = sequence.length;
+  const beatCount = scene.beats.length;
   return (
-    <>
-      {"caption" in beat && beat.caption ? (
-        <div
-          data-testid="walkthrough-caption"
-          className="fixed bottom-32 left-1/2 -translate-x-1/2 max-w-[720px] px-6 py-4 bg-white/95 rounded-xl shadow-lg text-[20px] text-[#262630] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-center"
-          style={{ zIndex: 120 }}
-        >
-          {beat.caption}
-        </div>
-      ) : null}
-      <div
-        data-testid="walkthrough-hud"
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 px-5 py-3 bg-white/95 rounded-full shadow-lg"
-        style={{ zIndex: 120 }}
+    <div
+      data-testid="wt-hud"
+      className="fixed bottom-6 right-6 z-[120] flex items-center gap-3 rounded-full bg-white/95 px-4 py-2 shadow-lg"
+    >
+      <button
+        type="button"
+        onClick={back}
+        className="rounded-full px-3 py-1 text-sm font-medium hover:bg-black/5"
       >
-        <button
-          onClick={back}
-          aria-label="previous"
-          className="size-8 flex items-center justify-center rounded-full hover:bg-[#f2f5f7]"
-        >
-          ◀
-        </button>
-        <div className="flex items-center gap-2 text-[14px] text-[#4b5563]">
-          {Array.from({ length: total }).map((_, i) => (
-            <span
-              key={i}
-              className={`size-2 rounded-full ${i === current ? "bg-[#247ae4]" : i < current ? "bg-[#9bb6d9]" : "bg-[#e1e9ef]"}`}
-            />
-          ))}
-          <span className="ml-2">
-            {current + 1} / {total}
-          </span>
-        </div>
-        <button
-          onClick={advance}
-          aria-label="next"
-          className="size-8 flex items-center justify-center rounded-full hover:bg-[#f2f5f7]"
-        >
-          ▶
-        </button>
-        <button
-          onClick={exit}
-          aria-label="exit"
-          className="ml-2 px-3 py-1 text-[13px] text-[#6b7280] hover:text-[#262630]"
-        >
-          ✕ exit
-        </button>
+        ← prev
+      </button>
+      <span className="text-sm font-medium text-[#262630]">
+        scene {cursor.sceneIndex + 1} of {sceneCount} · beat {cursor.beatIndex + 1} of {beatCount}
+      </span>
+      <div className="flex gap-1">
+        {scene.beats.map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 w-1.5 rounded-full ${i === cursor.beatIndex ? "bg-[#247ae4]" : "bg-black/20"}`}
+          />
+        ))}
       </div>
-    </>
+      <button
+        type="button"
+        onClick={advance}
+        className="rounded-full px-3 py-1 text-sm font-medium hover:bg-black/5"
+      >
+        next →
+      </button>
+    </div>
   );
 }

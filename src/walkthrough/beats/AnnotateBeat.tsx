@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import type { AnnotateTrack, Point } from "../types.new";
+import type { AnnotateTrack, Point } from "../types";
 
 const resolveTarget = (name: string) => document.querySelector<HTMLElement>(`[data-vt-name="${name}"]`);
 
