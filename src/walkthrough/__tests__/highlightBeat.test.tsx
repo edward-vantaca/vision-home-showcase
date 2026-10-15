@@ -1,30 +1,20 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { HighlightTarget } from "../beats/HighlightTarget";
+import { describe, it, expect, vi } from "vitest";
+import { render } from "@testing-library/react";
+import { HighlightBeat } from "../beats/HighlightBeat";
 
-describe("HighlightTarget beat", () => {
-  it("renders without crashing when target is missing", () => {
-    const onComplete = vi.fn();
-    render(<HighlightTarget beat={{ kind: "highlight", target: "nope" }} onComplete={onComplete} />);
-    expect(screen.getByTestId("highlight-beat")).toBeInTheDocument();
-  });
-
-  it("does NOT auto-invoke onComplete when target missing", async () => {
-    const onComplete = vi.fn();
-    render(<HighlightTarget beat={{ kind: "highlight", target: "nope" }} onComplete={onComplete} />);
-    await new Promise((r) => setTimeout(r, 10));
-    expect(onComplete).not.toHaveBeenCalled();
-  });
-
-  it("renders ring overlay when target exists", async () => {
+describe("HighlightBeat", () => {
+  it("calls scrollIntoView on the matching target", () => {
     const el = document.createElement("div");
-    el.setAttribute("data-ux-id", "has-target");
-    el.style.width = "100px";
-    el.style.height = "40px";
+    el.setAttribute("data-vt-name", "wt-target");
+    const spy = vi.fn();
+    el.scrollIntoView = spy;
     document.body.appendChild(el);
-    const onComplete = vi.fn();
-    render(<HighlightTarget beat={{ kind: "highlight", target: "has-target" }} onComplete={onComplete} />);
-    expect(screen.getByTestId("highlight-ring")).toBeInTheDocument();
-    document.body.removeChild(el);
+    render(<HighlightBeat target="wt-target" />);
+    expect(spy).toHaveBeenCalledWith({ block: "center", behavior: "auto" });
+    el.remove();
+  });
+
+  it("is a no-op when no matching element exists", () => {
+    expect(() => render(<HighlightBeat target="wt-missing" />)).not.toThrow();
   });
 });
