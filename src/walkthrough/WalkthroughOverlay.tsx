@@ -1,0 +1,37 @@
+import { useCursor } from "./cursor";
+import { useTargetRect } from "./useTargetRect";
+import type { Beat } from "./types.new";
+import "./walkthrough.css";
+
+function cutoutClipPath(rect: DOMRect | null): string | undefined {
+  if (!rect) return undefined;
+  const { left: l, top: t, right: r, bottom: b } = rect;
+  // polygon traces outer viewport, dives into the hole and back out
+  return `polygon(0 0, 100vw 0, 100vw 100vh, 0 100vh, 0 0, ${l}px ${t}px, ${l}px ${b}px, ${r}px ${b}px, ${r}px ${t}px, ${l}px ${t}px, 0 0)`;
+}
+
+function captionOf(beat: Beat | undefined): string | null {
+  if (!beat) return null;
+  if ("caption" in beat && beat.caption) return beat.caption;
+  if (beat.kind === "narrate") return beat.body;
+  return null;
+}
+
+export function WalkthroughOverlay() {
+  const { beat } = useCursor();
+  const target =
+    beat && (beat.kind === "highlight" || beat.kind === "lift" || beat.kind === "expand") ? beat.target : null;
+  const rect = useTargetRect(target);
+  const kind = beat?.kind ?? "idle";
+  const caption = captionOf(beat);
+
+  return (
+    <div className="wt-root" aria-hidden={kind === "idle"}>
+      <div className="wt-backdrop" data-beat-kind={kind} />
+      {kind === "highlight" && (
+        <div className="wt-cutout" style={rect ? { clipPath: cutoutClipPath(rect) } : undefined} />
+      )}
+      {caption && <div className="wt-caption">{caption}</div>}
+    </div>
+  );
+}
