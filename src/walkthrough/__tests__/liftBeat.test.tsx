@@ -14,7 +14,7 @@ describe("Lift / Return beats", () => {
     expect(screen.getByTestId("lift-beat")).toBeInTheDocument();
   });
 
-  it("Lift invokes onComplete when target missing", async () => {
+  it("does NOT auto-invoke onComplete when target missing", async () => {
     const onComplete = vi.fn();
     render(
       <LiftToStage
@@ -23,7 +23,7 @@ describe("Lift / Return beats", () => {
       />,
     );
     await new Promise((r) => setTimeout(r, 10));
-    expect(onComplete).toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
   });
 
   it("Return renders without crashing", () => {

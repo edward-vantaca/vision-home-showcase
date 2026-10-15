@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { resolveTarget } from "../targetRegistry";
 import { registerBeatRenderer } from "../WalkthroughStage";
@@ -6,25 +6,20 @@ import type { Beat, BeatProps } from "../types";
 
 type HighlightBeat = Extract<Beat, { kind: "highlight" }>;
 
-export function HighlightTarget({ beat, onComplete }: BeatProps<HighlightBeat>) {
+export function HighlightTarget({ beat, onComplete: _onComplete }: BeatProps<HighlightBeat>) {
   const [rect, setRect] = useState<DOMRect | null>(null);
-  const firedRef = useRef(false);
 
   useEffect(() => {
     const el = resolveTarget(beat.target);
     if (!el) {
       console.warn(`[walkthrough] highlight target "${beat.target}" not found`);
-      if (!firedRef.current) {
-        firedRef.current = true;
-        queueMicrotask(onComplete);
-      }
       return;
     }
     if (el.scrollIntoView) {
       el.scrollIntoView({ block: "center", behavior: "smooth" });
     }
     setRect(el.getBoundingClientRect());
-  }, [beat.target, onComplete]);
+  }, [beat.target]);
 
   return (
     <div data-testid="highlight-beat" className="pointer-events-none">

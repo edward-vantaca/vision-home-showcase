@@ -5,20 +5,12 @@ import type { Beat, BeatProps } from "../types";
 
 type NavigateBeat = Extract<Beat, { kind: "navigate" }>;
 
-export function NavigateApp({ beat, onComplete }: BeatProps<NavigateBeat>) {
+export function NavigateApp({ beat, onComplete: _onComplete }: BeatProps<NavigateBeat>) {
   const { requestNavigate } = useWalkthrough();
 
   useEffect(() => {
-    let cancelled = false;
     requestNavigate(beat.to);
-    const timer = setTimeout(() => {
-      if (!cancelled) onComplete();
-    }, 300);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [beat.to, requestNavigate, onComplete]);
+  }, [beat.to, requestNavigate]);
 
   return <div data-testid="navigate-beat" />;
 }

@@ -15,12 +15,12 @@ function resolvePoint(spec: string | Point): Point | null {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
-export function AnnotateWithGSAP({ beat, onComplete }: BeatProps<AnnotateBeat>) {
+export function AnnotateWithGSAP({ beat, onComplete: _onComplete }: BeatProps<AnnotateBeat>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
-      const tl = gsap.timeline({ onComplete });
+      const tl = gsap.timeline();
       beat.tracks.forEach((track, idx) => {
         if (track.type === "typeCaption") {
           const target = containerRef.current?.querySelector<HTMLElement>(`[data-track="caption-${idx}"]`);

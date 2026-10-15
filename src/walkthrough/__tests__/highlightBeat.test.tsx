@@ -9,11 +9,11 @@ describe("HighlightTarget beat", () => {
     expect(screen.getByTestId("highlight-beat")).toBeInTheDocument();
   });
 
-  it("invokes onComplete within a tick if target is missing", async () => {
+  it("does NOT auto-invoke onComplete when target missing", async () => {
     const onComplete = vi.fn();
     render(<HighlightTarget beat={{ kind: "highlight", target: "nope" }} onComplete={onComplete} />);
     await new Promise((r) => setTimeout(r, 10));
-    expect(onComplete).toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
   });
 
   it("renders ring overlay when target exists", async () => {

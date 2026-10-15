@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { resolveTarget } from "../targetRegistry";
 import { registerBeatRenderer } from "../WalkthroughStage";
@@ -6,19 +6,14 @@ import type { Beat, BeatProps } from "../types";
 
 type LiftBeat = Extract<Beat, { kind: "lift" }>;
 
-export function LiftToStage({ beat, onComplete }: BeatProps<LiftBeat>) {
+export function LiftToStage({ beat, onComplete: _onComplete }: BeatProps<LiftBeat>) {
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const [originOuterHTML, setOriginOuterHTML] = useState<string>("");
-  const firedRef = useRef(false);
 
   useEffect(() => {
     const el = resolveTarget(beat.target);
     if (!el) {
       console.warn(`[walkthrough] lift target "${beat.target}" not found`);
-      if (!firedRef.current) {
-        firedRef.current = true;
-        queueMicrotask(onComplete);
-      }
       return;
     }
     el.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -28,7 +23,7 @@ export function LiftToStage({ beat, onComplete }: BeatProps<LiftBeat>) {
     return () => {
       el.style.visibility = "";
     };
-  }, [beat.target, onComplete]);
+  }, [beat.target]);
 
   const scale = beat.scale ?? 1.4;
   const vw = typeof window !== "undefined" ? window.innerWidth : 1280;

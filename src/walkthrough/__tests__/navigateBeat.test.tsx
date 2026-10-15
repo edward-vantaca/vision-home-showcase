@@ -17,9 +17,9 @@ describe("NavigateApp beat", () => {
         <NavigateApp beat={{ kind: "navigate", to: "amenities" }} onComplete={onComplete} />
       </WalkthroughProvider>,
     );
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 10));
     expect(onNavigate).toHaveBeenCalledWith("amenities");
-    expect(onComplete).toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
   });
 
   it("exit mid-navigate does not throw", async () => {
@@ -30,8 +30,7 @@ describe("NavigateApp beat", () => {
       </WalkthroughProvider>,
     );
     unmount();
-    await new Promise((r) => setTimeout(r, 400));
-    // onComplete must not fire after unmount, and no throw
+    // no throw; onComplete is never called since there's no timer anymore
     expect(onComplete).not.toHaveBeenCalled();
   });
 });
