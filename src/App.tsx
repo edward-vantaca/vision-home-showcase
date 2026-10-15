@@ -4,7 +4,7 @@ import NewResidentFlow from "./onboarding/NewResidentFlow";
 import InboxPage from "./inbox/InboxPage";
 import BoardTasksWidget from "./board/BoardTasksWidget";
 import AmenitiesPage from "./amenities/AmenitiesPage";
-import AskHoaiPanel from "./chat/AskHoaiPanel";
+import AskHoaiPanel, { AskHoaiIcon } from "./chat/AskHoaiPanel";
 import imgBranding from "@/assets/Branding.svg";
 import { useCursor } from "./walkthrough/cursor";
 
@@ -240,9 +240,11 @@ interface SidebarProps {
   onClose?: () => void;
   onRestart: () => void;
   dashboardView?: DashboardView;
+  askHoaiOpen: boolean;
+  onOpenAskHoai: () => void;
 }
 
-function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView }: SidebarProps) {
+function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai }: SidebarProps) {
   const [boardActionsOpen, setBoardActionsOpen] = useState(true);
   return (
     <div data-ux-id="sidebar" className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
@@ -275,6 +277,21 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView }: 
             Quick Actions
           </span>
         </button>
+
+        {/* Ask HOAi reopen pill — visible only when the right panel is collapsed */}
+        {!askHoaiOpen && (
+          <button
+            type="button"
+            data-ux-id="sidebar-askhoai-open"
+            onClick={onOpenAskHoai}
+            className="w-full flex items-center justify-center gap-2 px-[23px] py-[12px] rounded-full bg-[#1d70dc] hover:bg-[#165bb3] text-white transition-colors shrink-0"
+          >
+            <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Ask HOAi
+            </span>
+            <AskHoaiIcon className="h-4 w-auto" />
+          </button>
+        )}
 
         {/* Nav Items */}
         <div data-ux-id="sidebar-nav-list" className="flex flex-col gap-[13px] w-full shrink-0">
@@ -1765,6 +1782,7 @@ function MainApp({ onRestart }: MainAppProps) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
+  const [askHoaiOpen, setAskHoaiOpen] = useState(true);
 
   const { page: scenePage } = useCursor();
   useEffect(() => {
@@ -1790,7 +1808,7 @@ function MainApp({ onRestart }: MainAppProps) {
       )}
       {/* Sidebar — desktop always visible, mobile slides in as overlay */}
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} />
+        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} />
       </div>
       {activePage === "dashboard" ? (
         <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} />
@@ -1801,7 +1819,7 @@ function MainApp({ onRestart }: MainAppProps) {
       ) : (
         <CommunityFeedPage onOpenSidebar={() => setSidebarOpen(true)} />
       )}
-      <AskHoaiPanel />
+      <AskHoaiPanel open={askHoaiOpen} onCollapse={() => setAskHoaiOpen(false)} />
       {/* Floating view toggle — only on dashboard */}
       {activePage === "dashboard" && (
         <ViewToggle view={dashboardView} onChange={setDashboardView} />

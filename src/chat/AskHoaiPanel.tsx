@@ -1,6 +1,26 @@
 import { useState } from "react";
 import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight } from "lucide-react";
 
+type Props = {
+  open: boolean;
+  onCollapse: () => void;
+};
+
+export function AskHoaiIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="73 0 22 21"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M81.367 16.9752C81.367 15.9135 80.5103 15.0522 79.4544 15.0522H75.6295C75.2788 15.0522 74.992 14.7637 74.992 14.4112V2.8731C74.992 2.52055 75.2788 2.2321 75.6295 2.2321H85.1405C86.4526 2.2321 86.4169 0.309082 85.1405 0.309082H75.6295C74.223 0.309082 73.0795 1.45888 73.0795 2.8731V14.4112C73.0795 15.8254 74.223 16.9752 75.6295 16.9752H79.4544V20.1802C79.4544 20.4246 79.5859 20.6449 79.8051 20.7531C80.0242 20.8613 80.2832 20.8372 80.4744 20.693L81.1558 20.1802L81.359 20.028L81.367 20.02L85.4032 16.9752H90.9295C92.3359 16.9752 93.4795 15.8254 93.4795 14.4112V8.94574C93.4795 7.68622 91.567 7.68622 91.567 8.94574V14.4112C91.567 14.7637 91.2801 15.0522 90.9295 15.0522H85.4032C84.9888 15.0522 84.5864 15.1884 84.2557 15.4368L81.367 17.6162V16.9752Z" />
+      <path d="M91.4931 1.44282C91.4173 1.47161 91.3668 1.54443 91.3668 1.62571C91.3668 1.707 91.4173 1.77982 91.4931 1.80861L92.4447 2.16762L92.8017 3.12441C92.8303 3.20063 92.9027 3.25142 92.9836 3.25142C93.0644 3.25142 93.1368 3.20063 93.1655 3.12441L93.5225 2.16762L94.4741 1.80861C94.5499 1.77982 94.6004 1.707 94.6004 1.62571C94.6004 1.54443 94.5499 1.47161 94.4741 1.44282L93.5225 1.08381L93.1655 0.12701C93.1368 0.0508054 93.0644 0 92.9836 0C92.9027 0 92.8303 0.0508054 92.8017 0.12701L92.4447 1.08381L91.4931 1.44282ZM86.134 4.06428C86.0379 4.10833 85.9773 4.20484 85.9773 4.3115C85.9773 4.41824 86.0379 4.51303 86.134 4.55707L86.4203 4.69087L86.5567 4.75349L86.5668 4.7586L88.0539 5.44953L88.7411 6.94317L88.7461 6.95332L88.8085 7.0905L88.9415 7.38005C88.9853 7.47656 89.0813 7.53752 89.1858 7.53752C89.2901 7.53752 89.3862 7.47656 89.4299 7.38005L89.563 7.0905L89.6253 6.95332L89.6303 6.94317L90.3175 5.4478L91.8046 4.7586L91.8148 4.75349L91.9511 4.69087L92.2392 4.55707C92.3352 4.51303 92.3958 4.41651 92.3958 4.3115C92.3958 4.2065 92.3352 4.10998 92.2392 4.06601L91.9511 3.93221L91.8148 3.86952L91.8046 3.86448L90.3175 3.17353L89.632 1.67821L89.627 1.66805L89.5647 1.52919L89.4316 1.23961C89.3878 1.14308 89.2918 1.08212 89.1874 1.08212C89.083 1.08212 88.987 1.14308 88.9432 1.23961L88.8102 1.52919L88.7478 1.66635L88.7427 1.67652L88.0556 3.17184L86.5685 3.86276L86.5584 3.86787L86.4219 3.93048L86.134 4.06428Z" />
+    </svg>
+  );
+}
+
 function AskHoaiWordmark() {
   return (
     <svg
@@ -57,14 +77,18 @@ const COMMON_QUESTIONS = [
   "What is the process to request a new pool key?",
 ];
 
-export default function AskHoaiPanel() {
+export default function AskHoaiPanel({ open, onCollapse }: Props) {
   const [input, setInput] = useState("");
 
   return (
     <aside
       data-ux-id="askhoai-panel"
-      className="hidden lg:flex flex-col shrink-0 w-[400px] bg-white border-l border-[#e5eaf0] h-full"
+      aria-hidden={!open}
+      className={`hidden lg:flex shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out ${
+        open ? "w-[400px]" : "w-0"
+      }`}
     >
+      <div className="flex flex-col h-full w-[400px] bg-white border-l border-[#e5eaf0]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5eaf0]">
         <AskHoaiWordmark />
@@ -78,6 +102,7 @@ export default function AskHoaiPanel() {
           <button
             type="button"
             aria-label="Collapse panel"
+            onClick={onCollapse}
             className="p-1.5 rounded-md border border-[#e5eaf0] text-[#262630] hover:bg-black/[0.03]"
           >
             <ChevronRight size={16} />
@@ -146,6 +171,7 @@ export default function AskHoaiPanel() {
             AI-generated responses may contain errors. Please verify before acting.
           </p>
         </div>
+      </div>
       </div>
     </aside>
   );
