@@ -104,10 +104,10 @@ function Sidebar({ screen, skipped, onStep, onBypass }: { screen: Screen; skippe
         type="button"
         onClick={onBypass}
         data-ux-id="onboarding-logo-bypass"
-        className="px-1 mb-2 self-start cursor-pointer"
+        className="mb-4 self-center cursor-pointer"
         aria-label="Skip to dashboard"
       >
-        <img src={imgWordmark} alt="Waterfront Community Estates" className="object-contain" style={{ height: "54px" }} />
+        <img src={imgWordmark} alt="Waterfront Community Estates" className="object-contain mx-auto" style={{ height: "110px" }} />
       </button>
 
       {/* Progress */}
