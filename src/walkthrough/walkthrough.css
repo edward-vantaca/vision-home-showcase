@@ -4,29 +4,31 @@
   inset: 0;
   pointer-events: none;
   z-index: 250;
-  /* No `isolation: isolate` here on purpose. Isolation would restrict the
-     wt-backdrop's backdrop-filter so it only blurs content inside wt-root,
-     leaving the Ask HOAi panel (a sibling in app-shell) crisp. */
 }
 
 .wt-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(40px) saturate(1.1);
+  -webkit-backdrop-filter: blur(40px) saturate(1.1);
   opacity: 0;
-  transition: opacity 240ms ease;
+  transition: opacity 500ms ease-out;
 }
 
-.wt-backdrop[data-beat-kind="idle"]      { opacity: 0; }
-.wt-backdrop[data-beat-kind="narrate"]   { opacity: 0.9; }
-.wt-backdrop[data-beat-kind="highlight"] { opacity: 0; } /* cutout handles the dim */
-.wt-backdrop[data-beat-kind="lift"]      { opacity: 0.6; }
-.wt-backdrop[data-beat-kind="expand"]    { opacity: 0.6; }
-.wt-backdrop[data-beat-kind="annotate"]  { opacity: 0.6; }
-.wt-backdrop[data-beat-kind="cursor"]    { opacity: 0; }
-.wt-backdrop[data-beat-kind="intro"]     { opacity: 1; background: #ffffff; backdrop-filter: none; }
+.wt-backdrop[data-beat-kind="lift"],
+.wt-backdrop[data-beat-kind="expand"],
+.wt-backdrop[data-beat-kind="annotate"],
+.wt-backdrop[data-beat-kind="narrate"] {
+  opacity: 1;
+}
+
+.wt-backdrop[data-beat-kind="intro"] {
+  opacity: 1;
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
 
 .wt-intro {
   position: fixed;
@@ -114,4 +116,8 @@
   .wt-caption {
     transition: none;
   }
+  /* LiftBeat/ExpandBeat snapshot `transition` as part of their saved state,
+     so forcing `transition: none` on the target would need a JS check; the
+     reduced-motion case is handled at the beat level by reading matchMedia
+     if needed (deferred — out of scope for Nov 3). */
 }
