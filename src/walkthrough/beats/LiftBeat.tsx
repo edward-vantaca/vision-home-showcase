@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect } from "react";
 import type { Point } from "../types";
 
 type Props = {
@@ -7,72 +7,78 @@ type Props = {
   position?: "center" | Point;
 };
 
-type Snapshot = { html: string; width: number; height: number; className: string };
-
-function findScene(name: string): HTMLElement | null {
-  // The scene-side element — not the stage slot (which has class wt-stage-slot).
+function findTarget(name: string): HTMLElement | null {
+  // Defensive: skip any stale stage slot left over from the old clone-based lift.
   const all = Array.from(document.querySelectorAll<HTMLElement>(`[data-vt-name="${name}"]`));
   return all.find((el) => !el.classList.contains("wt-stage-slot")) ?? null;
 }
 
+/**
+ * Lifts the real target element to the stage by mutating its inline styles
+ * and letting a CSS transition do the morph.
+ *
+ * Scene isolation invariant (spec section 7): every inline style written on
+ * mount is snapshotted first and restored on unmount, so nothing bleeds into
+ * the next scene. Renders nothing.
+ */
 export function LiftBeat({ target, scale = 1.4, position = "center" }: Props) {
-  // Capture content + dimensions during the render inside startViewTransition so
-  // the stage slot has size and content on its FIRST commit — otherwise the
-  // browser snapshots a 0×0 empty slot and skips the morph animation.
-  const [snapshot] = useState<Snapshot | null>(() => {
-    if (typeof document === "undefined") return null;
-    const scene = findScene(target);
-    if (!scene) return null;
-    const rect = scene.getBoundingClientRect();
-    return {
-      html: scene.innerHTML,
-      width: rect.width,
-      height: rect.height,
-      className: scene.className,
-    };
-  });
+  // Primitive key so a parent re-render with a fresh object doesn't restart the lift.
+  const positionKey = position === "center" ? "center" : `${position.x},${position.y}`;
 
-  // While the stage slot owns the view-transition-name, the scene-side element
-  // must release it or the browser sees a duplicate and refuses to animate.
-  // On cleanup we restore the target name so the return morph has a landing
-  // pad; the advance() handler is responsible for stripping the name again
-  // when stepping out of this scene so the lift doesn't bleed forward.
   useLayoutEffect(() => {
-    const scene = findScene(target);
-    if (!scene) return;
-    scene.style.visibility = "hidden";
-    scene.style.viewTransitionName = "none";
-    return () => {
-      scene.style.visibility = "";
-      scene.style.viewTransitionName = target;
+    const el = findTarget(target);
+    if (!el) return;
+
+    el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+
+    const saved = {
+      position: el.style.position,
+      top: el.style.top,
+      left: el.style.left,
+      width: el.style.width,
+      height: el.style.height,
+      margin: el.style.margin,
+      transform: el.style.transform,
+      transition: el.style.transition,
+      zIndex: el.style.zIndex,
+      willChange: el.style.willChange,
     };
-  }, [target]);
 
-  const centered = position === "center";
-  const style: React.CSSProperties = {
-    position: "fixed",
-    top: centered ? "50%" : position.y,
-    left: centered ? "50%" : position.x,
-    transform: centered
-      ? `translate(-50%, -50%) scale(${scale})`
-      : `scale(${scale})`,
-    transformOrigin: "center center",
-    viewTransitionName: target,
-    pointerEvents: "none",
-    // Pre-promote so the browser doesn't rasterize on frame 1, which was
-    // reading as a page-wide jitter when the lift kicked off.
-    willChange: "transform, opacity",
-    backfaceVisibility: "hidden",
-    contain: "layout paint",
-    ...(snapshot ? { width: snapshot.width, height: snapshot.height } : null),
-  };
+    const rect = el.getBoundingClientRect();
 
-  return (
-    <div
-      className={`wt-stage-slot ${snapshot?.className ?? ""}`.trim()}
-      data-vt-name={target}
-      style={style}
-      {...(snapshot ? { dangerouslySetInnerHTML: { __html: snapshot.html } } : {})}
-    />
-  );
+    // Pin in place at the current viewport position, at its current size, so
+    // going position:fixed doesn't resize or shift it.
+    el.style.position = "fixed";
+    el.style.top = `${rect.top}px`;
+    el.style.left = `${rect.left}px`;
+    el.style.width = `${rect.width}px`;
+    el.style.height = `${rect.height}px`;
+    el.style.margin = "0";
+    el.style.transform = "translate(0px, 0px) scale(1)";
+    el.style.transition = "transform 1000ms cubic-bezier(0.65,0,0.35,1)";
+    // Above .wt-root (z-index 250) so the lifted element sits over the blurred backdrop.
+    el.style.zIndex = "260";
+    el.style.willChange = "transform";
+
+    const raf = requestAnimationFrame(() => {
+      const dx =
+        position === "center"
+          ? window.innerWidth / 2 - (rect.left + rect.width / 2)
+          : position.x - rect.left;
+      const dy =
+        position === "center"
+          ? window.innerHeight / 2 - (rect.top + rect.height / 2)
+          : position.y - rect.top;
+      el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      Object.assign(el.style, saved);
+    };
+    // position is represented by positionKey
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, scale, positionKey]);
+
+  return null;
 }
