@@ -72,33 +72,8 @@ export function WalkthroughProvider({ sequence, children }: { sequence: Sequence
   );
 
   const advance = useCallback(() => {
-    // If this advance will step from the last beat of a scene into the next
-    // scene, strip any lingering view-transition-name declarations from DOM
-    // elements the current scene was targeting. Without this, the browser's
-    // view-transition captures the old frame with the name still live and the
-    // outgoing scene's lift/expand animation bleeds into the next scene.
-    const { sceneIndex, beatIndex } = state.cursor;
-    const currentScene = sequence[sceneIndex];
-    const atLastBeat = currentScene && beatIndex + 1 >= currentScene.beats.length;
-    const willLeaveScene = atLastBeat && sceneIndex + 1 < sequence.length;
-    if (willLeaveScene && typeof document !== "undefined") {
-      const targets = new Set<string>();
-      for (const beat of currentScene.beats) {
-        if (beat.kind === "lift" || beat.kind === "expand" || beat.kind === "highlight") {
-          targets.add(beat.target as string);
-        }
-      }
-      for (const name of targets) {
-        document
-          .querySelectorAll<HTMLElement>(`[data-vt-name="${name}"]`)
-          .forEach((el) => {
-            if (el.classList.contains("wt-stage-slot")) return;
-            el.style.viewTransitionName = "none";
-          });
-      }
-    }
     withTransition(() => dispatch({ type: "advance" }));
-  }, [state.cursor, sequence]);
+  }, []);
   const back = useCallback(() => {
     // If the current beat declares a reverseTo target, click it to undo the
     // beat's forward side effect (close an opened detail, roll back a phase

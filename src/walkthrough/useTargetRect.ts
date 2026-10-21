@@ -1,8 +1,8 @@
 import { useLayoutEffect, useState } from "react";
 
 function findByVTName(name: string): HTMLElement | null {
-  // We tag participating elements with data-vt-name mirroring viewTransitionName
-  // (CSS attribute lookup is more reliable than style-attribute parsing).
+  // data-vt-name is the walkthrough's target-lookup attribute: participating
+  // elements are tagged with it and found via a CSS attribute selector.
   return document.querySelector<HTMLElement>(`[data-vt-name="${name}"]`);
 }
 
