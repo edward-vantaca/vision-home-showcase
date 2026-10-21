@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act, fireEvent } from "@testing-library/react";
 import gsap from "gsap";
+import type { ReactNode } from "react";
 import AskHoaiPanel from "../AskHoaiPanel";
 
 function panel(props: { open: boolean; focused?: boolean }) {
@@ -161,5 +162,89 @@ describe("AskHoaiPanel welcome -> thread morph", () => {
     });
     expect(getByText("Second")).toBeInTheDocument();
     expect(getByText(MSG)).toBeInTheDocument();
+  });
+
+  function completeMorph(container: HTMLElement, welcomeEl: HTMLElement, questionsEl: HTMLElement) {
+    act(() => {
+      gsap.getTweensOf([welcomeEl, questionsEl]).forEach((t) => t.progress(1));
+    });
+    const thread = container.querySelector('[data-ash-section="thread"]');
+    const input = container.querySelector('[data-ash-section="input"]');
+    act(() => {
+      gsap.getTweensOf([thread, input]).forEach((t) => t.progress(1));
+    });
+  }
+
+  function rerenderFocused(rerender: (ui: ReactNode) => void, focused: boolean) {
+    rerender(<AskHoaiPanel open={true} onCollapse={() => {}} focused={focused} />);
+  }
+
+  it("leaving mid-script stops every scripted timer; re-entering shows a clean welcome view", () => {
+    const { rerender, container, welcomeEl, questionsEl, queryByText } = renderAndSend();
+    completeMorph(container, welcomeEl, questionsEl);
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+    rerenderFocused(rerender, false);
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+    expect(vi.getTimerCount()).toBe(0);
+    rerenderFocused(rerender, true);
+
+    expect(container.querySelector('[data-ash-section="welcome"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
+    expect(queryByText("Yes, that would be amazing!")).toBeNull();
+    expect(queryByText("Ok, I'll get started. Just a moment.")).toBeNull();
+    const textarea = container.querySelector<HTMLTextAreaElement>('[data-vt-name="wt-askhoai-input"]')!;
+    expect(textarea.value).toBe("");
+    // No stray welcome morph was started inside the hidden panel.
+    const welcome = container.querySelector('[data-ash-section="welcome"]')!;
+    expect(gsap.getTweensOf(welcome).length).toBe(0);
+  });
+
+  it("clears every scripted timer on unmount", () => {
+    const { unmount, container, welcomeEl, questionsEl } = renderAndSend();
+    completeMorph(container, welcomeEl, questionsEl);
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("defers the visual reset until the 700ms panel morph has finished", () => {
+    const { rerender, container, welcomeEl, questionsEl, getByText } = renderAndSend();
+    completeMorph(container, welcomeEl, questionsEl);
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    rerenderFocused(rerender, false);
+    // Script stops immediately...
+    const threadText = container.querySelector('[data-ash-section="thread"]')!.textContent;
+    act(() => {
+      vi.advanceTimersByTime(699);
+    });
+    // ...but the thread stays on screen while the panel morphs back.
+    expect(container.querySelector('[data-ash-section="thread"]')!.textContent).toBe(threadText);
+    expect(getByText(MSG)).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
+    expect(container.querySelector('[data-ash-section="welcome"]')).toBeInTheDocument();
+  });
+
+  it("re-entering before the deferred reset fires resets right away", () => {
+    const { rerender, container, welcomeEl, questionsEl } = renderAndSend();
+    completeMorph(container, welcomeEl, questionsEl);
+    rerenderFocused(rerender, false);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    rerenderFocused(rerender, true);
+    expect(container.querySelector('[data-ash-section="welcome"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

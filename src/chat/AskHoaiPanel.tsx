@@ -26,7 +26,8 @@ const AGENT_FENCE_REPLY =
 // them. z-190 keeps the sidebar above the z-180 white canvas (so it doesn't
 // drop under it while the canvas fades out) but below `.wt-root` (z-250) so
 // the walkthrough backdrop still blurs it.
-const PANEL_TRANSITION = "all 700ms cubic-bezier(0.65,0,0.35,1)";
+const PANEL_MORPH_MS = 700;
+const PANEL_TRANSITION = `all ${PANEL_MORPH_MS}ms cubic-bezier(0.65,0,0.35,1)`;
 const PANEL_FOCUSED_CLASS =
   "fixed flex overflow-hidden z-[200] top-[6vh] bottom-[6vh] left-1/2 -translate-x-1/2 w-[min(820px,92vw)]";
 const PANEL_SIDEBAR_CLASS =
@@ -115,7 +116,15 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [agentTyping, setAgentTyping] = useState(false);
-  const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Every timer the scripted conversation schedules is tracked here so leaving
+  // the scene (or unmounting) can stop the whole script at once. Timeouts and
+  // intervals are kept apart because fake timers reject cross-clearing.
+  const scriptTimeoutsRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+  const scriptIntervalsRef = useRef(new Set<ReturnType<typeof setInterval>>());
+  const stopTypingRef = useRef<(() => void) | null>(null);
+  // Pending deferred reset after leaving the scene (see the !focused effect).
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasFocusedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   // Scope for the welcome -> thread morph. The thread-view input sits outside
   // the scrolling region, so queries run against the panel root, not scrollRef.
@@ -130,9 +139,53 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const visible = open || focused;
   const hasConversation = messages.length > 0 || agentTyping;
 
+  function later(fn: () => void, ms: number) {
+    const timeouts = scriptTimeoutsRef.current;
+    const id = setTimeout(() => {
+      timeouts.delete(id);
+      fn();
+    }, ms);
+    timeouts.add(id);
+  }
+
+  /** Starts a tracked interval; returns a function that stops it. */
+  function every(fn: (stop: () => void) => void, ms: number): () => void {
+    const intervals = scriptIntervalsRef.current;
+    const stop = () => {
+      clearInterval(id);
+      intervals.delete(id);
+    };
+    const id = setInterval(() => fn(stop), ms);
+    intervals.add(id);
+    return stop;
+  }
+
+  function stopScript() {
+    scriptTimeoutsRef.current.forEach((id) => clearTimeout(id));
+    scriptTimeoutsRef.current.clear();
+    scriptIntervalsRef.current.forEach((id) => clearInterval(id));
+    scriptIntervalsRef.current.clear();
+    stopTypingRef.current = null;
+  }
+
+  function cancelPendingReset(): boolean {
+    if (resetTimerRef.current === null) return false;
+    clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = null;
+    return true;
+  }
+
+  function resetConversation() {
+    setMessages([]);
+    setAgentTyping(false);
+    setInput("");
+  }
+
   // When the walkthrough advances past the Ask HOAi scene (focused flips to
-  // false), reset the conversation so re-entering starts fresh. Also kill any
-  // in-flight typing interval so it can't keep writing into a stale panel.
+  // false), stop the scripted conversation immediately, then reset it once the
+  // 700ms panel morph has finished so the thread doesn't swap to the welcome
+  // view mid-morph. Re-entering before then resets right away, so the scene
+  // always starts from a fresh welcome view.
   useEffect(() => {
     if (!focused) {
       // Drop an in-flight morph so it can't commit into the reset panel.
@@ -142,15 +195,32 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
         morphRef.current.tween.revert();
         morphRef.current = null;
       }
-      if (typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current);
-        typingIntervalRef.current = null;
+      stopScript();
+      cancelPendingReset();
+      // Only an actual exit has a conversation (and a morph) to wait out.
+      if (wasFocusedRef.current) {
+        resetTimerRef.current = setTimeout(() => {
+          resetTimerRef.current = null;
+          resetConversation();
+        }, PANEL_MORPH_MS);
       }
-      setMessages([]);
-      setAgentTyping(false);
-      setInput("");
+    } else if (cancelPendingReset()) {
+      resetConversation();
     }
+    wasFocusedRef.current = focused;
+    // stopScript/cancelPendingReset/resetConversation only touch refs and setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focused]);
+
+  // Unmount: stop the script and any pending reset.
+  useEffect(
+    () => () => {
+      stopScript();
+      cancelPendingReset();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   // Sends a user message. From the welcome view this runs the welcome ->
   // thread morph: (1) welcome + common questions fade up and out, (2) the
@@ -225,8 +295,8 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   function typeAgentMessage(full: string, onDone?: () => void) {
     setMessages((prev) => [...prev, { role: "agent", text: "" }]);
     let cursor = 0;
-    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-    typingIntervalRef.current = setInterval(() => {
+    stopTypingRef.current?.();
+    stopTypingRef.current = every((stop) => {
       cursor = Math.min(full.length, cursor + 3);
       setMessages((prev) => {
         const copy = prev.slice();
@@ -239,9 +309,9 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
       requestAnimationFrame(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       });
-      if (cursor >= full.length && typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current);
-        typingIntervalRef.current = null;
+      if (cursor >= full.length) {
+        stop();
+        stopTypingRef.current = null;
         if (onDone) onDone();
       }
     }, 25);
@@ -250,17 +320,17 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   function animateUserFollowUp() {
     const text = "Yes, that would be amazing!";
     let cursor = 0;
-    const interval = setInterval(() => {
+    every((stop) => {
       cursor = Math.min(text.length, cursor + 1);
       setInput(text.slice(0, cursor));
       if (cursor >= text.length) {
-        clearInterval(interval);
+        stop();
         // Hold a beat so the finished input is visible, then send it, then
         // chain the agent's acknowledgement.
-        setTimeout(() => {
+        later(() => {
           pushUserMessage(text);
-          setTimeout(() => setAgentTyping(true), 500);
-          setTimeout(() => {
+          later(() => setAgentTyping(true), 500);
+          later(() => {
             setAgentTyping(false);
             typeAgentMessage("Ok, I'll get started. Just a moment.");
           }, 1500);
@@ -281,12 +351,12 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     // so the layout change feels like one motion instead of a jump.
     pushUserMessage(text);
     // Short pause, then show the typing indicator.
-    setTimeout(() => setAgentTyping(true), 500);
+    later(() => setAgentTyping(true), 500);
     // Then type out the first reply; when it finishes, chain the user's follow-up.
-    setTimeout(() => {
+    later(() => {
       setAgentTyping(false);
       typeAgentMessage(AGENT_FENCE_REPLY, () => {
-        setTimeout(animateUserFollowUp, 1400);
+        later(animateUserFollowUp, 1400);
       });
     }, 1900);
   }
