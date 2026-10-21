@@ -157,9 +157,10 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   // state change is committed synchronously via flushSync, (3) the new
   // thread-view input is FLIPped from the old input's position to its own and
   // the thread fades in. From the thread view (or if any element is missing)
-  // it commits immediately. A second send while a morph is in flight reverts the
-  // morph, flushes its pending commit, then commits directly — order is kept
-  // and the UI is never left half-faded.
+  // it commits immediately. handleSend ignores sends while a morph is in
+  // flight; as a defensive fallback for any other caller, a push during a
+  // morph reverts it, flushes its pending commit, then commits directly —
+  // order is kept and the UI is never left half-faded.
   const pushUserMessage = contextSafe((text: string) => {
     const commit = () => {
       setMessages((prev) => [...prev, { role: "user", text }]);
@@ -269,6 +270,10 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   }
 
   function handleSend() {
+    // The input is only cleared when the morph commits, so Send stays enabled
+    // during the ~350ms fade. Ignore sends while a morph is in flight — at this
+    // entry point, so the scripted agent chain below isn't scheduled twice.
+    if (morphRef.current) return;
     const text = input.trim();
     if (!text) return;
     // Morph welcome/questions out, slide the input down to the chat footer,

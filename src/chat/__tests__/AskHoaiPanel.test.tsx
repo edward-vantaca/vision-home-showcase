@@ -101,15 +101,36 @@ describe("AskHoaiPanel welcome -> thread morph", () => {
     expect(gsap.getTweensOf([threadEl, inputEl]).length).toBe(0);
   });
 
-  it("a second send mid-morph kills the morph and commits both messages in order", () => {
-    const { container, welcomeEl, questionsEl, getAllByText } = renderAndSend();
-    // Input is not cleared until commit, so Send is still enabled.
+  it("ignores a second send mid-morph: one user bubble, one complete agent reply", () => {
+    const { container, welcomeEl, questionsEl } = renderAndSend();
+    // Input is not cleared until commit, so Send is still clickable.
     act(() => {
       container.querySelector<HTMLButtonElement>('[data-vt-name="wt-askhoai-send-btn"]')!.click();
     });
-    expect(gsap.getTweensOf([welcomeEl, questionsEl]).length).toBe(0);
-    expect(container.querySelector('[data-ash-section="welcome"]')).toBeNull();
-    expect(getAllByText(MSG)).toHaveLength(2);
+    // The in-flight morph is untouched by the ignored click.
+    const phase1 = gsap.getTweensOf([welcomeEl, questionsEl]);
+    expect(phase1.length).toBeGreaterThan(0);
+    act(() => {
+      phase1.forEach((t) => t.progress(1));
+    });
+    const thread = container.querySelector<HTMLElement>('[data-ash-section="thread"]')!;
+    act(() => {
+      gsap.getTweensOf([thread, container.querySelector('[data-ash-section="input"]')]).forEach((t) =>
+        t.progress(1),
+      );
+    });
+    // Typing dots at 500ms, reply starts at 1900ms, ~400 chars at 3 chars / 25ms.
+    // Stop before the scripted follow-up (reply end + 1400ms) is sent.
+    act(() => {
+      vi.advanceTimersByTime(1900 + 4000);
+    });
+    const userBubbles = Array.from(thread.children).filter((c) => c.textContent === MSG);
+    expect(userBubbles).toHaveLength(1);
+    const agentBubbles = thread.querySelectorAll(".whitespace-pre-wrap");
+    expect(agentBubbles).toHaveLength(1);
+    expect(agentBubbles[0].textContent).toMatch(/^Absolutely/);
+    expect(agentBubbles[0].textContent).toMatch(/what I already know\?$/);
+    expect(thread.children).toHaveLength(2);
   });
 
   it("leaving the scene mid-morph kills the morph without committing", () => {
