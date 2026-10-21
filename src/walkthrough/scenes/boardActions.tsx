@@ -24,7 +24,6 @@ export const boardActionsScene: Scene = {
     {
       kind: "annotate",
       tracks: [
-        { type: "arrow", from: VT.BoardTaskCurrent, to: VT.BoardTaskCurrent },
         { type: "typeCaption", text: "Approve the fine. One tap. Timestamped and attributed to you." },
       ],
     },
