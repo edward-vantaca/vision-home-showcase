@@ -35,6 +35,30 @@ function reactSetInputValue(el: HTMLInputElement | HTMLTextAreaElement, value: s
   el.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+// Upper bound on how long a cursor beat waits for in-flight CSS animations
+// (e.g. the 700ms Ask HOAi panel morph) before measuring its stops anyway.
+const SETTLE_TIMEOUT_MS = 1500;
+
+/**
+ * Resolves once every running, finite CSS/WAAPI animation in the document has
+ * finished (or SETTLE_TIMEOUT_MS passes). Infinite loops (typing dots, pulses)
+ * and paused animations are ignored, since they would never settle. Returns
+ * null when the environment has no document.getAnimations (jsdom), meaning
+ * "nothing to wait for".
+ */
+function animationsSettled(): Promise<void> | null {
+  if (typeof document.getAnimations !== "function") return null;
+  const pending = document.getAnimations().filter((a) => {
+    if (a.playState !== "running") return false;
+    const end = a.effect?.getComputedTiming().endTime;
+    return typeof end === "number" && Number.isFinite(end);
+  });
+  if (pending.length === 0) return null;
+  const all = Promise.all(pending.map((a) => a.finished.catch(() => {}))).then(() => {});
+  const timeout = new Promise<void>((resolve) => setTimeout(resolve, SETTLE_TIMEOUT_MS));
+  return Promise.race([all, timeout]);
+}
+
 export function CursorBeat({
   to,
   action,
@@ -163,9 +187,25 @@ export function CursorBeat({
         }
       };
 
-      // One frame of grace for pending commits (expand/click from prev beat).
-      const raf = requestAnimationFrame(run);
+      // One frame of grace for pending commits (expand/click from prev beat),
+      // then wait out any CSS transitions they started (e.g. the panel morph on
+      // scene enter) so stops are measured at their settled positions.
+      let cancelled = false;
+      let raf = requestAnimationFrame(() => {
+        const settled = animationsSettled();
+        if (!settled) {
+          run();
+          return;
+        }
+        void settled.then(() => {
+          if (cancelled) return;
+          raf = requestAnimationFrame(() => {
+            if (!cancelled) run();
+          });
+        });
+      });
       return () => {
+        cancelled = true;
         cancelAnimationFrame(raf);
         tl?.kill();
         beatBusyRef.current = false;
