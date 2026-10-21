@@ -1,28 +1,32 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useLiftTarget } from "./useLiftTarget";
 
 type Props = { target: string; children: ReactNode };
 
-function findScene(name: string): HTMLElement | null {
-  const all = Array.from(document.querySelectorAll<HTMLElement>(`[data-vt-name="${name}"]`));
-  return all.find((el) => !el.classList.contains("wt-stage-slot")) ?? null;
-}
-
+/**
+ * Expands a target into a detail panel. The real target is lifted in place via
+ * useLiftTarget (kept at its current lift if a LiftBeat just handed it off,
+ * otherwise centered at scale 1) and dissolved to opacity 0, while the panel
+ * fades in at center: the card appears to become the panel.
+ *
+ * Scene isolation invariant (spec section 7): every inline style written on the
+ * target is snapshotted first and restored on unmount, so nothing bleeds into
+ * the next scene. The panel itself is React-owned and simply unmounts.
+ */
 export function ExpandBeat({ target, children }: Props) {
-  useEffect(() => {
-    const scene = findScene(target);
-    if (!scene) return;
-    scene.style.visibility = "hidden";
-    return () => {
-      scene.style.visibility = "";
-    };
-  }, [target]);
+  useLiftTarget(target, { scale: 1, position: "center", dissolve: true });
 
-  const style: React.CSSProperties = {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const style: CSSProperties = {
     position: "fixed",
     top: "50%",
     left: "50%",
     translate: "-50% -50%",
-    viewTransitionName: target,
     pointerEvents: "auto",
     maxWidth: "min(1000px, 90vw)",
     maxHeight: "calc(100vh - 160px)",
@@ -30,11 +34,9 @@ export function ExpandBeat({ target, children }: Props) {
     background: "white",
     borderRadius: "16px",
     boxShadow: "0 24px 60px rgba(0,0,0,.25)",
+    opacity: shown ? 1 : 0,
+    transition: "opacity 500ms ease-out",
   };
 
-  return (
-    <div className="wt-stage-slot" data-vt-name={target} style={style}>
-      {children}
-    </div>
-  );
+  return <div style={style}>{children}</div>;
 }

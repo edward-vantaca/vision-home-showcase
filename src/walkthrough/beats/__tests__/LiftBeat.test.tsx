@@ -1,8 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render } from "@testing-library/react";
+import { act, cleanup, render } from "@testing-library/react";
 import { LiftBeat } from "../LiftBeat";
 
 const added: HTMLElement[] = [];
+
+// Restore is deferred one microtask (same-target handoff, see useLiftTarget).
+function flushMicrotasks(): Promise<void> {
+  return act(async () => {
+    await Promise.resolve();
+  });
+}
 
 function makeTarget(style?: Partial<CSSStyleDeclaration>): HTMLElement {
   const el = document.createElement("div");
@@ -18,8 +25,9 @@ describe("LiftBeat", () => {
     Element.prototype.scrollIntoView = vi.fn();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     cleanup();
+    await flushMicrotasks();
     added.splice(0).forEach((el) => el.remove());
     // @ts-expect-error restore jsdom's lack of scrollIntoView
     delete Element.prototype.scrollIntoView;
@@ -36,10 +44,11 @@ describe("LiftBeat", () => {
     expect(target.style.transition).toContain("transform");
   });
 
-  it("restores all mutated inline styles on unmount", () => {
+  it("restores all mutated inline styles on unmount", async () => {
     const target = makeTarget({ position: "relative" });
     const { unmount } = render(<LiftBeat target="wt-test" />);
     unmount();
+    await flushMicrotasks();
 
     expect(target.style.position).toBe("relative");
     expect(target.style.zIndex).toBe("");
@@ -74,16 +83,18 @@ describe("LiftBeat", () => {
     expect(() => render(<LiftBeat target="wt-nonexistent" />)).not.toThrow();
   });
 
-  it("leaves no style residue after mount, unmount, remount, unmount", () => {
+  it("leaves no style residue after mount, unmount, remount, unmount", async () => {
     const target = makeTarget();
     render(<LiftBeat target="wt-test" />).unmount();
+    await flushMicrotasks();
     render(<LiftBeat target="wt-test" />).unmount();
+    await flushMicrotasks();
 
     const style = target.getAttribute("style");
     expect(style === null || style === "").toBe(true);
   });
 
-  it("pins width/height on mount and restores them on unmount", () => {
+  it("pins width/height on mount and restores them on unmount", async () => {
     const target = makeTarget({ width: "50%", height: "auto", margin: "8px" });
     target.getBoundingClientRect = () =>
       ({ top: 10, left: 20, width: 300, height: 120, right: 320, bottom: 130, x: 20, y: 10 }) as DOMRect;
@@ -94,6 +105,7 @@ describe("LiftBeat", () => {
     expect(target.style.margin).toBe("0px");
 
     unmount();
+    await flushMicrotasks();
     expect(target.style.width).toBe("50%");
     expect(target.style.height).toBe("auto");
     expect(target.style.margin).toBe("8px");
