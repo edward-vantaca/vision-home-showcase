@@ -8,7 +8,7 @@ export function WalkthroughHUD() {
   return (
     <div
       data-testid="wt-hud"
-      className="fixed bottom-6 right-6 z-[120] flex items-center gap-3 rounded-full bg-white/95 px-4 py-2 shadow-lg"
+      className="fixed bottom-6 right-6 z-[310] flex items-center gap-3 rounded-full bg-white/95 px-4 py-2 shadow-lg"
     >
       <button
         type="button"

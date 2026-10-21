@@ -1915,7 +1915,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         {showConsentModal && (
           <div
             data-ux-id="elections-consent-modal-backdrop"
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
+            className="fixed inset-0 z-[195] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
           >
             <div data-ux-id="elections-consent-modal" className="w-full max-w-[560px] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] flex flex-col gap-[0px] overflow-hidden">
               {/* Modal header */}
@@ -2417,7 +2417,7 @@ function CreatePostModal({
   };
 
   return (
-    <div data-ux-id="community-feed-create-post-modal" className="fixed inset-0 z-[70] flex items-center justify-center bg-[#152331]/45 p-[12px] md:p-[24px]" role="presentation" onMouseDown={onClose}>
+    <div data-ux-id="community-feed-create-post-modal" className="fixed inset-0 z-[195] flex items-center justify-center bg-[#152331]/45 p-[12px] md:p-[24px]" role="presentation" onMouseDown={onClose}>
       <form
         className="flex max-h-[calc(100dvh-24px)] w-full max-w-[890px] flex-col overflow-hidden rounded-[6px] border border-[#e3e3e3] bg-white shadow-[0_20px_60px_rgba(18,17,48,0.22)] md:max-h-[calc(100dvh-48px)]"
         onSubmit={submit}
