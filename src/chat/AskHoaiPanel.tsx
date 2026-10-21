@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight } from "lucide-react";
 import { VT } from "../walkthrough/viewTransitionNames";
+
+// Bind useGSAP to this module's gsap instance. Under Vitest, @gsap/react's CJS
+// build can load a second copy of gsap, so without this its context would not
+// see (and on unmount would not kill) tweens created here.
+gsap.registerPlugin(useGSAP);
 
 type ChatMessage = { role: "user" | "agent"; text: string };
 
@@ -109,6 +117,15 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const [agentTyping, setAgentTyping] = useState(false);
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Scope for the welcome -> thread morph. The thread-view input sits outside
+  // the scrolling region, so queries run against the panel root, not scrollRef.
+  const panelRootRef = useRef<HTMLElement>(null);
+  // The in-flight phase-1 tween of the welcome -> thread morph plus the commit
+  // it will run on completion. Non-null only while a morph is in flight.
+  const morphRef = useRef<{ tween: gsap.core.Tween; commit: () => void } | null>(null);
+  // Every tween created via contextSafe belongs to this panel's gsap.context,
+  // which useGSAP reverts (kills) on unmount — StrictMode-safe.
+  const { contextSafe } = useGSAP({ scope: panelRootRef });
 
   const visible = open || focused;
   const hasConversation = messages.length > 0 || agentTyping;
@@ -118,6 +135,13 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   // in-flight typing interval so it can't keep writing into a stale panel.
   useEffect(() => {
     if (!focused) {
+      // Drop an in-flight morph so it can't commit into the reset panel.
+      // revert() (not kill()) restores welcome/questions' pre-tween inline
+      // styles so re-entering the scene doesn't show them half-faded.
+      if (morphRef.current) {
+        morphRef.current.tween.revert();
+        morphRef.current = null;
+      }
       if (typingIntervalRef.current) {
         clearInterval(typingIntervalRef.current);
         typingIntervalRef.current = null;
@@ -128,10 +152,71 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     }
   }, [focused]);
 
-  function pushUserMessage(text: string) {
-    setMessages((prev) => [...prev, { role: "user", text }]);
-    setInput("");
-  }
+  // Sends a user message. From the welcome view this runs the welcome ->
+  // thread morph: (1) welcome + common questions fade up and out, (2) the
+  // state change is committed synchronously via flushSync, (3) the new
+  // thread-view input is FLIPped from the old input's position to its own and
+  // the thread fades in. From the thread view (or if any element is missing)
+  // it commits immediately. A second send while a morph is in flight reverts the
+  // morph, flushes its pending commit, then commits directly — order is kept
+  // and the UI is never left half-faded.
+  const pushUserMessage = contextSafe((text: string) => {
+    const commit = () => {
+      setMessages((prev) => [...prev, { role: "user", text }]);
+      setInput("");
+    };
+
+    if (morphRef.current) {
+      const pending = morphRef.current;
+      morphRef.current = null;
+      pending.tween.revert();
+      pending.commit();
+      commit();
+      return;
+    }
+
+    const scope = panelRootRef.current;
+    const welcomeEl = scope?.querySelector<HTMLElement>('[data-ash-section="welcome"]');
+    const questionsEl = scope?.querySelector<HTMLElement>('[data-ash-section="questions"]');
+    const startInputEl = scope?.querySelector<HTMLElement>('[data-ash-section="input"]');
+    if (!scope || !welcomeEl || !questionsEl || !startInputEl) {
+      commit();
+      return;
+    }
+
+    const startTop = startInputEl.getBoundingClientRect().top;
+
+    const tween = gsap.to([welcomeEl, questionsEl], {
+      opacity: 0,
+      y: -16,
+      duration: 0.35,
+      ease: "power2.in",
+      onComplete: contextSafe(() => {
+        morphRef.current = null;
+        flushSync(commit);
+        // The thread view renders a different input container; the welcome
+        // one is detached now, so re-query and FLIP the new node.
+        const newInputEl = scope.querySelector<HTMLElement>('[data-ash-section="input"]');
+        if (newInputEl) {
+          const newTop = newInputEl.getBoundingClientRect().top;
+          gsap.fromTo(
+            newInputEl,
+            { y: startTop - newTop },
+            { y: 0, duration: 0.5, ease: "power2.out", clearProps: "transform" },
+          );
+        }
+        const threadEl = scope.querySelector<HTMLElement>('[data-ash-section="thread"]');
+        if (threadEl) {
+          gsap.fromTo(
+            threadEl,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.5, ease: "power2.out", clearProps: "opacity" },
+          );
+        }
+      }),
+    });
+    morphRef.current = { tween, commit };
+  });
 
   // Streams an agent message into the thread one chunk at a time. Invokes
   // `onDone` after the final chunk is committed so the caller can chain the
@@ -203,6 +288,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
 
   return (
     <aside
+      ref={panelRootRef}
       data-ux-id="askhoai-panel"
       aria-hidden={!visible}
       style={{ transition: PANEL_TRANSITION }}
@@ -235,13 +321,14 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
       {/* Content */}
       {hasConversation ? (
         <>
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 pt-6 pb-4 flex flex-col gap-3">
+          <div ref={scrollRef} data-ash-section="thread" className="flex-1 overflow-y-auto px-5 pt-6 pb-4 flex flex-col gap-3">
             {messages.map((m, i) => (
               <MessageBubble key={i} role={m.role} text={m.text} />
             ))}
             {agentTyping && <TypingDots />}
           </div>
           <div
+            data-ash-section="input"
             className="mx-5 mb-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
           >
             <ChatInput
@@ -253,7 +340,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
         </>
       ) : (
         <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
-          <div>
+          <div data-ash-section="welcome">
             <h2 className="font-['DM_Sans:Bold',sans-serif] font-bold text-[22px] text-[#262630] leading-tight">
               Welcome back, james.polk
             </h2>
@@ -262,6 +349,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
 
           {/* Input */}
           <div
+            data-ash-section="input"
             className="mt-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
           >
             <ChatInput
@@ -272,7 +360,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
           </div>
 
           {/* Common questions */}
-          <div>
+          <div data-ash-section="questions">
             <p className="text-[11px] font-semibold text-[#8a8a96] tracking-[0.1em] mt-6 mb-3">
               COMMON QUESTIONS:
             </p>

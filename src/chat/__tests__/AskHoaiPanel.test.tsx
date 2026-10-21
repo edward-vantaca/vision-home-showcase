@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, act, fireEvent } from "@testing-library/react";
+import gsap from "gsap";
 import AskHoaiPanel from "../AskHoaiPanel";
 
 function panel(props: { open: boolean; focused?: boolean }) {
@@ -21,5 +22,123 @@ describe("AskHoaiPanel morph forms", () => {
     expect(classes).toContain("fixed");
     expect(classes).toContain(left);
     expect(classes.some((c) => c.startsWith("right-"))).toBe(false);
+  });
+});
+
+// The walkthrough's CursorBeat drives this exact path: it sets the textarea
+// value via the native setter + bubbling input event, then calls `.click()` on
+// `[data-vt-name="wt-askhoai-send-btn"]`.
+describe("AskHoaiPanel welcome -> thread morph", () => {
+  const MSG = "Can I replace my fence?";
+
+  beforeEach(() => {
+    // Fake only the scripted-conversation timers; GSAP's rAF ticker stays real
+    // (we drive tweens explicitly via progress()).
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
+  });
+
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  function renderAndSend() {
+    const utils = render(<AskHoaiPanel open={true} onCollapse={() => {}} focused={true} />);
+    const root = utils.container;
+    const welcomeEl = root.querySelector<HTMLElement>('[data-ash-section="welcome"]')!;
+    const questionsEl = root.querySelector<HTMLElement>('[data-ash-section="questions"]')!;
+    expect(welcomeEl).toBeInTheDocument();
+    expect(questionsEl).toBeInTheDocument();
+    expect(root.querySelector('[data-ash-section="input"]')).toBeInTheDocument();
+    const textarea = root.querySelector<HTMLTextAreaElement>('[data-vt-name="wt-askhoai-input"]')!;
+    fireEvent.change(textarea, { target: { value: MSG } });
+    const sendBtn = root.querySelector<HTMLButtonElement>('[data-vt-name="wt-askhoai-send-btn"]')!;
+    act(() => {
+      sendBtn.click();
+    });
+    return { ...utils, welcomeEl, questionsEl };
+  }
+
+  it("fades welcome + questions out before committing the message", () => {
+    const { container, welcomeEl, questionsEl } = renderAndSend();
+    // Phase 1 is in flight: message not yet committed, welcome still mounted.
+    expect(gsap.getTweensOf([welcomeEl, questionsEl]).length).toBeGreaterThan(0);
+    expect(welcomeEl.isConnected).toBe(true);
+    expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
+  });
+
+  it("kills in-flight welcome->thread tweens on unmount", () => {
+    const { unmount, welcomeEl, questionsEl } = renderAndSend();
+    expect(gsap.getTweensOf([welcomeEl, questionsEl]).length).toBeGreaterThan(0);
+    unmount();
+    expect(gsap.getTweensOf(welcomeEl).length).toBe(0);
+    expect(gsap.getTweensOf(questionsEl).length).toBe(0);
+  });
+
+  it("completes the morph: commits the message, swaps views, leaves no inline residue", () => {
+    const { container, welcomeEl, questionsEl, getByText } = renderAndSend();
+    act(() => {
+      gsap.getTweensOf([welcomeEl, questionsEl]).forEach((t) => t.progress(1));
+    });
+    expect(getByText(MSG)).toBeInTheDocument();
+    expect(container.querySelector('[data-ash-section="welcome"]')).toBeNull();
+    expect(container.querySelector('[data-ash-section="questions"]')).toBeNull();
+
+    const threadEl = container.querySelector<HTMLElement>('[data-ash-section="thread"]')!;
+    const inputEl = container.querySelector<HTMLElement>('[data-ash-section="input"]')!;
+    expect(threadEl).toBeInTheDocument();
+    expect(inputEl).toBeInTheDocument();
+    expect(inputEl).not.toBe(welcomeEl);
+    const phase3 = gsap.getTweensOf([threadEl, inputEl]);
+    expect(phase3.length).toBe(2);
+
+    act(() => {
+      phase3.forEach((t) => t.progress(1));
+    });
+    expect(inputEl.style.transform).toBe("");
+    expect(threadEl.style.opacity).toBe("");
+    expect(gsap.getTweensOf([threadEl, inputEl]).length).toBe(0);
+  });
+
+  it("a second send mid-morph kills the morph and commits both messages in order", () => {
+    const { container, welcomeEl, questionsEl, getAllByText } = renderAndSend();
+    // Input is not cleared until commit, so Send is still enabled.
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-vt-name="wt-askhoai-send-btn"]')!.click();
+    });
+    expect(gsap.getTweensOf([welcomeEl, questionsEl]).length).toBe(0);
+    expect(container.querySelector('[data-ash-section="welcome"]')).toBeNull();
+    expect(getAllByText(MSG)).toHaveLength(2);
+  });
+
+  it("leaving the scene mid-morph kills the morph without committing", () => {
+    const { rerender, container, welcomeEl, questionsEl } = renderAndSend();
+    act(() => {
+      gsap.getTweensOf([welcomeEl, questionsEl]).forEach((t) => t.progress(0.5));
+    });
+    expect(welcomeEl.style.opacity).not.toBe("");
+    rerender(<AskHoaiPanel open={true} onCollapse={() => {}} focused={false} />);
+    expect(gsap.getTweensOf([welcomeEl, questionsEl]).length).toBe(0);
+    expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
+    expect(container.querySelector('[data-ash-section="welcome"]')).toBe(welcomeEl);
+    // No half-faded residue when the scene is re-entered.
+    expect(welcomeEl.style.opacity).toBe("");
+    expect(welcomeEl.style.transform).toBe("");
+    expect(questionsEl.style.opacity).toBe("");
+  });
+
+  it("commits directly (no morph) when there is no welcome view", () => {
+    const { container, welcomeEl, questionsEl, getByText } = renderAndSend();
+    act(() => {
+      gsap.getTweensOf([welcomeEl, questionsEl]).forEach((t) => t.progress(1));
+    });
+    const textarea = container.querySelector<HTMLTextAreaElement>('[data-vt-name="wt-askhoai-input"]')!;
+    fireEvent.change(textarea, { target: { value: "Second" } });
+    act(() => {
+      container.querySelector<HTMLButtonElement>('[data-vt-name="wt-askhoai-send-btn"]')!.click();
+    });
+    expect(getByText("Second")).toBeInTheDocument();
+    expect(getByText(MSG)).toBeInTheDocument();
   });
 });
