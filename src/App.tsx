@@ -3081,7 +3081,14 @@ function MainApp({ onRestart }: MainAppProps) {
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} onOpenQuickActions={() => setQuickActionsView("menu")} />
       </div>
-      <div className="flex-1 flex min-w-0">
+      {/* AskHoaiPanel is position: fixed (so it can morph sidebar <-> focused),
+          so reserve its 400px here on lg+ while it's open or focused. Same
+          700ms easing as the panel so pill collapse/expand doesn't jump. */}
+      <div
+        className={`flex-1 flex min-w-0 transition-[padding] duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+          askHoaiOpen || askHoaiFocused ? "lg:pr-[400px]" : ""
+        }`}
+      >
         {activePage === "dashboard" ? (
           <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} />
         ) : activePage === "elections" ? (

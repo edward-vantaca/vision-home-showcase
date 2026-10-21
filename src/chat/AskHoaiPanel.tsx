@@ -12,6 +12,20 @@ const AGENT_FENCE_REPLY =
   "  • A quick plot showing your lot boundaries\n\n" +
   "Want me to open a draft ARC request for 5201 N Roxboro St and pre-fill what I already know?";
 
+// The panel morphs between three `position: fixed` forms. Every animated
+// property (left, top/bottom, width, translate) is explicit in each form so
+// CSS can interpolate it — never `auto`, and `right` is left unset in all of
+// them. z-190 keeps the sidebar above the z-180 white canvas (so it doesn't
+// drop under it while the canvas fades out) but below `.wt-root` (z-250) so
+// the walkthrough backdrop still blurs it.
+const PANEL_TRANSITION = "all 700ms cubic-bezier(0.65,0,0.35,1)";
+const PANEL_FOCUSED_CLASS =
+  "fixed flex overflow-hidden z-[200] top-[6vh] bottom-[6vh] left-1/2 -translate-x-1/2 w-[min(820px,92vw)]";
+const PANEL_SIDEBAR_CLASS =
+  "hidden lg:flex fixed overflow-hidden z-[190] top-0 bottom-0 left-[calc(100%_-_400px)] translate-x-0 w-[400px]";
+const PANEL_COLLAPSED_CLASS =
+  "hidden lg:flex fixed overflow-hidden z-[190] top-0 bottom-0 left-full translate-x-0 w-0";
+
 type Props = {
   open: boolean;
   onCollapse: () => void;
@@ -191,15 +205,10 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     <aside
       data-ux-id="askhoai-panel"
       aria-hidden={!visible}
-      className={
-        focused
-          ? "fixed inset-y-[6vh] left-1/2 -translate-x-1/2 w-[min(820px,92vw)] z-[200] flex overflow-hidden transition-all duration-500 ease-out"
-          : `hidden lg:flex shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out ${
-              visible ? "w-[400px]" : "w-0"
-            }`
-      }
+      style={{ transition: PANEL_TRANSITION }}
+      className={focused ? PANEL_FOCUSED_CLASS : open ? PANEL_SIDEBAR_CLASS : PANEL_COLLAPSED_CLASS}
     >
-      <div className={`flex flex-col h-full w-full bg-white ${focused ? "" : "w-[400px] border-l border-[#e5eaf0]"}`}>
+      <div className={`flex flex-col h-full w-full bg-white ${focused ? "" : "min-w-[400px] border-l border-[#e5eaf0]"}`}>
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b border-[#e5eaf0]"

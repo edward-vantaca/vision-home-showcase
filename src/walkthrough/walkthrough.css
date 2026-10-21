@@ -1,4 +1,6 @@
 /* src/walkthrough/walkthrough.css */
+/* .wt-root must NOT use `isolation: isolate` — it would stop the backdrop-filter
+   in .wt-backdrop from blurring the Ask HOAi panel (fixed, z-190) beneath it. */
 .wt-root {
   position: fixed;
   inset: 0;
