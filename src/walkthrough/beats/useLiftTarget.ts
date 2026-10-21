@@ -17,10 +17,11 @@ export type LiftOptions = {
   dissolve?: boolean;
 };
 
-const MOVE_TRANSITION = "transform 1000ms cubic-bezier(0.65,0,0.35,1)";
+// One transition for every claim, so opacity also animates when a handoff
+// un-dissolves the element (expand -> lift back-scrub) instead of snapping.
+const LIFT_TRANSITION = "transform 1000ms cubic-bezier(0.65,0,0.35,1), opacity 500ms ease-out";
 /** How many frames to keep looking for a target that isn't rendered yet. */
 const TARGET_RETRY_FRAMES = 30;
-const DISSOLVE_TRANSITION = `${MOVE_TRANSITION}, opacity 500ms ease-out`;
 
 // Union of every inline property any beat mutates. Snapshotted once, on the
 // first claim, and restored once, when the last claim is released.
@@ -136,7 +137,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
         existing.pendingRestore = false;
         entry = existing;
         if (!dissolve) entry.transform = liftTransform(entry.rect, scale, position);
-        el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
+        el.style.transition = LIFT_TRANSITION;
         applyTarget(el, entry, dissolve);
       } else {
         if (import.meta.env.DEV) warnOnContainingBlockAncestors(el, target);
@@ -163,7 +164,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
         el.style.height = `${rect.height}px`;
         el.style.margin = "0";
         el.style.transform = "translate(0px, 0px) scale(1)";
-        el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
+        el.style.transition = LIFT_TRANSITION;
         // Above .wt-root (z-index 250) so the lifted element sits over the blurred backdrop.
         el.style.zIndex = "260";
         el.style.willChange = "transform";

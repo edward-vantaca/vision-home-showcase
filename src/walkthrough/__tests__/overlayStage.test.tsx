@@ -109,6 +109,8 @@ describe("WalkthroughOverlay sticky stage", () => {
     await step("back"); // lift: un-dissolves, still staged
     expect(target.style.position).toBe("fixed");
     expect(target.style.opacity).toBe("");
+    // Opacity must transition back in, not snap 0 -> 1.
+    expect(target.style.transition).toContain("opacity");
 
     await step("back"); // idle, before the lift
     expect(hasNoStyle(target)).toBe(true);
