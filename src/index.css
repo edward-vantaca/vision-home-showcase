@@ -67,6 +67,16 @@ body,
   height: 100%;
 }
 
+/* Scroll anchoring was auto-adjusting the dashboard's scroll position
+   when the walkthrough's lift beat hid the payments widget mid-view-
+   transition, reading to users as a quick scroll jitter. Opting out of
+   it everywhere keeps the viewport pinned during walkthrough animations. */
+html,
+body,
+[data-ux-id$="-page"] {
+  overflow-anchor: none;
+}
+
 * {
   box-sizing: border-box;
 }

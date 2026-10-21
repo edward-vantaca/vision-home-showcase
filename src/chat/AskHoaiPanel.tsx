@@ -1,9 +1,22 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight } from "lucide-react";
+import { VT } from "../walkthrough/viewTransitionNames";
+
+type ChatMessage = { role: "user" | "agent"; text: string };
+
+const AGENT_FENCE_REPLY =
+  "Absolutely — fence replacements at Waterfront require an Architectural Review Committee (ARC) request before any work begins.\n\n" +
+  "To get started I'll need:\n" +
+  "  • A sketch or photo showing the proposed fence (height, material, location)\n" +
+  "  • An estimate from a licensed contractor\n" +
+  "  • A quick plot showing your lot boundaries\n\n" +
+  "Want me to open a draft ARC request for 5201 N Roxboro St and pre-fill what I already know?";
 
 type Props = {
   open: boolean;
   onCollapse: () => void;
+  focused?: boolean;
 };
 
 export function AskHoaiIcon({ className = "" }: { className?: string }) {
@@ -77,20 +90,146 @@ const COMMON_QUESTIONS = [
   "What is the process to request a new pool key?",
 ];
 
-export default function AskHoaiPanel({ open, onCollapse }: Props) {
+export default function AskHoaiPanel({ open, onCollapse, focused = false }: Props) {
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [agentTyping, setAgentTyping] = useState(false);
+  const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // VT names on the sub-regions are driven by CSS in walkthrough.css, gated
+  // on `html.wt-ash-vt-active`. That class is set BEFORE startViewTransition
+  // by the walkthrough's cursor actions (for ask-hoai scene enter/exit) and
+  // by handleSend (for the welcome → thread morph). Outside those cases, no
+  // VT names are set — the panel stays in the root snapshot so backdrop
+  // filters applied elsewhere (payments lift) can reach it.
+  const visible = open || focused;
+  const hasConversation = messages.length > 0 || agentTyping;
+
+  // When the walkthrough advances past the Ask HOAi scene (focused flips to
+  // false), reset the conversation so re-entering starts fresh. Also kill any
+  // in-flight typing interval so it can't keep writing into a stale panel.
+  useEffect(() => {
+    if (!focused) {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+        typingIntervalRef.current = null;
+      }
+      setMessages([]);
+      setAgentTyping(false);
+      setInput("");
+    }
+  }, [focused]);
+
+  function pushUserMessage(text: string) {
+    const commit = () => {
+      setMessages((prev) => [...prev, { role: "user", text }]);
+      setInput("");
+    };
+    if (typeof document.startViewTransition === "function") {
+      // wt-chat-send tunes the per-element animation duration for the
+      // welcome → thread morph; wt-ash-vt-active turns the sub-region VT
+      // names on (same gating used by the ask-hoai scene enter/exit).
+      document.documentElement.classList.add("wt-chat-send");
+      document.documentElement.classList.add("wt-ash-vt-active");
+      const vt = document.startViewTransition(() => {
+        flushSync(commit);
+      });
+      vt.finished.finally(() => {
+        document.documentElement.classList.remove("wt-chat-send");
+        document.documentElement.classList.remove("wt-ash-vt-active");
+      });
+    } else {
+      commit();
+    }
+  }
+
+  // Streams an agent message into the thread one chunk at a time. Invokes
+  // `onDone` after the final chunk is committed so the caller can chain the
+  // next step of the scripted conversation.
+  function typeAgentMessage(full: string, onDone?: () => void) {
+    setMessages((prev) => [...prev, { role: "agent", text: "" }]);
+    let cursor = 0;
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    typingIntervalRef.current = setInterval(() => {
+      cursor = Math.min(full.length, cursor + 3);
+      setMessages((prev) => {
+        const copy = prev.slice();
+        const last = copy[copy.length - 1];
+        if (last && last.role === "agent") {
+          copy[copy.length - 1] = { role: "agent", text: full.slice(0, cursor) };
+        }
+        return copy;
+      });
+      requestAnimationFrame(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      });
+      if (cursor >= full.length && typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+        typingIntervalRef.current = null;
+        if (onDone) onDone();
+      }
+    }, 25);
+  }
+
+  function animateUserFollowUp() {
+    const text = "Yes, that would be amazing!";
+    let cursor = 0;
+    const interval = setInterval(() => {
+      cursor = Math.min(text.length, cursor + 1);
+      setInput(text.slice(0, cursor));
+      if (cursor >= text.length) {
+        clearInterval(interval);
+        // Hold a beat so the finished input is visible, then send it, then
+        // chain the agent's acknowledgement.
+        setTimeout(() => {
+          pushUserMessage(text);
+          setTimeout(() => setAgentTyping(true), 500);
+          setTimeout(() => {
+            setAgentTyping(false);
+            typeAgentMessage("Ok, I'll get started. Just a moment.");
+          }, 1500);
+        }, 500);
+      }
+    }, 55);
+  }
+
+  function handleSend() {
+    const text = input.trim();
+    if (!text) return;
+    // Morph welcome/questions out, slide the input down to the chat footer,
+    // and fade the first user bubble in — all in one browser-driven transition
+    // so the layout change feels like one motion instead of a jump.
+    pushUserMessage(text);
+    // Short pause, then show the typing indicator.
+    setTimeout(() => setAgentTyping(true), 500);
+    // Then type out the first reply; when it finishes, chain the user's follow-up.
+    setTimeout(() => {
+      setAgentTyping(false);
+      typeAgentMessage(AGENT_FENCE_REPLY, () => {
+        setTimeout(animateUserFollowUp, 1400);
+      });
+    }, 1900);
+  }
 
   return (
     <aside
       data-ux-id="askhoai-panel"
-      aria-hidden={!open}
-      className={`hidden lg:flex shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out ${
-        open ? "w-[400px]" : "w-0"
-      }`}
+      aria-hidden={!visible}
+      className={
+        focused
+          ? "fixed inset-y-[6vh] left-1/2 -translate-x-1/2 w-[min(820px,92vw)] z-[200] flex overflow-hidden transition-all duration-500 ease-out"
+          : `hidden lg:flex shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out ${
+              visible ? "w-[400px]" : "w-0"
+            }`
+      }
     >
-      <div className="flex flex-col h-full w-[400px] bg-white border-l border-[#e5eaf0]">
+      <div className={`flex flex-col h-full w-full bg-white ${focused ? "" : "w-[400px] border-l border-[#e5eaf0]"}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5eaf0]">
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b border-[#e5eaf0]"
+        data-ash-vt="header"
+      >
         <AskHoaiWordmark />
         <div className="flex items-center gap-2">
           <button
@@ -111,59 +250,70 @@ export default function AskHoaiPanel({ open, onCollapse }: Props) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
-        <h2 className="font-['DM_Sans:Bold',sans-serif] font-bold text-[22px] text-[#262630] leading-tight">
-          Welcome back, james.polk
-        </h2>
-        <p className="text-[13px] text-[#5a5a66] mt-1">How can I help you today?</p>
+      {hasConversation ? (
+        <>
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 pt-6 pb-4 flex flex-col gap-3">
+            {messages.map((m, i) => (
+              <MessageBubble key={i} role={m.role} text={m.text} />
+            ))}
+            {agentTyping && <TypingDots />}
+          </div>
+          <div
+            className="mx-5 mb-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
+            data-ash-vt="input"
+          >
+            <ChatInput
+              input={input}
+              onChange={setInput}
+              onSend={handleSend}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
+          <div data-ash-vt="welcome">
+            <h2 className="font-['DM_Sans:Bold',sans-serif] font-bold text-[22px] text-[#262630] leading-tight">
+              Welcome back, james.polk
+            </h2>
+            <p className="text-[13px] text-[#5a5a66] mt-1">How can I help you today?</p>
+          </div>
 
-        {/* Input */}
-        <div className="mt-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Hello! How can I help you today?"
-            className="w-full resize-none outline-none text-[14px] placeholder:text-[#9a9aa6] bg-transparent"
-            rows={2}
-          />
-          <div className="flex justify-end gap-2 mt-2">
-            <button
-              type="button"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1a1a24] text-white text-[13px] rounded-full hover:bg-black"
-            >
-              <Paperclip size={13} /> Attach
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#8ab6ec] text-white text-[13px] rounded-full hover:bg-[#6ea0e0] disabled:opacity-70"
-              disabled={!input.trim()}
-            >
-              <ArrowUp size={13} /> Send
-            </button>
+          {/* Input */}
+          <div
+            className="mt-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
+            data-ash-vt="input"
+          >
+            <ChatInput
+              input={input}
+              onChange={setInput}
+              onSend={handleSend}
+            />
+          </div>
+
+          {/* Common questions */}
+          <div data-ash-vt="questions">
+            <p className="text-[11px] font-semibold text-[#8a8a96] tracking-[0.1em] mt-6 mb-3">
+              COMMON QUESTIONS:
+            </p>
+            <div className="flex flex-col gap-2">
+              {COMMON_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => setInput(q)}
+                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-[#f4f6f9] hover:bg-[#e8ecf3] text-left text-[13px] leading-snug text-[#262630]"
+                >
+                  <span className="flex-1">{q}</span>
+                  <ChevronsRight size={14} className="text-[#8a8a96] shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Common questions */}
-        <p className="text-[11px] font-semibold text-[#8a8a96] tracking-[0.1em] mt-6 mb-3">
-          COMMON QUESTIONS:
-        </p>
-        <div className="flex flex-col gap-2">
-          {COMMON_QUESTIONS.map((q) => (
-            <button
-              key={q}
-              type="button"
-              onClick={() => setInput(q)}
-              className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-[#f4f6f9] hover:bg-[#e8ecf3] text-left text-[13px] leading-snug text-[#262630]"
-            >
-              <span className="flex-1">{q}</span>
-              <ChevronsRight size={14} className="text-[#8a8a96] shrink-0" />
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Footer */}
-      <div className="px-5 py-3 border-t border-[#e5eaf0]">
+      <div className="px-5 py-3 border-t border-[#e5eaf0]" data-ash-vt="footer">
         <p className="text-center text-[11px] text-[#8a8a96] mb-2">Powered by HOAi</p>
         <div className="flex items-start gap-2 px-3 py-2 border border-[#e5eaf0] rounded-md">
           <Info size={14} className="text-[#8a8a96] shrink-0 mt-0.5" />
@@ -174,5 +324,80 @@ export default function AskHoaiPanel({ open, onCollapse }: Props) {
       </div>
       </div>
     </aside>
+  );
+}
+
+function ChatInput({
+  input,
+  onChange,
+  onSend,
+}: {
+  input: string;
+  onChange: (v: string) => void;
+  onSend: () => void;
+}) {
+  return (
+    <>
+      <textarea
+        value={input}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Hello! How can I help you today?"
+        data-vt-name={VT.AskHoaiInput}
+        className="w-full resize-none outline-none text-[14px] placeholder:text-[#9a9aa6] bg-transparent"
+        rows={2}
+      />
+      <div className="flex justify-end gap-2 mt-2">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1a1a24] text-white text-[13px] rounded-full hover:bg-black"
+        >
+          <Paperclip size={13} /> Attach
+        </button>
+        <button
+          type="button"
+          data-vt-name={VT.AskHoaiSendBtn}
+          onClick={onSend}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#247ae4] text-white text-[13px] rounded-full hover:bg-[#1d6fd4] disabled:bg-[#8ab6ec] disabled:opacity-70 transition-[background-color,opacity] duration-300"
+          disabled={!input.trim()}
+        >
+          <ArrowUp size={13} /> Send
+        </button>
+      </div>
+    </>
+  );
+}
+
+function MessageBubble({ role, text }: { role: "user" | "agent"; text: string }) {
+  if (role === "user") {
+    return (
+      <div className="self-end max-w-[80%] bg-[#247ae4] text-white text-[14px] leading-relaxed rounded-2xl rounded-br-md px-4 py-2.5 shadow-sm">
+        {text}
+      </div>
+    );
+  }
+  return (
+    <div className="self-start max-w-[85%] flex items-start gap-2">
+      <div className="shrink-0 w-7 h-7 rounded-full bg-[#f0f4fb] text-[#1D70DC] grid place-items-center">
+        <AskHoaiIcon className="w-4 h-4" />
+      </div>
+      <div className="bg-[#f4f6f9] text-[#262630] text-[14px] leading-relaxed rounded-2xl rounded-bl-md px-4 py-2.5 whitespace-pre-wrap">
+        {text}
+      </div>
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <div className="self-start flex items-center gap-2">
+      <div className="shrink-0 w-7 h-7 rounded-full bg-[#f0f4fb] text-[#1D70DC] grid place-items-center">
+        <AskHoaiIcon className="w-4 h-4" />
+      </div>
+      <div className="bg-[#f4f6f9] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#8a8a96] animate-[askhoai-dot_1s_ease-in-out_infinite]" style={{ animationDelay: "0ms" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#8a8a96] animate-[askhoai-dot_1s_ease-in-out_infinite]" style={{ animationDelay: "160ms" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#8a8a96] animate-[askhoai-dot_1s_ease-in-out_infinite]" style={{ animationDelay: "320ms" }} />
+      </div>
+    </div>
   );
 }

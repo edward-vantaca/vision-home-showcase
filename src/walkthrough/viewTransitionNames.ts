@@ -1,6 +1,24 @@
 export const VT = {
   BoardTaskCurrent: "wt-board-task-current",
   AmenityTilePool: "wt-amenity-tile-pool",
+  InboxHoaEmail: "wt-inbox-hoa-email",
+  InboxRegisterCta: "wt-inbox-register-cta",
+  InboxEmailBack: "wt-inbox-email-back",
+  OnboardingBackToInbox: "wt-onboarding-back-to-inbox",
+  OnboardingPasswordInput: "wt-onboarding-password-input",
+  OnboardingCreateAccountBtn: "wt-onboarding-create-account-btn",
+  OnboardingBackToAccount: "wt-onboarding-back-to-account",
+  AutoPayCardName: "wt-autopay-card-name",
+  AutoPayCardNumber: "wt-autopay-card-number",
+  AutoPayExpiry: "wt-autopay-expiry",
+  AutoPayCvv: "wt-autopay-cvv",
+  AutoPayEnrollBtn: "wt-autopay-enroll-btn",
+  OnboardingBackToConfirm: "wt-onboarding-back-to-confirm",
+  OnboardingGoToPortalBtn: "wt-onboarding-go-to-portal-btn",
+  PortalBackToDone: "wt-portal-back-to-done",
+  AskHoaiInput: "wt-askhoai-input",
+  AskHoaiSendBtn: "wt-askhoai-send-btn",
+  PaymentsWidget: "wt-payments-widget",
 } as const
 
 export type VTName = typeof VT[keyof typeof VT]

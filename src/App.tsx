@@ -1,12 +1,14 @@
 import { Fragment, useEffect, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
-import NewResidentFlow from "./onboarding/NewResidentFlow";
+import NewResidentFlow, { type Screen as OnboardingScreen } from "./onboarding/NewResidentFlow";
 import InboxPage from "./inbox/InboxPage";
 import BoardTasksWidget from "./board/BoardTasksWidget";
 import AmenitiesPage from "./amenities/AmenitiesPage";
 import AskHoaiPanel, { AskHoaiIcon } from "./chat/AskHoaiPanel";
 import imgBranding from "@/assets/Branding.svg";
+import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
+import { VT } from "./walkthrough/viewTransitionNames";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -39,6 +41,20 @@ function IconPayments() {
     <svg {...SZ} viewBox="0 0 24 24">
       <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
       <line x1="1" y1="10" x2="23" y2="10"/>
+    </svg>
+  );
+}
+
+/* fa-landmark */
+function IconBank() {
+  return (
+    <svg {...SZ} width="16" height="16" viewBox="0 0 24 24">
+      <path d="M12 2L2 8h20L12 2z"/>
+      <line x1="4" y1="8" x2="4" y2="19"/>
+      <line x1="9" y1="8" x2="9" y2="19"/>
+      <line x1="15" y1="8" x2="15" y2="19"/>
+      <line x1="20" y1="8" x2="20" y2="19"/>
+      <line x1="2" y1="21" x2="22" y2="21"/>
     </svg>
   );
 }
@@ -104,6 +120,16 @@ function IconCalendar() {
       <line x1="16" y1="2" x2="16" y2="6"/>
       <line x1="8" y1="2" x2="8" y2="6"/>
       <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  );
+}
+
+/* fa-tag */
+function IconOffers() {
+  return (
+    <svg {...SZ} viewBox="0 0 24 24">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
     </svg>
   );
 }
@@ -193,7 +219,7 @@ function AddressCard() {
 }
 
 /* ─── Sidebar ─── */
-type Page = "dashboard" | "elections" | "community" | "amenities";
+type Page = "dashboard" | "elections" | "community" | "amenities" | "arc-form" | "offers";
 type DashboardView = "homeowner" | "board";
 
 interface NavItemProps {
@@ -242,10 +268,12 @@ interface SidebarProps {
   dashboardView?: DashboardView;
   askHoaiOpen: boolean;
   onOpenAskHoai: () => void;
+  onOpenQuickActions: () => void;
 }
 
-function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai }: SidebarProps) {
+function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai, onOpenQuickActions }: SidebarProps) {
   const [boardActionsOpen, setBoardActionsOpen] = useState(true);
+
   return (
     <div data-ux-id="sidebar" className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
       <div className="flex flex-col gap-[42px] items-center px-[26px] py-[40px] flex-1 overflow-y-auto">
@@ -271,7 +299,11 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
         </button>
 
         {/* Quick Actions */}
-        <button data-ux-id="sidebar-quick-actions" className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0">
+        <button
+          onClick={onOpenQuickActions}
+          data-ux-id="sidebar-quick-actions"
+          className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0"
+        >
           <span className="text-[#247ae4] font-bold text-[14px]">+</span>
           <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
             Quick Actions
@@ -295,6 +327,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
             />
           ) : null}
           <NavItem icon={<IconRequests />} label="Requests" uxId="requests" />
+          <NavItem icon={<IconOffers />} label="Offers" active={activePage === "offers"} onClick={() => onNavigate("offers")} uxId="offers" />
           <NavItem icon={<IconDocuments />} label="Documents" uxId="documents" />
           <NavItem icon={<IconDirectory />} label="Directory" uxId="directory" />
           <NavItem icon={<IconCalendar />} label="Calendar" uxId="calendar" />
@@ -368,6 +401,193 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
   );
 }
 
+/* ─── Quick Actions Modal ─── */
+type QuickActionsView = "menu" | "arc";
+
+const ARC_FORMS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: "fence", label: "ARC Request – Fence Installation" },
+  { id: "pool", label: "ARC Request – Pool Installation" },
+  { id: "solar", label: "ARC Request – Solar Panel" },
+  { id: "landscaping", label: "ARC Request – Landscaping" },
+  { id: "paint", label: "ARC Request – Exterior Paint" },
+];
+
+function QuickActionsModal({
+  view,
+  onClose,
+  onSelectArc,
+  onBackToMenu,
+  onPickArcForm,
+}: {
+  view: QuickActionsView;
+  onClose: () => void;
+  onSelectArc: () => void;
+  onBackToMenu: () => void;
+  onPickArcForm: (form: { id: string; label: string }) => void;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const options = [
+    {
+      key: "arc",
+      label: "ARC Request",
+      uxId: "sidebar-quick-actions-arc-request",
+      onClick: onSelectArc,
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 3h8l6 6v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"/>
+          <path d="M12 3v6h6"/>
+          <path d="M6.5 12h5"/>
+          <path d="M6.5 15h3"/>
+        </svg>
+      ),
+    },
+    {
+      key: "general",
+      label: "General Request",
+      uxId: "sidebar-quick-actions-general-request",
+      onClick: () => {},
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M18 16v-5a6 6 0 10-12 0v5l-1.5 2h15L18 16z"/>
+          <path d="M10 20a2 2 0 004 0"/>
+        </svg>
+      ),
+    },
+    {
+      key: "service",
+      label: "Service Request",
+      uxId: "sidebar-quick-actions-service-request",
+      onClick: () => {},
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M20.5 7.5a4.5 4.5 0 01-5.9 4.3L5.4 20.9a1.5 1.5 0 01-2.1-2.1l9.1-9.1A4.5 4.5 0 0117 2.9l-2.7 2.7 2.1 2.1 2.7-2.7c.9.9 1.4 2.1 1.4 3.5z"/>
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <div
+      data-ux-id="quick-actions-modal-backdrop"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
+      role="presentation"
+      onMouseDown={onClose}
+    >
+      <div
+        data-ux-id="quick-actions-modal"
+        className="w-full max-w-[640px] bg-white rounded-[16px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quick-actions-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-[26px] pt-[22px] pb-[18px]">
+          <p id="quick-actions-title" className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+            New Request
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            data-ux-id="quick-actions-modal-close"
+            className="flex size-[32px] items-center justify-center rounded-[6px] text-[#262630] opacity-55 hover:opacity-100 hover:bg-[#f2f5f7] transition-colors"
+            aria-label="Close new request"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {view === "menu" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] px-[26px] pb-[26px]">
+            {options.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                data-ux-id={option.uxId}
+                onClick={option.onClick}
+                className="group flex flex-col items-center justify-center gap-[14px] rounded-[12px] border border-[#e2eaf0] bg-white px-[16px] py-[32px] text-center transition-all hover:border-[#247ae4] hover:bg-[#f6faff] hover:shadow-[0_4px_12px_rgba(36,122,228,0.08)]"
+              >
+                <span className="text-[#262630] group-hover:text-[#247ae4] transition-colors">
+                  {option.icon}
+                </span>
+                <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  {option.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[18px] px-[26px] pb-[22px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              ARC Request
+            </p>
+            <div className="rounded-[8px] border border-[#cfe2fa] bg-[#f3f8ff] px-[18px] py-[14px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Select a form from the list below
+            </div>
+            <ul className="flex flex-col divide-y divide-[#eef2f6] border-t border-b border-[#eef2f6]">
+              {ARC_FORMS.map((form) => (
+                <li key={form.id}>
+                  <button
+                    type="button"
+                    onClick={() => onPickArcForm(form)}
+                    data-ux-id={`quick-actions-arc-form-${form.id}`}
+                    className="group flex w-full items-center justify-between gap-[14px] px-[6px] py-[14px] text-left transition-colors hover:bg-[#f7fafd]"
+                  >
+                    <span className="flex items-center gap-[14px] min-w-0">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#262630" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+                        <path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8l-5-5z"/>
+                        <path d="M14 3v5h5"/>
+                      </svg>
+                      <span className="truncate font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        {form.label}
+                      </span>
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 group-hover:stroke-[#247ae4]">
+                      <path d="M14 3h7v7"/>
+                      <path d="M10 14L21 3"/>
+                      <path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-between pt-[4px]">
+              <button
+                type="button"
+                onClick={onBackToMenu}
+                data-ux-id="quick-actions-arc-back"
+                className="inline-flex items-center gap-[8px] rounded-[8px] border border-[#d9e0e7] bg-white px-[16px] py-[9px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px] transition-colors hover:bg-[#f2f5f7]"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M19 12H5"/>
+                  <path d="M12 19l-7-7 7-7"/>
+                </svg>
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                data-ux-id="quick-actions-arc-cancel"
+                className="rounded-[8px] border border-[#d9e0e7] bg-white px-[20px] py-[9px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px] transition-colors hover:bg-[#f2f5f7]"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── View Toggle ─── */
 function ViewToggle({ view, onChange }: { view: DashboardView; onChange: (v: DashboardView) => void }) {
   return (
@@ -409,10 +629,641 @@ function ViewToggle({ view, onChange }: { view: DashboardView; onChange: (v: Das
   );
 }
 
+/* ─── Payment helpers ─── */
+function generateConfirmationNumber() {
+  const segment = (length: number) => Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join("").toUpperCase();
+  return `${segment(4)}-${segment(4)}-${segment(12)}`;
+}
+
+function generateAlphanumericConfirmationNumber() {
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const segment = (length: number) => Array.from({ length }, () => charset[Math.floor(Math.random() * charset.length)]).join("");
+  return `${segment(6)}-${segment(4)}-${segment(6)}`;
+}
+
+function formatCardNumber(v: string) { return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(); }
+function formatCardExpiry(v: string) { const d = v.replace(/\D/g, "").slice(0, 4); return d.length >= 3 ? d.slice(0, 2) + " / " + d.slice(2) : d; }
+
+/* ─── Make a Payment Modal ─── */
+function PaymentModal({ onClose, currentBalance }: { onClose: () => void; currentBalance: string }) {
+  const [step, setStep] = useState<"form" | "review" | "confirmation" | "autopay-confirmation" | "new-card-form" | "new-bank-form">("form");
+  const [method, setMethod] = useState<"visa" | "bank" | "new-card" | "new-bank">("visa");
+  const [methodExpanded, setMethodExpanded] = useState(false);
+  const [amountOption, setAmountOption] = useState<"balance" | "other">("balance");
+  const [otherAmount, setOtherAmount] = useState("");
+  const [confirmationNumber] = useState(generateConfirmationNumber);
+  const [autopayConfirmationNumber] = useState(generateAlphanumericConfirmationNumber);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [routingNumber, setRoutingNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [confirmAccountNumber, setConfirmAccountNumber] = useState("");
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const methodLabel = method === "visa" ? "Visa •••• 4242" : method === "bank" ? "Bank •••• 2363" : method === "new-card" ? "New Card" : "New Bank Account";
+  const paymentAmount = amountOption === "balance" ? currentBalance : `$${otherAmount || "0.00"}`;
+  const processingFee = "$0.00";
+
+  return (
+    <div
+      data-ux-id="payment-modal-backdrop"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
+      onMouseDown={onClose}
+    >
+      <div
+        data-ux-id="payment-modal"
+        className="w-full max-w-[560px] max-h-[calc(100dvh-32px)] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-[28px] pt-[26px] pb-[20px] flex items-center justify-between shrink-0">
+          <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[24px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+            Make a Payment
+          </p>
+          <button
+            onClick={onClose}
+            data-ux-id="payment-modal-close-button"
+            className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-[#f2f5f7] transition-colors shrink-0"
+            aria-label="Close"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+        <div className="w-full h-px bg-[#e2eaf0] shrink-0" />
+
+        {/* Body */}
+        {step === "new-card-form" ? (
+        <div className="px-[28px] py-[22px] flex flex-col gap-[22px] overflow-y-auto">
+          <div className="flex flex-col gap-[8px]">
+            <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Card Number
+            </p>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-number"
+                placeholder="1234 5678 9012 3456"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                data-ux-id="payment-new-card-number-input"
+                className="w-full h-[52px] rounded-[10px] border border-[#cfd3da] bg-white pl-[18px] pr-[150px] font-['DM_Sans:Regular',sans-serif] font-normal text-[16px] text-[#262630] tracking-wider placeholder:text-[#9ca3af] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              />
+              <div className="absolute right-[14px] top-1/2 -translate-y-1/2 flex items-center gap-[6px]">
+                <div className="bg-[#1a1a1a] rounded-[5px] w-[34px] h-[22px] flex items-center justify-center">
+                  <div className="flex items-center">
+                    <div className="w-[13px] h-[13px] rounded-full bg-[#eb001b]" />
+                    <div className="w-[13px] h-[13px] rounded-full bg-[#f79e1b] -ml-[5px] mix-blend-screen" />
+                  </div>
+                </div>
+                <div className="bg-white border border-[#e1e9ef] rounded-[5px] w-[34px] h-[22px] flex items-center justify-center">
+                  <span className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#1434cb] text-[9px] italic" style={{ fontVariationSettings: '"opsz" 14' }}>VISA</span>
+                </div>
+                <div className="bg-[#2557a7] rounded-[5px] w-[34px] h-[22px] flex items-center justify-center">
+                  <span className="font-['DM_Sans:Bold',sans-serif] font-bold text-white text-[7px] leading-tight text-center" style={{ fontVariationSettings: '"opsz" 14' }}>AM<br />EX</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-[20px] w-full">
+            <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Expiration
+              </p>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-exp"
+                placeholder="MM / YY"
+                maxLength={7}
+                value={cardExpiry}
+                onChange={(e) => setCardExpiry(formatCardExpiry(e.target.value))}
+                data-ux-id="payment-new-card-expiry-input"
+                className="w-full h-[52px] rounded-[10px] border border-[#cfd3da] bg-white px-[18px] font-['DM_Sans:Regular',sans-serif] font-normal text-[16px] text-[#262630] placeholder:text-[#9ca3af] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                CVC
+              </p>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-csc"
+                placeholder="CVC"
+                maxLength={4}
+                value={cardCvc}
+                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                data-ux-id="payment-new-card-cvc-input"
+                className="w-full h-[52px] rounded-[10px] border border-[#cfd3da] bg-white px-[18px] font-['DM_Sans:Regular',sans-serif] font-normal text-[16px] text-[#262630] placeholder:text-[#9ca3af] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              />
+            </div>
+          </div>
+        </div>
+        ) : step === "new-bank-form" ? (
+        <div className="px-[28px] py-[22px] flex flex-col gap-[22px] overflow-y-auto">
+          <div className="flex flex-col gap-[8px]">
+            <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Routing Number
+            </p>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="123456789"
+              maxLength={9}
+              value={routingNumber}
+              onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, "").slice(0, 9))}
+              data-ux-id="payment-new-bank-routing-input"
+              className="w-full h-[52px] rounded-[10px] border border-[#cfd3da] bg-white px-[18px] font-['DM_Sans:Regular',sans-serif] font-normal text-[16px] text-[#262630] tracking-wider placeholder:text-[#9ca3af] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+              style={{ fontVariationSettings: '"opsz" 14' }}
+            />
+          </div>
+
+          <div className="flex gap-[20px] w-full">
+            <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Account Number
+              </p>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="000123456789"
+                maxLength={17}
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                data-ux-id="payment-new-bank-account-number-input"
+                className="w-full h-[52px] rounded-[10px] border border-[#cfd3da] bg-white px-[18px] font-['DM_Sans:Regular',sans-serif] font-normal text-[16px] text-[#262630] placeholder:text-[#9ca3af] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-[8px]">
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Confirm Account Number
+              </p>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="000123456789"
+                maxLength={17}
+                value={confirmAccountNumber}
+                onChange={(e) => setConfirmAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                data-ux-id="payment-new-bank-confirm-account-number-input"
+                className="w-full h-[52px] rounded-[10px] border border-[#cfd3da] bg-white px-[18px] font-['DM_Sans:Regular',sans-serif] font-normal text-[16px] text-[#262630] placeholder:text-[#9ca3af] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              />
+            </div>
+          </div>
+        </div>
+        ) : step === "autopay-confirmation" ? (
+        <div className="px-[28px] py-[22px] flex flex-col gap-[18px] overflow-y-auto">
+          <div data-ux-id="payment-confirmation-card" className="border border-[#e5e9ef] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
+            <div className="flex items-center gap-[12px]">
+              <div className="shrink-0 w-[26px] h-[26px] rounded-full bg-[#dcf5e3] flex items-center justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#1f9254" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Confirmed.</p>
+            </div>
+            <div className="w-full h-px bg-[#e5e9ef]" />
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px] leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Your payment of <span className="font-['DM_Sans:Bold',sans-serif] font-bold">{paymentAmount}</span> has been successfully processed. A receipt has been sent to your email.
+              <br />
+              Confirmation number: {confirmationNumber}
+            </p>
+          </div>
+
+          <div data-ux-id="payment-autopay-confirmation-card" className="border border-[#e5e9ef] rounded-[14px] p-[20px] flex flex-col gap-[18px]">
+            <div className="flex items-center gap-[14px]">
+              <div className="shrink-0 w-[36px] h-[36px] rounded-full bg-[#dcf5e3] flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#1f9254" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div>
+                <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>You&apos;re enrolled in AutoPay</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Your payments will be handled automatically.</p>
+              </div>
+            </div>
+
+            <div className="bg-[#f4f6f8] rounded-[10px] px-[18px] py-[14px] flex flex-col gap-[4px]">
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] opacity-55 text-[12px] uppercase tracking-wide" style={{ fontVariationSettings: '"opsz" 14' }}>Confirmation Number</p>
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>{autopayConfirmationNumber}</p>
+            </div>
+
+            <div className="border border-[#e5e9ef] rounded-[12px] overflow-hidden">
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px] px-[18px] py-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>AutoPay Details</p>
+              <div className="border-t border-[#e5e9ef] flex items-center justify-between px-[18px] py-[13px]">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Type</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Full Balance</p>
+              </div>
+              <div className="border-t border-[#e5e9ef] flex items-center justify-between px-[18px] py-[13px]">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Method</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Visa •••• 7531</p>
+              </div>
+              <div className="border-t border-[#e5e9ef] flex items-center justify-between px-[18px] py-[13px]">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Start Date</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>10/01/2026</p>
+              </div>
+              <div className="border-t border-[#e5e9ef] flex items-center justify-between px-[18px] py-[13px]">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Frequency</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Monthly</p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            data-ux-id="payment-modal-done-button"
+            className="w-full bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+            style={{ fontVariationSettings: '"opsz" 14' }}
+          >
+            Done
+          </button>
+        </div>
+        ) : step === "confirmation" ? (
+        <div className="px-[28px] pt-[22px] pb-[38px] flex flex-col gap-[18px] overflow-y-auto">
+          <div data-ux-id="payment-confirmation-card" className="border border-[#e5e9ef] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
+            <div className="flex items-center gap-[12px]">
+              <div className="shrink-0 w-[26px] h-[26px] rounded-full bg-[#dcf5e3] flex items-center justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#1f9254" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Confirmed.</p>
+            </div>
+            <div className="w-full h-px bg-[#e5e9ef]" />
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px] leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Your payment of <span className="font-['DM_Sans:Bold',sans-serif] font-bold">{paymentAmount}</span> has been successfully processed. A receipt has been sent to your email.
+              <br />
+              Confirmation number: {confirmationNumber}
+            </p>
+          </div>
+
+          <div data-ux-id="payment-autopay-upsell-card" className="border border-[#e5e9ef] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
+            <div className="flex items-center gap-[10px]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#262630" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <path d="M3 12a9 9 0 0115-6.7M21 12a9 9 0 01-15 6.7"/>
+                <polyline points="3 3 3 9 9 9"/>
+                <polyline points="21 21 21 15 15 15"/>
+              </svg>
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>Auto Pay – stay on track of your dues</p>
+            </div>
+            <div className="w-full h-px bg-[#e5e9ef]" />
+            <div className="flex gap-[8px]">
+              <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[15px] shrink-0 whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Full Balance</p>
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[15px] leading-[1.4]" style={{ fontVariationSettings: '"opsz" 14' }}>Pays your full balance on scheduled due date.</p>
+            </div>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Payment Start Date: <span className="font-['DM_Sans:Bold',sans-serif] font-bold">10/01/26</span>
+            </p>
+            <div className="flex items-center gap-[12px]">
+              <div className="bg-[#1434cb] rounded-[5px] px-[8px] py-[4px] shrink-0">
+                <span className="font-['DM_Sans:Bold',sans-serif] font-bold text-white text-[12px] italic" style={{ fontVariationSettings: '"opsz" 14' }}>VISA</span>
+              </div>
+              <div>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Card ending in <span className="font-['DM_Sans:Bold',sans-serif] font-bold">7531</span>
+                </p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>2.99% fee</p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setStep("autopay-confirmation")}
+            data-ux-id="payment-modal-enroll-autopay-button"
+            className="w-full bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+            style={{ fontVariationSettings: '"opsz" 14' }}
+          >
+            Enroll in AutoPay
+          </button>
+
+          <div className="flex items-center justify-center gap-[8px]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a7282" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <rect x="5" y="11" width="14" height="10" rx="2"/>
+              <path d="M8 11V7a4 4 0 018 0v4"/>
+            </svg>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#6a7282] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payments are secure &amp; encrypted</p>
+          </div>
+
+          <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#6a7282] text-[13px] text-center leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
+            By clicking Enroll in AutoPay you consent to the payment conditions for your payment selection as described on the{" "}
+            <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#247ae4]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Disclosure</span>{" "}
+            page.
+          </p>
+        </div>
+        ) : step === "form" ? (
+        <div className="px-[28px] py-[22px] flex flex-col gap-[22px] overflow-y-auto">
+          {/* Payment Method */}
+          <div className="flex flex-col gap-[10px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Payment Method
+            </p>
+
+            {!methodExpanded ? (
+              <div data-ux-id="payment-method-selected" className="flex items-center gap-[14px] rounded-[8px] border border-[#247ae4] bg-[#eef5fe] px-[18px] py-[16px]">
+                {method === "visa" ? (
+                  <div className="bg-[#1434cb] rounded-[5px] px-[8px] py-[4px] shrink-0">
+                    <span className="font-['DM_Sans:Bold',sans-serif] font-bold text-white text-[13px] italic" style={{ fontVariationSettings: '"opsz" 14' }}>VISA</span>
+                  </div>
+                ) : method === "bank" ? (
+                  <div className="bg-[#e3f5ea] rounded-[8px] size-[30px] flex items-center justify-center shrink-0 text-[#1f9254]">
+                    <IconBank />
+                  </div>
+                ) : method === "new-card" ? (
+                  <div className="bg-[#e7f0fc] rounded-[8px] size-[30px] flex items-center justify-center shrink-0 text-[#247ae4]">
+                    <IconPayments />
+                  </div>
+                ) : (
+                  <div className="bg-[#e3f5ea] rounded-[8px] size-[30px] flex items-center justify-center shrink-0 text-[#1f9254]">
+                    <IconBank />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    {method === "visa" ? "Visa ending in 4242" : method === "bank" ? "Bank •••• 2363" : method === "new-card" ? "New Card" : "New Bank Account"}
+                  </p>
+                  {method === "visa" && (
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Expires 12/26</p>
+                  )}
+                  {method === "bank" && (
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Checking Account</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setMethodExpanded(true)}
+                  data-ux-id="payment-method-change-button"
+                  className="shrink-0 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[15px] hover:underline"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setMethod("visa")}
+                  data-ux-id="payment-method-visa"
+                  className={`flex items-center gap-[14px] rounded-[8px] border px-[18px] py-[16px] text-left transition-colors ${method === "visa" ? "border-[#247ae4] bg-[#eef5fe]" : "border-[#e1e9ef] bg-white hover:border-[#c8d9e6]"}`}
+                >
+                  <div className={`shrink-0 w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center ${method === "visa" ? "border-[#247ae4]" : "border-[#c8d9e6]"}`}>
+                    {method === "visa" && <div className="w-[10px] h-[10px] rounded-full bg-[#247ae4]" />}
+                  </div>
+                  <span className="text-[#262630] shrink-0"><IconPayments /></span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Visa •••• 4242</p>
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Expires 12/26</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setMethod("bank")}
+                  data-ux-id="payment-method-bank"
+                  className={`flex items-center gap-[14px] rounded-[8px] border px-[18px] py-[16px] text-left transition-colors ${method === "bank" ? "border-[#247ae4] bg-[#eef5fe]" : "border-[#e1e9ef] bg-white hover:border-[#c8d9e6]"}`}
+                >
+                  <div className={`shrink-0 w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center ${method === "bank" ? "border-[#247ae4]" : "border-[#c8d9e6]"}`}>
+                    {method === "bank" && <div className="w-[10px] h-[10px] rounded-full bg-[#247ae4]" />}
+                  </div>
+                  <span className="text-[#262630] shrink-0"><IconBank /></span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Bank •••• 2363</p>
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Checking Account</p>
+                  </div>
+                </button>
+
+                <div className="flex flex-col md:flex-row gap-[10px] w-full">
+                  <button
+                    onClick={() => setStep("new-card-form")}
+                    data-ux-id="payment-method-new-card"
+                    className={`flex-1 min-w-0 flex items-center gap-[10px] rounded-[8px] border px-[12px] py-[16px] text-left transition-colors ${method === "new-card" ? "border-[#247ae4] bg-[#eef5fe]" : "border-[#e1e9ef] bg-white hover:border-[#c8d9e6]"}`}
+                  >
+                    <div className="bg-[#e7f0fc] rounded-[8px] size-[30px] flex items-center justify-center shrink-0 text-[#247ae4]">
+                      <IconPayments />
+                    </div>
+                    <p className="flex-1 min-w-0 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Add New Card</p>
+                  </button>
+
+                  <button
+                    onClick={() => setStep("new-bank-form")}
+                    data-ux-id="payment-method-new-bank"
+                    className={`flex-1 min-w-0 flex items-center gap-[10px] rounded-[8px] border px-[12px] py-[16px] text-left transition-colors ${method === "new-bank" ? "border-[#247ae4] bg-[#eef5fe]" : "border-[#e1e9ef] bg-white hover:border-[#c8d9e6]"}`}
+                  >
+                    <div className="bg-[#e3f5ea] rounded-[8px] size-[30px] flex items-center justify-center shrink-0 text-[#1f9254]">
+                      <IconBank />
+                    </div>
+                    <p className="flex-1 min-w-0 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Add Bank Account</p>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Payment Amount */}
+          {!methodExpanded && (
+          <div className="flex flex-col gap-[10px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Payment Amount
+            </p>
+
+            <button
+              onClick={() => setAmountOption("balance")}
+              data-ux-id="payment-amount-balance"
+              className={`flex items-center gap-[14px] rounded-[8px] border px-[18px] py-[16px] text-left transition-colors ${amountOption === "balance" ? "border-[#247ae4] bg-[#eef5fe]" : "border-[#e1e9ef] bg-white hover:border-[#c8d9e6]"}`}
+            >
+              <div className={`shrink-0 w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center ${amountOption === "balance" ? "border-[#247ae4]" : "border-[#c8d9e6]"}`}>
+                {amountOption === "balance" && <div className="w-[10px] h-[10px] rounded-full bg-[#247ae4]" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Current Balance</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[20px]" style={{ fontVariationSettings: '"opsz" 14' }}>{currentBalance}</p>
+              </div>
+            </button>
+
+            <div
+              data-ux-id="payment-amount-other"
+              className={`rounded-[8px] border transition-colors ${amountOption === "other" ? "border-[#247ae4] bg-[#eef5fe]" : "border-[#e1e9ef] bg-white hover:border-[#c8d9e6]"}`}
+            >
+              <button
+                type="button"
+                onClick={() => setAmountOption("other")}
+                className="w-full flex items-center gap-[14px] px-[18px] py-[16px] text-left"
+              >
+                <div className={`shrink-0 w-[20px] h-[20px] rounded-full border-2 flex items-center justify-center ${amountOption === "other" ? "border-[#247ae4]" : "border-[#c8d9e6]"}`}>
+                  {amountOption === "other" && <div className="w-[10px] h-[10px] rounded-full bg-[#247ae4]" />}
+                </div>
+                <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Other Amount</p>
+              </button>
+
+              {amountOption === "other" && (
+                <div className="px-[18px] pb-[16px] flex flex-col gap-[6px]">
+                  <label className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] opacity-70 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Enter Amount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-[14px] top-1/2 -translate-y-1/2 font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={otherAmount}
+                      onChange={(e) => setOtherAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                      placeholder="0.00"
+                      data-ux-id="payment-amount-other-input"
+                      className="w-full h-[44px] rounded-[8px] border border-[#cfd3da] bg-white pl-[26px] pr-[14px] font-['DM_Sans:Regular',sans-serif] font-normal text-[15px] text-[#262630] outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+                      style={{ fontVariationSettings: '"opsz" 14' }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          )}
+        </div>
+        ) : (
+        <div className="px-[28px] py-[22px] flex flex-col gap-[22px] overflow-y-auto">
+          {/* Review Payment Details */}
+          <div className="flex flex-col gap-[14px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Review Payment Details
+            </p>
+
+            <div data-ux-id="payment-review-summary" className="bg-[#f4f6f8] rounded-[14px] p-[20px] flex flex-col gap-[16px]">
+              <div className="flex items-center justify-between">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Amount</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>{paymentAmount}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Payment Method</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>{methodLabel}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>Processing Fee</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>{processingFee}</p>
+              </div>
+              <div className="w-full h-px bg-[#dde3e8]" />
+              <div className="flex items-center justify-between">
+                <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[19px]" style={{ fontVariationSettings: '"opsz" 14' }}>Total Charge</p>
+                <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-[#262630] text-[19px]" style={{ fontVariationSettings: '"opsz" 14' }}>{paymentAmount}</p>
+              </div>
+            </div>
+          </div>
+
+          <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#6a7282] text-[13px] text-center leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
+            By clicking Confirm Payment you consent to the payment conditions for your payment selection as described on the{" "}
+            <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#247ae4]" style={{ fontVariationSettings: '"opsz" 14' }}>payment disclosure</span>{" "}
+            page
+          </p>
+        </div>
+        )}
+
+        {/* Footer */}
+        {step !== "confirmation" && step !== "autopay-confirmation" && (
+          <div className="px-[28px] pb-[26px] pt-[4px] shrink-0 flex gap-[14px]">
+            {step === "form" ? (
+              methodExpanded ? (
+                <button
+                  onClick={() => setMethodExpanded(false)}
+                  data-ux-id="payment-modal-use-payment-method-button"
+                  className="w-full bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Use this Payment Method
+                </button>
+              ) : (
+                <button
+                  onClick={() => setStep("review")}
+                  data-ux-id="payment-modal-continue-button"
+                  className="w-full bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Continue
+                </button>
+              )
+            ) : step === "new-card-form" ? (
+              <>
+                <button
+                  onClick={() => setStep("form")}
+                  data-ux-id="payment-modal-new-card-back-button"
+                  className="flex-1 bg-[#f3f4f6] hover:bg-[#e8eaed] transition-colors text-[#262630] rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => { setMethod("new-card"); setMethodExpanded(false); setStep("form"); }}
+                  data-ux-id="payment-modal-new-card-save-button"
+                  className="flex-1 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Save
+                </button>
+              </>
+            ) : step === "new-bank-form" ? (
+              <>
+                <button
+                  onClick={() => setStep("form")}
+                  data-ux-id="payment-modal-new-bank-back-button"
+                  className="flex-1 bg-[#f3f4f6] hover:bg-[#e8eaed] transition-colors text-[#262630] rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => { setMethod("new-bank"); setMethodExpanded(false); setStep("form"); }}
+                  data-ux-id="payment-modal-new-bank-save-button"
+                  className="flex-1 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setStep("form")}
+                  data-ux-id="payment-modal-back-button"
+                  className="flex-1 bg-[#f3f4f6] hover:bg-[#e8eaed] transition-colors text-[#262630] rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setStep("confirmation")}
+                  data-ux-id="payment-modal-confirm-button"
+                  className="flex-1 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  Confirm Payment
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Dashboard Page ─── */
 function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView }) {
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const currentBalance = "$2,911.14";
+  const { sceneId: walkthroughSceneId } = useCursor();
+  // Keep the view-transition handle on the widget while any payments-scene
+  // beat is active (plus the beat that precedes it, so the entry morph has a
+  // source rect). The advance() handler strips the name imperatively right
+  // before the browser snapshots the old frame when the user steps out of
+  // the payments scene — that's what stops the lift from bleeding forward.
+  const paymentsLiftActive =
+    walkthroughSceneId === "payments" || walkthroughSceneId === "go-to-portal";
   return (
-    <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto" style={{ overflowAnchor: "none" }}>
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="dashboard-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
@@ -456,7 +1307,12 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
         {/* Payments + Transactions row */}
         <div className="flex flex-col md:flex-row gap-[20px] md:gap-[32px] w-full shrink-0">
           {/* Payments widget */}
-          <div data-ux-id="payments-widget" className="bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0">
+          <div
+            data-ux-id="payments-widget"
+            data-vt-name={paymentsLiftActive ? VT.PaymentsWidget : undefined}
+            style={paymentsLiftActive ? { viewTransitionName: VT.PaymentsWidget } : undefined}
+            className="bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0"
+          >
             <div className="flex flex-col gap-[14px] pb-[18px] pt-[20px] md:pt-[24px] px-[16px] md:px-[26px]">
               <div className="flex items-center justify-between w-full gap-[8px]">
                 <p className="flex-1 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>Payments</p>
@@ -468,7 +1324,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
               <div className="flex flex-col md:flex-row gap-[16px] md:gap-[22px] w-full">
                 <div className="flex flex-row md:flex-col gap-[20px] md:gap-[20px] flex-1 min-w-0 justify-between md:justify-start">
                   <div>
-                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] md:text-[34px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>$2,911.14</p>
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] md:text-[34px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>{currentBalance}</p>
                     <div className="flex gap-[4px] items-center text-[14px]">
                       <p className="font-['DM_Sans:Regular',sans-serif] font-normal opacity-62 text-[#262630] text-[13px] md:text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>Current Balance</p>
                       <span className="text-[#262630]"><IconQuestion /></span>
@@ -483,7 +1339,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
                   </div>
                 </div>
                 <div className="flex flex-col gap-[12px] md:gap-[22px] md:items-end pb-0 md:pb-[11px] md:pt-[14px] md:shrink-0">
-                  <button data-ux-id="payments-make-payment-button" className="bg-[#247ae4] flex items-center justify-center px-[24px] py-[10px] rounded-[8px] hover:bg-[#1a6ed0] transition-colors w-full md:w-auto">
+                  <button onClick={() => setPaymentModalOpen(true)} data-ux-id="payments-make-payment-button" className="bg-[#247ae4] flex items-center justify-center px-[24px] py-[10px] rounded-[8px] hover:bg-[#1a6ed0] transition-colors w-full md:w-auto">
                     <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[16px] text-center whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Make a Payment</span>
                   </button>
                   <div className="flex flex-row md:flex-col gap-[16px] md:gap-[10px] md:items-end items-center">
@@ -512,9 +1368,9 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
               </div>
               <div className="w-full flex flex-col gap-[11px]">
                 {[
-                  { date: "Jan 5, 2026", desc: "Annual HOA Fee", amount: "$649.34" },
-                  { date: "Dec 5, 2025", desc: "Monthly HOA Fee", amount: "$425.00" },
-                  { date: "Nov 5, 2025", desc: "Monthly HOA Fee", amount: "$425.00" },
+                  { date: "Sep 5, 2026", desc: "Monthly HOA Fee", amount: "$425.00" },
+                  { date: "Aug 5, 2026", desc: "Monthly HOA Fee", amount: "$425.00" },
+                  { date: "Jul 5, 2026", desc: "Monthly HOA Fee", amount: "$425.00" },
                 ].map((tx, i) => (
                   <div key={i} data-ux-id={`transactions-row-${tx.date.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
                     <div className="flex gap-[22px] items-center w-full">
@@ -683,6 +1539,9 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
           </div>
         </div>
       </div>
+      {paymentModalOpen && (
+        <PaymentModal onClose={() => setPaymentModalOpen(false)} currentBalance={currentBalance} />
+      )}
     </div>
   );
 }
@@ -1440,6 +2299,22 @@ type CommunityPost = {
 
 const initialCommunityPosts: CommunityPost[] = [
   {
+    id: 6,
+    title: "Discounted tickets: Forgotten Island (opening weekend)",
+    body: "Resident perk from PerkSpot — grab discounted tickets to DreamWorks' Forgotten Island opening weekend. Save up to 35% at participating AMC, Regal, and Cinemark locations. Promo code and showtimes are available in the Offers section of the portal.",
+    date: "10/18/2026",
+    author: "Waterfront Community Association",
+    initials: "WC",
+    image: "/assets/forgotten-island.webp",
+    imageAlt: "DreamWorks Forgotten Island movie poster",
+    likes: 28,
+    official: true,
+    links: [
+      { label: "portal.waterfrontcommunity.org/offers", href: "https://portal.waterfrontcommunity.org/offers" },
+      { label: "perkspot.com/forgotten-island", href: "https://perkspot.com/forgotten-island" },
+    ],
+  },
+  {
     id: 1,
     title: "Food Truck Friday is back",
     body: "Join your neighbors by the clubhouse this Friday from 5–8 PM. Local favorites will be serving dinner, with lawn games and live acoustic music for the whole family.",
@@ -1773,6 +2648,392 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   );
 }
 
+/* ─── ARC Form Page ─── */
+/* ─── Offers Page ─── */
+function OffersPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+  const [activeTab, setActiveTab] = useState<"home" | "recommended" | "tickets" | "travel">("home");
+  const [query, setQuery] = useState("");
+
+  const tabs: { id: "home" | "recommended" | "tickets" | "travel"; label: string }[] = [
+    { id: "home", label: "Home Essentials" },
+    { id: "recommended", label: "Recommended Deals" },
+    { id: "tickets", label: "Tickets & Attractions" },
+    { id: "travel", label: "Travel" },
+  ];
+
+  const bullets = [
+    "Exclusive, premium deals",
+    "Discount codes that work the first time, always",
+    "Trusted by 16M+ deal seekers",
+  ];
+
+  const perkspotLogoUrl = "https://www.perkspot.com/wp-content/uploads/perkspot-logo-2025.svg";
+  const brands = [
+    { name: "Walmart", logo: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Walmart_logo_%282025%29.svg/250px-Walmart_logo_%282025%29.svg.png" alt="Walmart" className="max-h-[36px] max-w-full object-contain" />, offer: "Earn 500 PerkPoints With Walmart+ Membership" },
+    { name: "Samsung", logo: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Samsung_Black_icon.svg/330px-Samsung_Black_icon.svg.png" alt="Samsung" className="max-h-[26px] max-w-full object-contain" />, offer: "Up to 40% off TVs, Mobile, Home Appliances & More" },
+    { name: "Brooklinen", logo: <span className="font-['DM_Sans:Bold',sans-serif] font-bold text-black text-[22px] tracking-tight italic" style={{ fontVariationSettings: '"opsz" 14' }}>brooklinen</span>, offer: "$20 off $100+ Bedding, Bath & More" },
+    { name: "PerkSpot", logo: <img src={perkspotLogoUrl} alt="PerkSpot" className="max-h-[28px] max-w-full object-contain" />, offer: "Get Free Shipping on any Order. + Earn Up to 1% in PerkPoints" },
+    { name: "Home Depot", logo: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/The_Home_Depot_logo.svg/250px-The_Home_Depot_logo.svg.png" alt="The Home Depot" className="max-h-[44px] max-w-full object-contain" />, offer: "Earn up to 4% in PerkPoints on Home Improvement Purchases" },
+  ];
+
+  return (
+    <div data-ux-id="offers-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+      {/* Mobile top bar */}
+      <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
+        <button onClick={onOpenSidebar} data-ux-id="offers-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
+        </button>
+        <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>Offers</p>
+        <div className="w-[36px]" />
+      </div>
+
+      <div className="flex flex-col gap-[24px] md:gap-[28px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0">
+        {/* Header */}
+        <div className="flex flex-col gap-[4px]">
+          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+            Offers
+          </p>
+          <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+            Member discounts powered by PerkSpot
+          </p>
+        </div>
+
+        {/* PerkSpot card */}
+        <div data-ux-id="offers-perkspot-card" className="rounded-[18px] overflow-hidden shadow-[0_2px_18px_rgba(18,17,48,0.07)] bg-white">
+          {/* Hero */}
+          <div className="relative overflow-hidden">
+            <div className="bg-[#1a1b4b] text-center px-[16px] py-[10px]">
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-white text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Your HOA has partnered with PerkSpot to bring you exclusive deals.
+              </p>
+            </div>
+            <div className="relative">
+              <div
+                className="absolute inset-0"
+                aria-hidden="true"
+                style={{
+                  backgroundImage: `linear-gradient(90deg, rgba(26,27,75,0.92) 0%, rgba(26,27,75,0.72) 45%, rgba(26,27,75,0.15) 100%), url(${imgPerkspotHero})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "right bottom",
+                }}
+              />
+              <div className="relative flex flex-col gap-[20px] px-[22px] py-[36px] md:px-[48px] md:py-[52px] max-w-[640px]">
+                <img
+                  src={perkspotLogoUrl}
+                  alt="PerkSpot"
+                  className="self-start h-[32px] md:h-[36px] w-auto"
+                  style={{ filter: "brightness(0) invert(1)" }}
+                />
+                <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-white text-[32px] md:text-[40px] leading-[1.1]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Unlock up to<br />60% off top brands.
+                </p>
+                <div className="flex flex-wrap items-center gap-x-[14px] gap-y-[6px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  <span>15,000+ deals</span>
+                  <span className="opacity-60">·</span>
+                  <span>3,000+ brands</span>
+                  <span className="opacity-60">·</span>
+                  <span className="flex items-center gap-[6px]">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9b22c" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.9 Chrome Rating
+                  </span>
+                </div>
+                <form
+                  onSubmit={(event) => event.preventDefault()}
+                  className="flex items-center gap-[10px] rounded-full bg-white p-[6px] max-w-[520px]"
+                  role="search"
+                >
+                  <div className="flex items-center gap-[10px] flex-1 min-w-0 pl-[14px]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+                      <circle cx="11" cy="11" r="7"/>
+                      <path d="M21 21l-4.3-4.3"/>
+                    </svg>
+                    <input
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Search Brands, Categories…"
+                      data-ux-id="offers-search-input"
+                      className="flex-1 min-w-0 h-[36px] bg-transparent font-['DM_Sans:Regular',sans-serif] font-normal text-[14px] text-[#262630] placeholder:text-[#8a94a6] outline-none italic"
+                      style={{ fontVariationSettings: '"opsz" 14' }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    data-ux-id="offers-search-submit"
+                    className="shrink-0 rounded-full bg-[#1d5bff] hover:bg-[#1646c8] transition-colors px-[22px] py-[9px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px]"
+                    style={{ fontVariationSettings: '"opsz" 14' }}
+                  >
+                    Search
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-[22px] md:gap-[32px] border-b border-[#e2eaf0] px-[22px] md:px-[32px] overflow-x-auto">
+            {tabs.map((tab) => {
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  data-ux-id={`offers-tab-${tab.id}`}
+                  className={`shrink-0 relative py-[14px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[15px] transition-colors ${active ? "text-[#1d5bff]" : "text-[#262630] hover:text-[#1d5bff]"}`}
+                  style={{ fontVariationSettings: '"opsz" 14' }}
+                >
+                  {tab.label}
+                  {active && <span aria-hidden="true" className="absolute left-0 right-0 -bottom-px h-[3px] rounded-t-full bg-[#1d5bff]" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Features + brand grid */}
+          <div className="flex flex-col gap-[26px] px-[22px] py-[26px] md:px-[32px] md:py-[32px]">
+            <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-[26px] items-start">
+              <ul className="flex flex-col gap-[16px]">
+                {bullets.map((bullet) => (
+                  <li key={bullet} className="flex items-start gap-[12px]">
+                    <span className="shrink-0 w-[22px] h-[22px] rounded-full bg-[#1a1b4b] flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12l5 5L20 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </span>
+                    <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px] leading-[1.3]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      {bullet}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="relative">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-[14px]">
+                  {brands.map((brand) => (
+                    <div key={brand.name} data-ux-id={`offers-brand-${brand.name.toLowerCase().replace(/\s+/g, "-")}`} className="flex flex-col gap-[12px]">
+                      <div className="flex items-center justify-center h-[72px] rounded-[8px] border border-[#e2eaf0] bg-white px-[14px]">
+                        {brand.logo}
+                      </div>
+                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[1.35]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        {brand.offer}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px] leading-[1.5] text-center" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Clicking on any link within widget is acceptance and acknowledgement of PerkSpot's updated{" "}
+              <a href="#" className="text-[#1d5bff] underline">Terms of Use</a>{" "}and{" "}
+              <a href="#" className="text-[#1d5bff] underline">Privacy Policy</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArcFormPage({
+  formLabel,
+  onOpenSidebar,
+  onCancel,
+}: {
+  formLabel: string;
+  onOpenSidebar: () => void;
+  onCancel: () => void;
+}) {
+  const [subject, setSubject] = useState("");
+  const [details, setDetails] = useState("");
+  const [property, setProperty] = useState("");
+  const [areaOfWork, setAreaOfWork] = useState("");
+  const [supportingForm, setSupportingForm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [attachment, setAttachment] = useState("");
+
+  const inputBase = "h-[44px] w-full rounded-[8px] border border-[#cfd3da] bg-white px-[14px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/40 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15";
+  const labelBase = "font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]";
+
+  return (
+    <div data-ux-id="arc-form-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+      {/* Mobile top bar */}
+      <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
+        <button onClick={onOpenSidebar} data-ux-id="arc-form-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
+        </button>
+        <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>ARC Request</p>
+        <div className="w-[36px]" />
+      </div>
+
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[24px] px-[16px] py-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px] md:pb-[44px]">
+        {/* Header — desktop only */}
+        <div className="hidden md:flex items-center justify-between w-full shrink-0">
+          <div className="flex flex-col flex-1 min-w-0">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Submit a Request
+            </p>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Share the details below so your community team can get started.
+            </p>
+          </div>
+          <AddressCard />
+        </div>
+
+        <form
+          data-ux-id="arc-form"
+          className="mx-auto flex w-full max-w-[820px] flex-col gap-[22px] rounded-[18px] bg-white px-[22px] py-[26px] shadow-[0_2px_18px_rgba(18,17,48,0.07)] md:px-[32px] md:py-[32px]"
+          onSubmit={(event) => event.preventDefault()}
+        >
+          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] md:text-[22px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+            {formLabel}
+          </p>
+
+          <label className="flex flex-col gap-[8px]">
+            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Subject</span>
+            <input
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              data-ux-id="arc-form-subject"
+              className={inputBase}
+            />
+          </label>
+
+          <label className="flex flex-col gap-[8px]">
+            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Details</span>
+            <textarea
+              value={details}
+              onChange={(event) => setDetails(event.target.value)}
+              data-ux-id="arc-form-details"
+              className="min-h-[128px] w-full rounded-[8px] border border-[#cfd3da] bg-white px-[14px] py-[12px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal leading-[1.4] text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/40 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+            />
+          </label>
+
+          <label className="flex flex-col gap-[8px]">
+            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Property</span>
+            <select
+              value={property}
+              onChange={(event) => setProperty(event.target.value)}
+              data-ux-id="arc-form-property"
+              className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
+              style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
+            >
+              <option value=""></option>
+              <option value="123-madison-green">123 Madison Green</option>
+              <option value="24-waterfront-dr">24 Waterfront Dr</option>
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-[8px]">
+            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Area of Work</span>
+            <select
+              value={areaOfWork}
+              onChange={(event) => setAreaOfWork(event.target.value)}
+              data-ux-id="arc-form-area-of-work"
+              className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
+              style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
+            >
+              <option value=""></option>
+              <option value="front-yard">Front yard</option>
+              <option value="back-yard">Back yard</option>
+              <option value="exterior">Exterior</option>
+            </select>
+          </label>
+
+          <fieldset className="flex flex-col gap-[12px] rounded-[10px] border border-[#e2eaf0] bg-[#f6f9fc] px-[18px] py-[18px]">
+            <legend className="sr-only">Architectural Forms</legend>
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Architectural Forms
+            </p>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Download supporting documents to reference while completing this form.
+            </p>
+            <label className="flex flex-col gap-[6px]">
+              <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Select form</span>
+              <select
+                value={supportingForm}
+                onChange={(event) => setSupportingForm(event.target.value)}
+                data-ux-id="arc-form-supporting-form"
+                className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
+                style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
+              >
+                <option value="">Choose a form to download</option>
+                <option value="guidelines">Architectural Guidelines (PDF)</option>
+                <option value="plot-plan">Plot Plan Template (PDF)</option>
+                <option value="checklist">Submission Checklist (PDF)</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <div className="flex flex-col gap-[10px]">
+            <p className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Date Range</p>
+            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+              <label className="flex flex-col gap-[6px]">
+                <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Start Date</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(event) => setStartDate(event.target.value)}
+                  data-ux-id="arc-form-start-date"
+                  className={inputBase}
+                />
+              </label>
+              <label className="flex flex-col gap-[6px]">
+                <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>End Date</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(event) => setEndDate(event.target.value)}
+                  data-ux-id="arc-form-end-date"
+                  className={inputBase}
+                />
+              </label>
+            </div>
+          </div>
+
+          <label className="flex flex-col gap-[8px]">
+            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Attachments</span>
+            <span className="relative flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-[6px] rounded-[8px] border border-dashed border-[#cfd3da] bg-[#f9fafb] px-[18px] py-[18px] text-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" stroke="#65666e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-black text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                {attachment ? attachment : <>Drag &amp; Drop or <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline">Choose file</span> to upload</>}
+              </span>
+              <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>PDF, ZIP, PNG, JPEG, HEIC</span>
+              <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>Max 25 MB total</span>
+              <input
+                type="file"
+                data-ux-id="arc-form-attachment"
+                onChange={(event) => setAttachment(event.target.files?.[0]?.name ?? "")}
+                className="absolute inset-0 cursor-pointer opacity-0"
+                aria-label="Upload attachment"
+              />
+            </span>
+          </label>
+
+          <div className="flex items-center justify-end gap-[10px] pt-[6px]">
+            <button
+              type="button"
+              onClick={onCancel}
+              data-ux-id="arc-form-cancel"
+              className="rounded-[8px] border border-[#d9e0e7] bg-white px-[18px] py-[10px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px] transition-colors hover:bg-[#f2f5f7]"
+              style={{ fontVariationSettings: '"opsz" 14' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              data-ux-id="arc-form-submit"
+              className="rounded-[8px] bg-[#247ae4] px-[18px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px] shadow-sm transition-colors hover:bg-[#176dcb]"
+              style={{ fontVariationSettings: '"opsz" 14' }}
+            >
+              Submit Request
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Portal (post-onboarding) ─── */
 type MainAppProps = {
   onRestart: () => void;
@@ -1783,13 +3044,32 @@ function MainApp({ onRestart }: MainAppProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
   const [askHoaiOpen, setAskHoaiOpen] = useState(true);
+  const [quickActionsView, setQuickActionsView] = useState<QuickActionsView | null>(null);
+  const [arcForm, setArcForm] = useState<{ id: string; label: string } | null>(null);
 
-  const { page: scenePage } = useCursor();
+  const { page: scenePage, sceneId, scene } = useCursor();
+  // Only drive activePage when the WALKTHROUGH scene changes. Having
+  // activePage in the deps would snap manual sidebar nav right back to the
+  // scene's page every time the user tried to go somewhere else.
   useEffect(() => {
-    if (scenePage && scenePage !== activePage) {
+    if (scenePage && scenePage !== "inbox" && scenePage !== "onboarding") {
       setActivePage(scenePage);
     }
-  }, [scenePage, activePage]);
+
+  }, [scenePage]);
+
+  // Launcher-driven sync for the rest of MainApp's state. Reads scene.appState
+  // on sceneId change — manual toggles between scenes are preserved because
+  // this effect doesn't re-run while the user is interacting inside a scene.
+  useEffect(() => {
+    const target = scene?.appState;
+    if (!target || target.phase !== "portal") return;
+    if (target.dashboardView) setDashboardView(target.dashboardView);
+    if (typeof target.askHoaiOpen === "boolean") setAskHoaiOpen(target.askHoaiOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sceneId]);
+
+  const askHoaiFocused = sceneId === "ask-hoai";
 
   const navigate = (page: Page) => {
     setActivePage(page);
@@ -1797,7 +3077,7 @@ function MainApp({ onRestart }: MainAppProps) {
   };
 
   return (
-    <div data-ux-id="app-shell" className="bg-gradient-to-b from-[#edf9f2] to-[#ddf2ff] flex h-full w-full overflow-hidden">
+    <div data-ux-id="app-shell" className="bg-gradient-to-b from-[#edf9f2] to-[#ddf2ff] flex h-full w-full overflow-hidden relative">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -1808,21 +3088,49 @@ function MainApp({ onRestart }: MainAppProps) {
       )}
       {/* Sidebar — desktop always visible, mobile slides in as overlay */}
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} />
+        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} onOpenQuickActions={() => setQuickActionsView("menu")} />
       </div>
-      {activePage === "dashboard" ? (
-        <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} />
-      ) : activePage === "elections" ? (
-        <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} />
-      ) : activePage === "amenities" ? (
-        <AmenitiesPage onOpenSidebar={() => setSidebarOpen(true)} />
-      ) : (
-        <CommunityFeedPage onOpenSidebar={() => setSidebarOpen(true)} />
-      )}
-      <AskHoaiPanel open={askHoaiOpen} onCollapse={() => setAskHoaiOpen(false)} />
+      <div className="flex-1 flex min-w-0">
+        {activePage === "dashboard" ? (
+          <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} />
+        ) : activePage === "elections" ? (
+          <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} />
+        ) : activePage === "amenities" ? (
+          <AmenitiesPage onOpenSidebar={() => setSidebarOpen(true)} />
+        ) : activePage === "arc-form" && arcForm ? (
+          <ArcFormPage
+            formLabel={arcForm.label}
+            onOpenSidebar={() => setSidebarOpen(true)}
+            onCancel={() => navigate("dashboard")}
+          />
+        ) : activePage === "offers" ? (
+          <OffersPage onOpenSidebar={() => setSidebarOpen(true)} />
+        ) : (
+          <CommunityFeedPage onOpenSidebar={() => setSidebarOpen(true)} />
+        )}
+      </div>
+      {/* Pure-white canvas when Ask HOAi is focused — abstracts the chat for the interaction. */}
+      <div
+        aria-hidden="true"
+        className={`fixed inset-0 bg-white z-[180] transition-opacity duration-500 ${askHoaiFocused ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+      />
+      <AskHoaiPanel open={askHoaiOpen} onCollapse={() => setAskHoaiOpen(false)} focused={askHoaiFocused} />
       {/* Floating view toggle — only on dashboard */}
-      {activePage === "dashboard" && (
+      {activePage === "dashboard" && !askHoaiFocused && (
         <ViewToggle view={dashboardView} onChange={setDashboardView} />
+      )}
+      {quickActionsView && (
+        <QuickActionsModal
+          view={quickActionsView}
+          onClose={() => setQuickActionsView(null)}
+          onSelectArc={() => setQuickActionsView("arc")}
+          onBackToMenu={() => setQuickActionsView("menu")}
+          onPickArcForm={(form) => {
+            setArcForm(form);
+            setQuickActionsView(null);
+            navigate("arc-form");
+          }}
+        />
       )}
     </div>
   );
@@ -1833,11 +3141,81 @@ type AppPhase = "inbox" | "onboarding" | "portal";
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>("inbox");
+  // Lifted so the opened email survives an inbox → onboarding → inbox round-trip.
+  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
+  // When the walkthrough scrubs back from portal, we re-enter onboarding on
+  // the done screen (not the default account screen).
+  const [onboardingReturnScreen, setOnboardingReturnScreen] = useState<OnboardingScreen | undefined>(undefined);
+
+  // Scene-jump sync: when the launcher jumps to a scene whose appState
+  // declares a different phase (and optional onboarding sub-screen), snap
+  // this root to that phase so the right subtree mounts before the scene's
+  // beats start running. Guarded by appState so natural beat-driven phase
+  // transitions (register click, finish onboarding) aren't double-driven.
+  const { scene } = useCursor();
+  useEffect(() => {
+    const target = scene?.appState;
+    if (!target) return;
+    if (target.phase !== phase) setPhase(target.phase);
+    if (target.phase === "onboarding") {
+      setOnboardingReturnScreen(target.onboardingScreen);
+    } else {
+      setOnboardingReturnScreen(undefined);
+    }
+    // phase is intentionally not in deps — this runs on scene change only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene?.id]);
   if (phase === "inbox") {
-    return <InboxPage onRegister={() => setPhase("onboarding")} />;
+    return (
+      <InboxPage
+        onRegister={() => setPhase("onboarding")}
+        selectedId={selectedEmailId}
+        onSelect={setSelectedEmailId}
+      />
+    );
   }
   if (phase === "onboarding") {
-    return <NewResidentFlow onComplete={() => setPhase("portal")} />;
+    return (
+      <>
+        <NewResidentFlow
+          key={onboardingReturnScreen ?? "fresh"}
+          onComplete={() => {
+            setOnboardingReturnScreen(undefined);
+            setPhase("portal");
+          }}
+          initialScreen={onboardingReturnScreen}
+        />
+        {/* Walkthrough-only reverse hook: click target for ArrowLeft from the inbox CTA beat */}
+        <button
+          type="button"
+          data-vt-name={VT.OnboardingBackToInbox}
+          onClick={() => setPhase("inbox")}
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          Back to inbox
+        </button>
+      </>
+    );
   }
-  return <MainApp onRestart={() => setPhase("inbox")} />;
+  return (
+    <>
+      <MainApp onRestart={() => setPhase("inbox")} />
+      {/* Walkthrough-only reverse hook: ArrowLeft from the Go-to-portal beat lands back on the done screen */}
+      <button
+        type="button"
+        data-vt-name={VT.PortalBackToDone}
+        onClick={() => {
+          setOnboardingReturnScreen("done");
+          setPhase("onboarding");
+        }}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        Back to onboarding done
+      </button>
+    </>
+  );
 }

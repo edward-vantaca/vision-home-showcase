@@ -4,7 +4,9 @@ import { AmenityReservationStage } from "../stage-content/AmenityReservationStag
 
 export const amenityScene: Scene = {
   id: "amenity",
+  label: "Amenity booking",
   page: "amenities",
+  appState: { phase: "portal", page: "amenities", dashboardView: "homeowner", askHoaiOpen: false },
   beats: [
     { kind: "idle" },
     {

@@ -3,6 +3,7 @@ import { WalkthroughProvider } from "./cursor";
 import { useWalkthroughKeyboard } from "./keyboard";
 import { WalkthroughOverlay } from "./WalkthroughOverlay";
 import { WalkthroughHUD } from "./WalkthroughHUD";
+import { SceneLauncher } from "./SceneLauncher";
 import type { Sequence } from "./types";
 
 function useVTNameUniquenessGuard() {
@@ -36,6 +37,7 @@ function Inner({ children }: { children: ReactNode }) {
       {children}
       <WalkthroughOverlay />
       <WalkthroughHUD />
+      <SceneLauncher />
     </>
   );
 }

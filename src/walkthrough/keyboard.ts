@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useCursor } from "./cursor";
+import { useCursor, beatBusyRef } from "./cursor";
 
 function isEditable(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
@@ -19,11 +19,13 @@ export function useWalkthroughKeyboard(): void {
         case " ":
         case "PageDown":
           e.preventDefault();
+          if (beatBusyRef.current) return;
           advance();
           return;
         case "ArrowLeft":
         case "PageUp":
           e.preventDefault();
+          if (beatBusyRef.current) return;
           back();
           return;
         case "Home":

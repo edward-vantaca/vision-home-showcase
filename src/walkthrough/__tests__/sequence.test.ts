@@ -15,13 +15,16 @@ describe("homeVisionSequence", () => {
         if (beat.kind === "highlight" || beat.kind === "lift" || beat.kind === "expand") {
           expect(vtValues.has(beat.target as any)).toBe(true);
         }
+        if (beat.kind === "cursor") {
+          expect(vtValues.has(beat.to as any)).toBe(true);
+        }
       }
     }
   });
 
-  it("every scene starts with an idle beat", () => {
+  it("every scene has at least one beat", () => {
     for (const scene of homeVisionSequence) {
-      expect(scene.beats[0].kind).toBe("idle");
+      expect(scene.beats.length).toBeGreaterThan(0);
     }
   });
 

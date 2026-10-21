@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { useCursor } from "./cursor";
 import { useTargetRect } from "./useTargetRect";
 import type { Beat } from "./types";
@@ -6,6 +7,8 @@ import { HighlightBeat } from "./beats/HighlightBeat";
 import { LiftBeat } from "./beats/LiftBeat";
 import { ExpandBeat } from "./beats/ExpandBeat";
 import { AnnotateBeat } from "./beats/AnnotateBeat";
+import { CursorBeat } from "./beats/CursorBeat";
+import { IntroBeat } from "./beats/IntroBeat";
 
 function cutoutClipPath(rect: DOMRect | null): string | undefined {
   if (!rect) return undefined;
@@ -22,7 +25,7 @@ function captionOf(beat: Beat | undefined): string | null {
 }
 
 export function WalkthroughOverlay() {
-  const { beat, cursor, scene } = useCursor();
+  const { beat, cursor, scene, direction } = useCursor();
 
   // Sticky stage: when annotate is active, keep the preceding lift/expand mounted
   // so the staged element stays on screen while GSAP paints annotations on top.
@@ -41,8 +44,27 @@ export function WalkthroughOverlay() {
   const kind = beat?.kind ?? "idle";
   const caption = captionOf(beat);
 
+  // Scene-scoped hooks for ::view-transition pseudo-elements. Those live on
+  // :root, so we tag the <html> element with the current scene id to let CSS
+  // target scene-specific pseudo rules (e.g. hiding the root snapshot while
+  // the payments scene is active so its live backdrop can paint through).
+  // useLayoutEffect — the attribute MUST be in place before the browser
+  // captures the view-transition's new snapshot, which happens between React's
+  // commit and the next frame paint.
+  useLayoutEffect(() => {
+    const sceneId = scene?.id;
+    if (!sceneId) {
+      document.documentElement.removeAttribute("data-walkthrough-scene");
+      return;
+    }
+    document.documentElement.setAttribute("data-walkthrough-scene", sceneId);
+    return () => {
+      document.documentElement.removeAttribute("data-walkthrough-scene");
+    };
+  }, [scene?.id]);
+
   return (
-    <div className="wt-root" aria-hidden={kind === "idle"}>
+    <div className="wt-root" data-scene={scene?.id} aria-hidden={kind === "idle"}>
       <div className="wt-backdrop" data-beat-kind={kind} />
       {kind === "highlight" && rect && (
         <div className="wt-cutout" style={{ clipPath: cutoutClipPath(rect) }} />
@@ -56,6 +78,20 @@ export function WalkthroughOverlay() {
         <ExpandBeat target={stageBeat.target}>{stageBeat.content}</ExpandBeat>
       )}
       {beat?.kind === "annotate" && <AnnotateBeat tracks={beat.tracks} durationMs={beat.durationMs} />}
+      {beat?.kind === "cursor" && (
+        <CursorBeat
+          to={beat.to}
+          action={beat.action}
+          durationMs={beat.durationMs}
+          direction={direction}
+          typeText={beat.typeText}
+          typeCps={beat.typeCps}
+          then={beat.then}
+        />
+      )}
+      {beat?.kind === "intro" && (
+        <IntroBeat title={beat.title} logoSrc={beat.logoSrc} wordmark={beat.wordmark} />
+      )}
     </div>
   );
 }

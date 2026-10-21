@@ -36,6 +36,7 @@ import {
   CornerUpRight,
   Reply,
 } from "lucide-react";
+import { VT } from "../walkthrough/viewTransitionNames";
 
 type EmailCategory = "primary" | "promotions" | "social" | "updates";
 
@@ -686,6 +687,7 @@ function EmailRow({
           onOpen(email.id);
         }
       }}
+      data-vt-name={email.isHoa ? VT.InboxHoaEmail : undefined}
       className={`group relative flex items-stretch h-11 cursor-pointer border-b border-[#e8eaed] ${
         bold ? "bg-white" : "bg-[#f2f6fc]"
       } hover:bg-white hover:shadow-[inset_1px_0_0_#dadce0,inset_-1px_0_0_#dadce0,0_1px_2px_0_rgba(60,64,67,.3),0_1px_3px_1px_rgba(60,64,67,.15)]`}
@@ -804,6 +806,7 @@ function HoaEmailBody({ onRegister }: { onRegister: () => void }) {
         <button
           type="button"
           onClick={onRegister}
+          data-vt-name={VT.InboxRegisterCta}
           className="inline-flex items-center gap-2 rounded-full bg-[#0b57d0] text-white text-[14px] font-medium px-5 py-2.5 hover:bg-[#0a4bb3] shadow-sm"
         >
           Register for the resident portal
@@ -849,6 +852,7 @@ function EmailView({
         <button
           type="button"
           onClick={onBack}
+          data-vt-name={VT.InboxEmailBack}
           className="p-2 rounded-full hover:bg-[#e7e8eb]"
           aria-label="Back to inbox"
         >
@@ -985,10 +989,11 @@ function EmailView({
 
 type InboxPageProps = {
   onRegister: () => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
 };
 
-export default function InboxPage({ onRegister }: InboxPageProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export default function InboxPage({ onRegister, selectedId, onSelect }: InboxPageProps) {
   const [activeTab, setActiveTab] = useState<EmailCategory>("primary");
 
   const visibleEmails = useMemo(
@@ -1008,13 +1013,13 @@ export default function InboxPage({ onRegister }: InboxPageProps) {
           {selected ? (
             <EmailView
               email={selected}
-              onBack={() => setSelectedId(null)}
+              onBack={() => onSelect(null)}
               onRegister={onRegister}
             />
           ) : (
             <EmailList
               emails={visibleEmails}
-              onOpen={setSelectedId}
+              onOpen={onSelect}
               activeTab={activeTab}
               onTabChange={setActiveTab}
             />

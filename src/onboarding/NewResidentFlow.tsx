@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, UserPlus, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { VT } from "../walkthrough/viewTransitionNames";
 import svgPaths from "@/imports/NewAccount/svg-0it9rwg11a";
 import imgWordmark from "@/assets/Branding.svg";
 import imgCreditCardSelected from "@/imports/credit-card.png";
@@ -9,7 +10,7 @@ import imgBankUnselected from "@/imports/bank.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Screen = "account" | "confirm" | "autopay" | "done";
+export type Screen = "account" | "confirm" | "autopay" | "done";
 
 interface FormData {
   firstName: string;
@@ -156,10 +157,10 @@ function Sidebar({ screen, skipped, onStep, onBypass }: { screen: Screen; skippe
 // ─── Shared components ────────────────────────────────────────────────────────
 
 function Field({
-  label, type = "text", placeholder, value, onChange, autoComplete, maxLength, uxId,
+  label, type = "text", placeholder, value, onChange, autoComplete, maxLength, uxId, vtName,
 }: {
   label: string; type?: string; placeholder?: string; value: string;
-  onChange: (v: string) => void; autoComplete?: string; maxLength?: number; uxId: string;
+  onChange: (v: string) => void; autoComplete?: string; maxLength?: number; uxId: string; vtName?: string;
 }) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
@@ -171,6 +172,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         autoComplete={autoComplete} maxLength={maxLength}
         data-ux-id={uxId}
+        data-vt-name={vtName}
         className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       />
@@ -222,6 +224,7 @@ function PasswordField({ label, value, onChange, uxId }: { label: string; value:
           onChange={(e) => onChange(e.target.value)}
           autoComplete="new-password"
           data-ux-id={uxId}
+          data-vt-name={VT.OnboardingPasswordInput}
           className="w-full h-[44px] px-4 pr-11 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all"
           style={{ fontFamily: "'DM Sans', sans-serif" }}
         />
@@ -265,7 +268,7 @@ function StepAccount({ data, onChange, onNext }: { data: FormData; onChange: (k:
         <Field label="Email" type="email" value={data.email} onChange={(v) => onChange("email", v)} autoComplete="email" uxId="onboarding-account-email-input" />
         <PasswordField label="Create your Password" value={data.password} onChange={(v) => onChange("password", v)} uxId="onboarding-account-password-input" />
 
-        <button type="submit" data-ux-id="onboarding-account-create-button" className="w-full mt-1 bg-[#247ae4] hover:bg-[#1d6fd4] active:bg-[#1a63bf] text-white text-[14px] font-semibold rounded-[8px] px-4 py-3 transition-colors cursor-pointer" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <button type="submit" data-ux-id="onboarding-account-create-button" data-vt-name={VT.OnboardingCreateAccountBtn} className="w-full mt-1 bg-[#247ae4] hover:bg-[#1d6fd4] active:bg-[#1a63bf] text-white text-[14px] font-semibold rounded-[8px] px-4 py-3 transition-colors cursor-pointer" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           Create Account
         </button>
       </form>
@@ -373,19 +376,19 @@ function AutoPayFields({ data, onChange, onEnable, onSkip, uxPrefix }: {
       {/* Payment fields */}
       {data.paymentMethod === "card" ? (
         <div className="flex flex-col gap-3">
-          <Field label="Name on Card" placeholder="Full name" value={data.cardName} onChange={(v) => onChange("cardName", v)} autoComplete="cc-name" uxId={`${uxPrefix}-card-name-input`} />
+          <Field label="Name on Card" placeholder="Full name" value={data.cardName} onChange={(v) => onChange("cardName", v)} autoComplete="cc-name" uxId={`${uxPrefix}-card-name-input`} vtName={VT.AutoPayCardName} />
           <div className="flex flex-col gap-1.5">
             <label className="text-[#262630] text-[13px] font-semibold" style={{ fontFamily: "'DM Sans', sans-serif" }}>Card Number</label>
-            <input type="text" inputMode="numeric" placeholder="1234 5678 9012 3456" value={data.cardNumber} onChange={(e) => onChange("cardNumber", formatCard(e.target.value))} autoComplete="cc-number" data-ux-id={`${uxPrefix}-card-number-input`} className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all tracking-wider" style={{ fontFamily: "'DM Sans', sans-serif" }} />
+            <input type="text" inputMode="numeric" placeholder="1234 5678 9012 3456" value={data.cardNumber} onChange={(e) => onChange("cardNumber", formatCard(e.target.value))} autoComplete="cc-number" data-ux-id={`${uxPrefix}-card-number-input`} data-vt-name={VT.AutoPayCardNumber} className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all tracking-wider" style={{ fontFamily: "'DM Sans', sans-serif" }} />
           </div>
           <div className="flex gap-3">
             <div className="flex flex-col gap-1.5 flex-1">
               <label className="text-[#262630] text-[13px] font-semibold" style={{ fontFamily: "'DM Sans', sans-serif" }}>Expiry</label>
-              <input type="text" inputMode="numeric" placeholder="MM/YY" value={data.expiry} onChange={(e) => onChange("expiry", formatExpiry(e.target.value))} autoComplete="cc-exp" maxLength={5} data-ux-id={`${uxPrefix}-card-expiry-input`} className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }} />
+              <input type="text" inputMode="numeric" placeholder="MM/YY" value={data.expiry} onChange={(e) => onChange("expiry", formatExpiry(e.target.value))} autoComplete="cc-exp" maxLength={5} data-ux-id={`${uxPrefix}-card-expiry-input`} data-vt-name={VT.AutoPayExpiry} className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }} />
             </div>
             <div className="flex flex-col gap-1.5 flex-1">
               <label className="text-[#262630] text-[13px] font-semibold" style={{ fontFamily: "'DM Sans', sans-serif" }}>CVV</label>
-              <input type="text" inputMode="numeric" placeholder="123" value={data.cvv} onChange={(e) => onChange("cvv", e.target.value.replace(/\D/g, "").slice(0, 4))} autoComplete="cc-csc" maxLength={4} data-ux-id={`${uxPrefix}-card-cvv-input`} className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }} />
+              <input type="text" inputMode="numeric" placeholder="123" value={data.cvv} onChange={(e) => onChange("cvv", e.target.value.replace(/\D/g, "").slice(0, 4))} autoComplete="cc-csc" maxLength={4} data-ux-id={`${uxPrefix}-card-cvv-input`} data-vt-name={VT.AutoPayCvv} className="w-full h-[44px] px-4 text-[15px] text-[#262630] placeholder:text-[#9ca3af] rounded-[6px] border border-[#e0e0e0] bg-white outline-none focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/10 transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }} />
             </div>
           </div>
         </div>
@@ -403,6 +406,7 @@ function AutoPayFields({ data, onChange, onEnable, onSkip, uxPrefix }: {
           type="button"
           onClick={onEnable}
           data-ux-id={`${uxPrefix}-enroll-button`}
+          data-vt-name={VT.AutoPayEnrollBtn}
           className="w-full bg-[#247ae4] hover:bg-[#1d6fd4] active:bg-[#1a63bf] text-white text-[14px] font-semibold rounded-[8px] px-4 py-3 transition-colors cursor-pointer"
           style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
@@ -469,7 +473,7 @@ function ScreenDone({ data, skipped, onPortal }: { data: FormData; skipped: bool
         ))}
       </div>
 
-      <button type="button" onClick={onPortal} data-ux-id="onboarding-done-go-to-portal-button" className="w-full bg-[#247ae4] hover:bg-[#1d6fd4] text-white text-[14px] font-semibold rounded-[8px] px-6 py-3 transition-colors cursor-pointer" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <button type="button" onClick={onPortal} data-ux-id="onboarding-done-go-to-portal-button" data-vt-name={VT.OnboardingGoToPortalBtn} className="w-full bg-[#247ae4] hover:bg-[#1d6fd4] text-white text-[14px] font-semibold rounded-[8px] px-6 py-3 transition-colors cursor-pointer" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         Go to my portal
       </button>
     </div>
@@ -486,8 +490,8 @@ const INITIAL: FormData = {
   bankName: "", routingNumber: "", accountNumber: "",
 };
 
-export default function NewResidentFlow({ onComplete }: { onComplete: () => void }) {
-  const [screen, setScreen] = useState<Screen>("account");
+export default function NewResidentFlow({ onComplete, initialScreen }: { onComplete: () => void; initialScreen?: Screen }) {
+  const [screen, setScreen] = useState<Screen>(initialScreen ?? "account");
   const [skipped, setSkipped] = useState(false);
   const [data, setData] = useState<FormData>(INITIAL);
 
@@ -513,6 +517,28 @@ export default function NewResidentFlow({ onComplete }: { onComplete: () => void
         </div>
         <div className="flex-1 flex items-center justify-center w-full">
         {screen === "account"  && <StepAccount   data={data} onChange={(k, v) => change(k, v)} onNext={() => setScreen("confirm")} />}
+        {/* Walkthrough-only reverse hook: ArrowLeft from the Create Account beat lands back on the account step */}
+        <button
+          type="button"
+          data-vt-name={VT.OnboardingBackToAccount}
+          onClick={() => setScreen("account")}
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          Back to account step
+        </button>
+        {/* Walkthrough-only reverse hook: ArrowLeft from the AutoPay enroll beat lands back on confirm */}
+        <button
+          type="button"
+          data-vt-name={VT.OnboardingBackToConfirm}
+          onClick={() => setScreen("confirm")}
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          Back to confirm step
+        </button>
         {screen === "confirm"  && <ScreenConfirm data={data} onChange={change} onEnable={() => { setSkipped(false); setScreen("done"); }} onSkip={() => { setSkipped(true); setScreen("done"); }} />}
         {screen === "autopay"  && <StepAutoPay   data={data} onChange={change} onBack={() => setScreen("confirm")} onFinish={() => { setSkipped(false); setScreen("done"); }} onSkip={() => { setSkipped(true); setScreen("done"); }} />}
         {screen === "done"     && <ScreenDone    data={data} skipped={skipped} onPortal={onComplete} />}

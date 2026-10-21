@@ -4,7 +4,9 @@ import { BoardActionStageDetail } from "../stage-content/BoardActionStageDetail"
 
 export const boardActionsScene: Scene = {
   id: "board-actions",
+  label: "Board actions",
   page: "dashboard",
+  appState: { phase: "portal", page: "dashboard", dashboardView: "board", askHoaiOpen: false },
   beats: [
     { kind: "idle" },
     {
