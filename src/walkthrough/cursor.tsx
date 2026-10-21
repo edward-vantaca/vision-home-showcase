@@ -1,75 +1,14 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from "react";
 import type { Beat, Cursor, Scene, Sequence, WalkthroughAction, WalkthroughState } from "./types";
 
-function prefersReducedMotion(): boolean {
-  if (typeof matchMedia === "undefined") return false;
-  try {
-    return matchMedia("(prefers-reduced-motion: reduce)").matches;
-  } catch {
-    return false;
-  }
-}
-
 // Shared between beats and the keyboard handler. Beats flip this to `true` while
 // their animation is running so arrow keys don't skip past mid-sequence; the
 // keyboard handler reads it before dispatching advance/back. Mutable ref — no
 // re-renders needed when the flag flips.
 export const beatBusyRef = { current: false };
 
-type WithTransitionOptions = {
-  // When provided, the class is added to <html> BEFORE startViewTransition
-  // fires so CSS rules scoped to it apply during the OLD snapshot capture,
-  // and removed when the transition finishes. This is how we scope which
-  // elements receive viewTransitionName per-transition: AskHoaiPanel's
-  // sub-regions, for instance, only need their VT names during transitions
-  // that actually move the panel (ask-hoai scene enter/exit, chat-send).
-  htmlClass?: string;
-};
-
-export function withTransition(update: () => void, options?: WithTransitionOptions): void {
-  const vt = typeof document !== "undefined" ? document.startViewTransition : undefined;
-  if (vt && !prefersReducedMotion()) {
-    // Lock scroll on every page-level scrollable container across the whole
-    // view-transition. Browsers tend to nudge scroll by a few pixels when
-    // view-transition-named elements change containment mid-transition —
-    // keeping overflow:hidden until .finished resolves pins the viewport.
-    const scrollables =
-      typeof document !== "undefined" && typeof document.querySelectorAll === "function"
-        ? Array.from(document.querySelectorAll<HTMLElement>('[data-ux-id$="-page"]'))
-        : [];
-    const savedOverflow = scrollables.map((el) => el.style.overflow);
-    const savedScroll = scrollables.map((el) => ({ top: el.scrollTop, left: el.scrollLeft }));
-    for (const el of scrollables) {
-      el.style.overflow = "hidden";
-    }
-    const hasWindow = typeof window !== "undefined";
-    const savedWindowScroll = hasWindow
-      ? { top: window.scrollY, left: window.scrollX }
-      : { top: 0, left: 0 };
-
-    const htmlClass = options?.htmlClass;
-    if (htmlClass) document.documentElement.classList.add(htmlClass);
-
-    const transition = vt.call(document, update);
-    const restore = () => {
-      scrollables.forEach((el, i) => {
-        el.style.overflow = savedOverflow[i];
-        el.scrollTop = savedScroll[i].top;
-        el.scrollLeft = savedScroll[i].left;
-      });
-      if (hasWindow && typeof window.scrollTo === "function") {
-        window.scrollTo(savedWindowScroll.left, savedWindowScroll.top);
-      }
-      if (htmlClass) document.documentElement.classList.remove(htmlClass);
-    };
-    transition?.finished?.then(restore, restore);
-  } else {
-    update();
-  }
-}
-
-function scenesInvolve(a: Scene | undefined, b: Scene | undefined, id: string): boolean {
-  return a?.id === id || b?.id === id;
+export function withTransition(update: () => void): void {
+  update();
 }
 
 export function cursorReducer(
@@ -158,11 +97,7 @@ export function WalkthroughProvider({ sequence, children }: { sequence: Sequence
           });
       }
     }
-    const nextScene = willLeaveScene ? sequence[sceneIndex + 1] : currentScene;
-    const htmlClass = scenesInvolve(currentScene, nextScene, "ask-hoai")
-      ? "wt-ash-vt-active"
-      : undefined;
-    withTransition(() => dispatch({ type: "advance" }), { htmlClass });
+    withTransition(() => dispatch({ type: "advance" }));
   }, [state.cursor, sequence]);
   const back = useCallback(() => {
     // If the current beat declares a reverseTo target, click it to undo the
@@ -174,30 +109,21 @@ export function WalkthroughProvider({ sequence, children }: { sequence: Sequence
     const currentBeat = currentScene?.beats[beatIndex];
     const reverseTo =
       currentBeat && currentBeat.kind === "cursor" ? currentBeat.reverseTo : undefined;
-    const prevScene = beatIndex > 0 ? currentScene : sequence[sceneIndex - 1];
-    const htmlClass = scenesInvolve(currentScene, prevScene, "ask-hoai")
-      ? "wt-ash-vt-active"
-      : undefined;
     if (reverseTo) {
       const el = document.querySelector<HTMLElement>(`[data-vt-name="${reverseTo}"]`);
       el?.click();
       requestAnimationFrame(() =>
-        withTransition(() => dispatch({ type: "back" }), { htmlClass }),
+        withTransition(() => dispatch({ type: "back" })),
       );
     } else {
-      withTransition(() => dispatch({ type: "back" }), { htmlClass });
+      withTransition(() => dispatch({ type: "back" }));
     }
   }, [state.cursor, sequence]);
   const jumpTo = useCallback(
     (cursor: Cursor) => {
-      const curScene = sequence[state.cursor.sceneIndex];
-      const nextScene = sequence[cursor.sceneIndex];
-      const htmlClass = scenesInvolve(curScene, nextScene, "ask-hoai")
-        ? "wt-ash-vt-active"
-        : undefined;
-      withTransition(() => dispatch({ type: "jumpTo", cursor }), { htmlClass });
+      withTransition(() => dispatch({ type: "jumpTo", cursor }));
     },
-    [state.cursor, sequence],
+    [],
   );
   const toggleHud = useCallback(() => dispatch({ type: "toggleHud" }), []);
 

@@ -1254,14 +1254,6 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
 function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView }) {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const currentBalance = "$2,911.14";
-  const { sceneId: walkthroughSceneId } = useCursor();
-  // Keep the view-transition handle on the widget while any payments-scene
-  // beat is active (plus the beat that precedes it, so the entry morph has a
-  // source rect). The advance() handler strips the name imperatively right
-  // before the browser snapshots the old frame when the user steps out of
-  // the payments scene — that's what stops the lift from bleeding forward.
-  const paymentsLiftActive =
-    walkthroughSceneId === "payments" || walkthroughSceneId === "go-to-portal";
   return (
     <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto" style={{ overflowAnchor: "none" }}>
       {/* Mobile top bar */}
@@ -1309,8 +1301,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
           {/* Payments widget */}
           <div
             data-ux-id="payments-widget"
-            data-vt-name={paymentsLiftActive ? VT.PaymentsWidget : undefined}
-            style={paymentsLiftActive ? { viewTransitionName: VT.PaymentsWidget } : undefined}
+            data-vt-name={VT.PaymentsWidget}
             className="bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex-1 min-w-0"
           >
             <div className="flex flex-col gap-[14px] pb-[18px] pt-[20px] md:pt-[24px] px-[16px] md:px-[26px]">

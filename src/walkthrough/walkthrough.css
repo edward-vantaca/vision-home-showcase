@@ -28,59 +28,6 @@
 .wt-backdrop[data-beat-kind="cursor"]    { opacity: 0; }
 .wt-backdrop[data-beat-kind="intro"]     { opacity: 1; background: #ffffff; backdrop-filter: none; }
 
-/* Scenes opt in to the deep blur canvas by scene id. Without this, each scene
-   keeps the original mild backdrop so the heavy blur never leaks into scripts
-   that weren't written for it. */
-.wt-root[data-scene="payments"] .wt-backdrop {
-  background: rgba(0, 0, 0, 0.6);
-  /* Default (not-yet-active) state: zero blur strength. The active-beat
-     selectors below snap opacity (so the dim tint instantly covers the
-     Ask HOAi panel) while the blur strength eases up over the full morph. */
-  backdrop-filter: blur(0px) saturate(1);
-  -webkit-backdrop-filter: blur(0px) saturate(1);
-  transition:
-    backdrop-filter 1000ms cubic-bezier(0.65, 0, 0.35, 1),
-    -webkit-backdrop-filter 1000ms cubic-bezier(0.65, 0, 0.35, 1);
-  will-change: backdrop-filter;
-  backface-visibility: hidden;
-}
-.wt-root[data-scene="payments"] .wt-backdrop[data-beat-kind="lift"],
-.wt-root[data-scene="payments"] .wt-backdrop[data-beat-kind="expand"],
-.wt-root[data-scene="payments"] .wt-backdrop[data-beat-kind="annotate"],
-.wt-root[data-scene="payments"] .wt-backdrop[data-beat-kind="narrate"] {
-  opacity: 1;
-  backdrop-filter: blur(40px) saturate(1.1);
-  -webkit-backdrop-filter: blur(40px) saturate(1.1);
-}
-
-/* While the payments scene is active, hide the root view-transition
-   pseudo-elements. Otherwise the browser captures a snapshot of the dashboard
-   taken before the backdrop's CSS transition has had a chance to apply,
-   freezes it on top of the real DOM for the full 1s morph, and the Ask HOAi
-   fields show through unblurred because the snapshot didn't have the blur
-   yet. Hiding the pseudo lets the live DOM — where backdrop-filter transitions
-   are actually running — paint through. */
-html[data-walkthrough-scene="payments"]::view-transition-old(root),
-html[data-walkthrough-scene="payments"]::view-transition-new(root) {
-  animation: none;
-  opacity: 0;
-}
-
-/* Ask HOAi panel sub-region VT names are OFF by default. They turn ON only
-   while html.wt-ash-vt-active is set — which the walkthrough cursor adds for
-   transitions that actually move the panel (ask-hoai scene enter/exit) and
-   handleSend adds for the welcome → thread morph. Outside those cases, no
-   view-transition-name is declared on the panel, so the panel stays in the
-   root snapshot during unrelated transitions (e.g. payments lift) and
-   backdrop-filter on wt-backdrop can reach the live DOM behind it. The class
-   is added BEFORE startViewTransition fires, so OLD and NEW snapshots both
-   see the VT names and the browser can morph between them. */
-html.wt-ash-vt-active [data-ash-vt="header"]   { view-transition-name: ash-header; }
-html.wt-ash-vt-active [data-ash-vt="input"]    { view-transition-name: ash-input; }
-html.wt-ash-vt-active [data-ash-vt="welcome"]  { view-transition-name: ash-welcome; }
-html.wt-ash-vt-active [data-ash-vt="questions"]{ view-transition-name: ash-questions; }
-html.wt-ash-vt-active [data-ash-vt="footer"]   { view-transition-name: ash-footer; }
-
 .wt-intro {
   position: fixed;
   inset: 0;
@@ -157,57 +104,14 @@ html.wt-ash-vt-active [data-ash-vt="footer"]   { view-transition-name: ash-foote
   display: none;
 }
 
-::view-transition-group(*),
-::view-transition-image-pair(*),
-::view-transition-old(*),
-::view-transition-new(*) {
-  animation-duration: 1000ms;
-  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-/* The ROOT pseudo-element is a snapshot of everything NOT given its own
-   view-transition-name. Its default 1s cross-fade briefly shows the pre-blur
-   state (so the Ask HOAi fields look un-blurred mid-morph). Snap it to the
-   new state almost instantly so the named backdrop + card do the storytelling. */
-/* Keep the root cross-fade near-instant: everything that isn't the lifted
-   card lives in root, and we don't want it to visibly animate. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 1ms;
-}
-
-/* The lifted card paints above the root pseudo-element by default; keep an
-   explicit z-index so future named transitions can slot below without
-   reordering risk. */
-::view-transition-group(wt-payments-widget),
-::view-transition-group(wt-amenity-tile-pool),
-::view-transition-group(wt-board-task-current) {
-  z-index: 2;
-}
-
 @keyframes askhoai-dot {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30% { opacity: 1; transform: translateY(-3px); }
-}
-
-/* Snappier VT when the chat transitions from empty state to thread state. */
-html.wt-chat-send::view-transition-group(*),
-html.wt-chat-send::view-transition-image-pair(*),
-html.wt-chat-send::view-transition-old(*),
-html.wt-chat-send::view-transition-new(*) {
-  animation-duration: 550ms;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .wt-backdrop,
   .wt-caption {
     transition: none;
-  }
-  ::view-transition-group(*),
-  ::view-transition-image-pair(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-duration: 1ms !important;
   }
 }

@@ -203,7 +203,6 @@ export default function BoardTasksWidget() {
             <div
               data-ux-id="board-task-current"
               data-vt-name="wt-board-task-current"
-              style={{ viewTransitionName: "wt-board-task-current" }}
               className="bg-white border border-[#e1e9ef] flex flex-col sm:flex-row sm:items-center gap-[16px] sm:gap-[23px] px-[20px] sm:px-[32px] py-[16px] sm:py-[18px] rounded-[16px] shrink-0 w-full"
             >
 

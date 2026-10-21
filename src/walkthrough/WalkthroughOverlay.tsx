@@ -1,4 +1,3 @@
-import { useLayoutEffect } from "react";
 import { useCursor } from "./cursor";
 import { useTargetRect } from "./useTargetRect";
 import type { Beat } from "./types";
@@ -43,25 +42,6 @@ export function WalkthroughOverlay() {
   const rect = useTargetRect(target);
   const kind = beat?.kind ?? "idle";
   const caption = captionOf(beat);
-
-  // Scene-scoped hooks for ::view-transition pseudo-elements. Those live on
-  // :root, so we tag the <html> element with the current scene id to let CSS
-  // target scene-specific pseudo rules (e.g. hiding the root snapshot while
-  // the payments scene is active so its live backdrop can paint through).
-  // useLayoutEffect — the attribute MUST be in place before the browser
-  // captures the view-transition's new snapshot, which happens between React's
-  // commit and the next frame paint.
-  useLayoutEffect(() => {
-    const sceneId = scene?.id;
-    if (!sceneId) {
-      document.documentElement.removeAttribute("data-walkthrough-scene");
-      return;
-    }
-    document.documentElement.setAttribute("data-walkthrough-scene", sceneId);
-    return () => {
-      document.documentElement.removeAttribute("data-walkthrough-scene");
-    };
-  }, [scene?.id]);
 
   return (
     <div className="wt-root" data-scene={scene?.id} aria-hidden={kind === "idle"}>

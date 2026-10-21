@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight } from "lucide-react";
 import { VT } from "../walkthrough/viewTransitionNames";
 
@@ -97,12 +96,6 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // VT names on the sub-regions are driven by CSS in walkthrough.css, gated
-  // on `html.wt-ash-vt-active`. That class is set BEFORE startViewTransition
-  // by the walkthrough's cursor actions (for ask-hoai scene enter/exit) and
-  // by handleSend (for the welcome → thread morph). Outside those cases, no
-  // VT names are set — the panel stays in the root snapshot so backdrop
-  // filters applied elsewhere (payments lift) can reach it.
   const visible = open || focused;
   const hasConversation = messages.length > 0 || agentTyping;
 
@@ -122,26 +115,8 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   }, [focused]);
 
   function pushUserMessage(text: string) {
-    const commit = () => {
-      setMessages((prev) => [...prev, { role: "user", text }]);
-      setInput("");
-    };
-    if (typeof document.startViewTransition === "function") {
-      // wt-chat-send tunes the per-element animation duration for the
-      // welcome → thread morph; wt-ash-vt-active turns the sub-region VT
-      // names on (same gating used by the ask-hoai scene enter/exit).
-      document.documentElement.classList.add("wt-chat-send");
-      document.documentElement.classList.add("wt-ash-vt-active");
-      const vt = document.startViewTransition(() => {
-        flushSync(commit);
-      });
-      vt.finished.finally(() => {
-        document.documentElement.classList.remove("wt-chat-send");
-        document.documentElement.classList.remove("wt-ash-vt-active");
-      });
-    } else {
-      commit();
-    }
+    setMessages((prev) => [...prev, { role: "user", text }]);
+    setInput("");
   }
 
   // Streams an agent message into the thread one chunk at a time. Invokes
@@ -228,7 +203,6 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b border-[#e5eaf0]"
-        data-ash-vt="header"
       >
         <AskHoaiWordmark />
         <div className="flex items-center gap-2">
@@ -260,7 +234,6 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
           </div>
           <div
             className="mx-5 mb-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
-            data-ash-vt="input"
           >
             <ChatInput
               input={input}
@@ -271,7 +244,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
         </>
       ) : (
         <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
-          <div data-ash-vt="welcome">
+          <div>
             <h2 className="font-['DM_Sans:Bold',sans-serif] font-bold text-[22px] text-[#262630] leading-tight">
               Welcome back, james.polk
             </h2>
@@ -281,7 +254,6 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
           {/* Input */}
           <div
             className="mt-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
-            data-ash-vt="input"
           >
             <ChatInput
               input={input}
@@ -291,7 +263,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
           </div>
 
           {/* Common questions */}
-          <div data-ash-vt="questions">
+          <div>
             <p className="text-[11px] font-semibold text-[#8a8a96] tracking-[0.1em] mt-6 mb-3">
               COMMON QUESTIONS:
             </p>
@@ -313,7 +285,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
       )}
 
       {/* Footer */}
-      <div className="px-5 py-3 border-t border-[#e5eaf0]" data-ash-vt="footer">
+      <div className="px-5 py-3 border-t border-[#e5eaf0]">
         <p className="text-center text-[11px] text-[#8a8a96] mb-2">Powered by HOAi</p>
         <div className="flex items-start gap-2 px-3 py-2 border border-[#e5eaf0] rounded-md">
           <Info size={14} className="text-[#8a8a96] shrink-0 mt-0.5" />

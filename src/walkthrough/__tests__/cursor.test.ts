@@ -50,31 +50,9 @@ describe("cursorReducer", () => {
 });
 
 describe("withTransition", () => {
-  it("calls document.startViewTransition when available", () => {
-    const spy = vi.fn((cb: () => void) => {
-      cb();
-      return { finished: Promise.resolve() } as any;
-    });
-    (globalThis as any).document = { startViewTransition: spy };
-    const update = vi.fn();
-    withTransition(update);
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(update).toHaveBeenCalledTimes(1);
-  });
-
-  it("falls back to direct update when startViewTransition is undefined", () => {
-    (globalThis as any).document = { startViewTransition: undefined };
+  it("invokes update synchronously", () => {
     const update = vi.fn();
     withTransition(update);
     expect(update).toHaveBeenCalledTimes(1);
-  });
-
-  it("falls back to direct update when prefers-reduced-motion matches", () => {
-    (globalThis as any).document = { startViewTransition: vi.fn() };
-    (globalThis as any).matchMedia = vi.fn().mockReturnValue({ matches: true });
-    const update = vi.fn();
-    withTransition(update);
-    expect(update).toHaveBeenCalledTimes(1);
-    expect((globalThis as any).document.startViewTransition).not.toHaveBeenCalled();
   });
 });
