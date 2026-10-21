@@ -155,4 +155,49 @@ describe("LiftBeat", () => {
     render(<LiftBeat target="wt-test" />);
     expect(warn).not.toHaveBeenCalled();
   });
+
+  it("lifts a target that appears a few frames after mount (late page render)", () => {
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
+    render(<LiftBeat target="wt-test" />);
+    vi.advanceTimersByTime(16 * 3);
+
+    const target = makeTarget({ position: "relative" });
+    vi.advanceTimersByTime(16 * 2);
+    expect(target.style.position).toBe("fixed");
+    expect(target.style.zIndex).toBe("260");
+  });
+
+  it("gives up quietly after the retry window and leaves late targets untouched", async () => {
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
+    const { unmount } = render(<LiftBeat target="wt-test" />);
+    vi.advanceTimersByTime(16 * 60);
+
+    const target = makeTarget();
+    vi.advanceTimersByTime(16 * 10);
+    expect(target.getAttribute("style")).toBeNull();
+    unmount();
+    await flushMicrotasks();
+    expect(target.getAttribute("style")).toBeNull();
+  });
+
+  it("stops retrying on unmount and restores a late-claimed target", async () => {
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
+    const first = render(<LiftBeat target="wt-test" />);
+    first.unmount();
+    const target = makeTarget();
+    vi.advanceTimersByTime(16 * 5);
+    expect(target.getAttribute("style")).toBeNull();
+
+    const second = render(<LiftBeat target="wt-other" />);
+    const other = document.createElement("div");
+    other.setAttribute("data-vt-name", "wt-other");
+    document.body.appendChild(other);
+    added.push(other);
+    vi.advanceTimersByTime(16 * 2);
+    expect(other.style.position).toBe("fixed");
+    second.unmount();
+    await flushMicrotasks();
+    const style = other.getAttribute("style");
+    expect(style === null || style === "").toBe(true);
+  });
 });

@@ -18,6 +18,8 @@ export type LiftOptions = {
 };
 
 const MOVE_TRANSITION = "transform 1000ms cubic-bezier(0.65,0,0.35,1)";
+/** How many frames to keep looking for a target that isn't rendered yet. */
+const TARGET_RETRY_FRAMES = 30;
 const DISSOLVE_TRANSITION = `${MOVE_TRANSITION}, opacity 500ms ease-out`;
 
 // Union of every inline property any beat mutates. Snapshotted once, on the
@@ -122,58 +124,85 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
   const positionKey = position === "center" ? "center" : `${position.x},${position.y}`;
 
   useLayoutEffect(() => {
-    const el = findTarget(target);
-    if (!el) return;
-
     let raf = 0;
-    const existing = entries.get(el);
-    let entry: Entry;
+    let claimedEl: HTMLElement | null = null;
+    let claimedEntry: Entry | null = null;
 
-    if (existing) {
-      existing.pendingRestore = false;
-      entry = existing;
-      if (!dissolve) entry.transform = liftTransform(entry.rect, scale, position);
-      el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
-      applyTarget(el, entry, dissolve);
+    const claim = (el: HTMLElement) => {
+      const existing = entries.get(el);
+      let entry: Entry;
+
+      if (existing) {
+        existing.pendingRestore = false;
+        entry = existing;
+        if (!dissolve) entry.transform = liftTransform(entry.rect, scale, position);
+        el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
+        applyTarget(el, entry, dissolve);
+      } else {
+        if (import.meta.env.DEV) warnOnContainingBlockAncestors(el, target);
+        el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
+
+        const saved = {} as Saved;
+        for (const prop of SAVED_PROPS) saved[prop] = el.style[prop];
+
+        const rect = el.getBoundingClientRect();
+        entry = {
+          saved,
+          rect,
+          transform: liftTransform(rect, scale, position),
+          pendingRestore: false,
+        };
+        entries.set(el, entry);
+
+        // Pin in place at the current viewport position, at its current size, so
+        // going position:fixed doesn't resize or shift it.
+        el.style.position = "fixed";
+        el.style.top = `${rect.top}px`;
+        el.style.left = `${rect.left}px`;
+        el.style.width = `${rect.width}px`;
+        el.style.height = `${rect.height}px`;
+        el.style.margin = "0";
+        el.style.transform = "translate(0px, 0px) scale(1)";
+        el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
+        // Above .wt-root (z-index 250) so the lifted element sits over the blurred backdrop.
+        el.style.zIndex = "260";
+        el.style.willChange = "transform";
+
+        // Force a reflow so the transition always starts from the pinned state.
+        void el.offsetWidth;
+
+        const claimed = entry;
+        raf = requestAnimationFrame(() => applyTarget(el, claimed, dissolve));
+      }
+
+      claimedEl = el;
+      claimedEntry = entry;
+    };
+
+    // The target may not be rendered yet (e.g. a launcher jump into another
+    // page: App's appState sync runs in a useEffect after this layout effect).
+    // Retry each frame for a short window, then give up quietly.
+    const el = findTarget(target);
+    if (el) {
+      claim(el);
     } else {
-      if (import.meta.env.DEV) warnOnContainingBlockAncestors(el, target);
-      el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
-
-      const saved = {} as Saved;
-      for (const prop of SAVED_PROPS) saved[prop] = el.style[prop];
-
-      const rect = el.getBoundingClientRect();
-      entry = {
-        saved,
-        rect,
-        transform: liftTransform(rect, scale, position),
-        pendingRestore: false,
+      let frames = 0;
+      const retry = () => {
+        const found = findTarget(target);
+        if (found) {
+          claim(found);
+        } else if (++frames < TARGET_RETRY_FRAMES) {
+          raf = requestAnimationFrame(retry);
+        }
       };
-      entries.set(el, entry);
-
-      // Pin in place at the current viewport position, at its current size, so
-      // going position:fixed doesn't resize or shift it.
-      el.style.position = "fixed";
-      el.style.top = `${rect.top}px`;
-      el.style.left = `${rect.left}px`;
-      el.style.width = `${rect.width}px`;
-      el.style.height = `${rect.height}px`;
-      el.style.margin = "0";
-      el.style.transform = "translate(0px, 0px) scale(1)";
-      el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
-      // Above .wt-root (z-index 250) so the lifted element sits over the blurred backdrop.
-      el.style.zIndex = "260";
-      el.style.willChange = "transform";
-
-      // Force a reflow so the transition always starts from the pinned state.
-      void el.offsetWidth;
-
-      const claimed = entry;
-      raf = requestAnimationFrame(() => applyTarget(el, claimed, dissolve));
+      raf = requestAnimationFrame(retry);
     }
 
     return () => {
       cancelAnimationFrame(raf);
+      const el = claimedEl;
+      const entry = claimedEntry;
+      if (!el || !entry) return;
       entry.pendingRestore = true;
       queueMicrotask(() => {
         if (!entry.pendingRestore || entries.get(el) !== entry) return;
