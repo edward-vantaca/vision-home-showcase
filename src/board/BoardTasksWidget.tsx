@@ -112,7 +112,7 @@ export default function BoardTasksWidget() {
   };
 
   return (
-    <div data-ux-id="board-tasks-widget" className="bg-white drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex flex-col gap-[24px] items-start px-[16px] md:px-[26px] py-[20px] md:py-[24px] relative rounded-[18px] shrink-0 w-full">
+    <div data-ux-id="board-tasks-widget" className="bg-white shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex flex-col gap-[24px] items-start px-[16px] md:px-[26px] py-[20px] md:py-[24px] relative rounded-[18px] shrink-0 w-full">
 
       {/* Header */}
       <div className="flex gap-[14px] items-center relative shrink-0 w-full">

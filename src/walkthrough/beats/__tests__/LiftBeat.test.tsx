@@ -133,4 +133,26 @@ describe("LiftBeat", () => {
     // dx = 500 - 200 = 300; dy = 400 - 150 = 250
     expect(target.style.transform).toBe("translate(300px, 250px) scale(1.4)");
   });
+
+  it("dev-warns when an ancestor would trap position:fixed (filter)", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const wrapper = document.createElement("div");
+    wrapper.style.filter = "drop-shadow(0px 2px 9px rgba(18,17,48,0.07))";
+    document.body.appendChild(wrapper);
+    added.push(wrapper);
+    const el = document.createElement("div");
+    el.setAttribute("data-vt-name", "wt-test");
+    wrapper.appendChild(el);
+
+    render(<LiftBeat target="wt-test" />);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain("filter");
+  });
+
+  it("does not warn for a plain ancestor chain", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    makeTarget();
+    render(<LiftBeat target="wt-test" />);
+    expect(warn).not.toHaveBeenCalled();
+  });
 });

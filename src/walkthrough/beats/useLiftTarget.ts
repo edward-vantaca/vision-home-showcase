@@ -55,6 +55,35 @@ function findTarget(name: string): HTMLElement | null {
   return all.find((el) => !el.classList.contains("wt-stage-slot")) ?? null;
 }
 
+// Any of these on an ancestor makes it the containing block for position:fixed
+// descendants (and/or a stacking context), so the pinned element lands offset
+// and stays trapped under .wt-root's backdrop. Dev-only diagnostic.
+const CONTAINING_BLOCK_CHECKS: [prop: string, isTrap: (value: string) => boolean][] = [
+  ["transform", (v) => v !== "" && v !== "none"],
+  ["filter", (v) => v !== "" && v !== "none"],
+  ["backdrop-filter", (v) => v !== "" && v !== "none"],
+  ["perspective", (v) => v !== "" && v !== "none"],
+  ["contain", (v) => /\b(paint|layout|strict|content)\b/.test(v)],
+  ["will-change", (v) => /\b(transform|filter|perspective|backdrop-filter)\b/.test(v)],
+  ["container-type", (v) => v !== "" && v !== "normal"],
+];
+
+function warnOnContainingBlockAncestors(el: HTMLElement, name: string) {
+  for (let node = el.parentElement; node && node !== document.documentElement; node = node.parentElement) {
+    const cs = getComputedStyle(node);
+    for (const [prop, isTrap] of CONTAINING_BLOCK_CHECKS) {
+      const value = cs.getPropertyValue(prop);
+      if (isTrap(value)) {
+        console.warn(
+          `[walkthrough] lift target "${name}" has an ancestor with ${prop}: ${value}; ` +
+            "position:fixed will be offset and trapped under the backdrop.",
+          node,
+        );
+      }
+    }
+  }
+}
+
 function liftTransform(rect: DOMRect, scale: number, position: "center" | Point): string {
   const dx =
     position === "center" ? window.innerWidth / 2 - (rect.left + rect.width / 2) : position.x - rect.left;
@@ -107,6 +136,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
       el.style.transition = dissolve ? DISSOLVE_TRANSITION : MOVE_TRANSITION;
       applyTarget(el, entry, dissolve);
     } else {
+      if (import.meta.env.DEV) warnOnContainingBlockAncestors(el, target);
       el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
 
       const saved = {} as Saved;
