@@ -12,40 +12,36 @@ import { VT } from "./walkthrough/viewTransitionNames";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
-/* ─── Icons — outlined stroke style matching FA Regular weight ─── */
+/* ─── Icons — Font Awesome Pro Regular (paths inlined from @fortawesome/fontawesome-pro 6, svgs/regular) ─── */
 
 const SZ = { width: 16, height: 16, fill: "none" as const, stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, className: "shrink-0" };
 
-/* fa-inbox */
-function IconInbox() {
+// 16px tall, width follows the icon's own aspect ratio, colored by the parent.
+function FaIcon({ viewBox, d, size = 16, className = "shrink-0" }: { viewBox: string; d: string; size?: number; className?: string }) {
+  const [, , w, h] = viewBox.split(" ").map(Number);
   return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <path d="M22 12h-6l-2 3H10l-2-3H2"/>
-      <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+    <svg width={(size * w) / h} height={size} viewBox={viewBox} fill="currentColor" aria-hidden="true" className={className}>
+      <path d={d} />
     </svg>
   );
+}
+
+/* fa-inbox */
+function IconInbox() {
+  return <FaIcon viewBox="0 0 512 512" d="M75.3 94c1-8 7.8-14 15.9-14l329.7 0c8 0 14.8 6 15.9 14l25 194-85.2 0c-13.4 0-25.9 6.7-33.3 17.8l-20.1 30.2-134.3 0-20.1-30.2c-7.4-11.1-19.9-17.8-33.3-17.8l-85.2 0 25-194zM48 336l83.2 0 20.1 30.2c7.4 11.1 19.9 17.8 33.3 17.8l142.9 0c13.4 0 25.9-6.7 33.3-17.8l20.1-30.2 83.2 0 0 80c0 8.8-7.2 16-16 16L64 432c-8.8 0-16-7.2-16-16l0-80zM91.2 32C59 32 31.8 55.9 27.7 87.8L.2 300.9 0 302.5 0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-113.5-.2-1.5-27.5-213.1C480.2 55.9 453 32 420.8 32L91.2 32z" />;
 }
 
 /* fa-house */
 function IconHome() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 512 512" d="M240 6.1c9.1-8.2 22.9-8.2 32 0l232 208c9.9 8.8 10.7 24 1.8 33.9s-24 10.7-33.9 1.8l-8-7.2 0 205.3c0 35.3-28.7 64-64 64l-288 0c-35.3 0-64-28.7-64-64l0-205.3-8 7.2c-9.9 8.8-25 8-33.9-1.8s-8-25 1.8-33.9L240 6.1zm16 50.1L96 199.7 96 448c0 8.8 7.2 16 16 16l48 0 0-104c0-39.8 32.2-72 72-72l48 0c39.8 0 72 32.2 72 72l0 104 48 0c8.8 0 16-7.2 16-16l0-248.3-160-143.4zM208 464l96 0 0-104c0-13.3-10.7-24-24-24l-48 0c-13.3 0-24 10.7-24 24l0 104z" />;
 }
 
 /* fa-credit-card */
 function IconPayments() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-      <line x1="1" y1="10" x2="23" y2="10"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 512 512" d="M448 112c8.8 0 16 7.2 16 16l0 32-416 0 0-32c0-8.8 7.2-16 16-16l384 0zm16 112l0 160c0 8.8-7.2 16-16 16L64 400c-8.8 0-16-7.2-16-16l0-160 416 0zM64 64C28.7 64 0 92.7 0 128L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L64 64zM80 344c0 13.3 10.7 24 24 24l48 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-48 0c-13.3 0-24 10.7-24 24zm144 0c0 13.3 10.7 24 24 24l64 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-64 0c-13.3 0-24 10.7-24 24z" />;
 }
 
-/* fa-landmark */
+/* Payment modal bank icon (stroke style; not part of the nav) */
 function IconBank() {
   return (
     <svg {...SZ} width="16" height="16" viewBox="0 0 24 24">
@@ -60,102 +56,63 @@ function IconBank() {
 }
 
 /* fa-box-ballot */
-function IconVote({ active = false }: { active?: boolean }) {
-  return (
-    <svg width="17" height="15" viewBox="0 0 17 15" fill="none" className="shrink-0">
-      <path d="M5.15625 6.09375H11.7188V1.40625H5.15625V6.09375ZM3.75 0.9375C3.75 0.439453 4.16016 0 4.6875 0H12.1875C12.6855 0 13.125 0.439453 13.125 0.9375V6.5625C13.125 7.08984 12.6855 7.5 12.1875 7.5H4.6875C4.16016 7.5 3.75 7.08984 3.75 6.5625V0.9375ZM1.40625 4.6875H2.8125V6.09375H1.40625V9.375H15.4688V6.09375H14.0625V4.6875H15.4688C16.2305 4.6875 16.875 5.33203 16.875 6.09375V9.375V10.0781V10.7812V13.5938C16.875 14.3848 16.2305 15 15.4688 15H1.40625C0.615234 15 0 14.3848 0 13.5938V10.7812V10.0781V9.375V6.09375C0 5.33203 0.615234 4.6875 1.40625 4.6875ZM15.4688 10.7812H1.40625V13.5938H15.4688V10.7812Z" fill={active ? "#247AE4" : "#262630"}/>
-    </svg>
-  );
+function IconVote() {
+  return <FaIcon viewBox="0 0 512 512" d="M171.9 121.4l101.5-101.5 82.7 82.7-101.5 101.5-82.7-82.7zm-33.9 33.9l68.6 68.6-86.6 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l272 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-89.4 0 87.5-87.5c18.7-18.7 18.7-49.1 0-67.9L307.4-14.1c-18.7-18.7-49.1-18.7-67.9 0L137.9 87.5c-18.7 18.7-18.7 49.1 0 67.9zM418.5 176l29.5 0c8.8 0 16 7.2 16 16l0 144-416 0 0-144c0-8.8 7.2-16 16-16l28.7 0c-10.2-14.5-15.8-31.1-17-48L64 128c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35-28.1-63.4-62.9-64-4.2 15.3-12.4 29.8-24.4 41.8l-6.2 6.2zM464 384l0 64c0 8.8-7.2 16-16 16L64 464c-8.8 0-16-7.2-16-16l0-64 416 0z" />;
 }
 
 /* fa-address-card */
 function IconFeed() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <rect x="1" y="4" width="22" height="16" rx="2"/>
-      <circle cx="8" cy="11" r="2.5"/>
-      <path d="M4.5 20a3.5 3.5 0 017 0"/>
-      <line x1="14" y1="8" x2="21" y2="8"/>
-      <line x1="14" y1="12" x2="21" y2="12"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 576 512" d="M512 80c8.8 0 16 7.2 16 16l0 320c0 8.8-7.2 16-16 16L64 432c-8.8 0-16-7.2-16-16L48 96c0-8.8 7.2-16 16-16l448 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l448 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zM208 248a56 56 0 1 0 0-112 56 56 0 1 0 0 112zm-32 40c-44.2 0-80 35.8-80 80 0 8.8 7.2 16 16 16l192 0c8.8 0 16-7.2 16-16 0-44.2-35.8-80-80-80l-64 0zM376 144c-13.3 0-24 10.7-24 24s10.7 24 24 24l80 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-80 0zm0 96c-13.3 0-24 10.7-24 24s10.7 24 24 24l80 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-80 0z" />;
 }
 
 /* fa-paper-plane */
 function IconRequests() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <line x1="22" y1="2" x2="11" y2="13"/>
-      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 576 512" d="M290.5 287.7L491.4 86.9 359 456.3 290.5 287.7zM457.4 53L256.6 253.8 88 185.3 457.4 53zM38.1 216.8l205.8 83.6 83.6 205.8c5.3 13.1 18.1 21.7 32.3 21.7 14.7 0 27.8-9.2 32.8-23.1L570.6 8c3.5-9.8 1-20.6-6.3-28s-18.2-9.8-28-6.3L39.4 151.7c-13.9 5-23.1 18.1-23.1 32.8 0 14.2 8.6 27 21.7 32.3z" />;
 }
 
 /* fa-folder-open */
 function IconDocuments() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 576 512" d="M97.5 400l50-160 379.4 0-50 160-379.4 0zm190.7 48L477 448c21 0 39.6-13.6 45.8-33.7l50-160c9.7-30.9-13.4-62.3-45.8-62.3l-379.4 0c-21 0-39.6 13.6-45.8 33.7L80.2 294.4 80.2 96c0-8.8 7.2-16 16-16l138.7 0c3.5 0 6.8 1.1 9.6 3.2L282.9 112c13.8 10.4 30.7 16 48 16l117.3 0c8.8 0 16 7.2 16 16l48 0c0-35.3-28.7-64-64-64L330.9 80c-6.9 0-13.7-2.2-19.2-6.4L273.3 44.8C262.2 36.5 248.8 32 234.9 32L96.2 32c-35.3 0-64 28.7-64 64l0 288c0 35.3 28.7 64 64 64l192 0z" />;
 }
 
 /* fa-address-book */
 function IconDirectory() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-      <circle cx="13" cy="9" r="2"/>
-      <path d="M10 13.5a3 3 0 016 0"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 512 512" d="M384 48c8.8 0 16 7.2 16 16l0 384c0 8.8-7.2 16-16 16L96 464c-8.8 0-16-7.2-16-16L80 64c0-8.8 7.2-16 16-16l288 0zM96 0C60.7 0 32 28.7 32 64l0 384c0 35.3 28.7 64 64 64l288 0c35.3 0 64-28.7 64-64l0-384c0-35.3-28.7-64-64-64L96 0zM240 248a56 56 0 1 0 0-112 56 56 0 1 0 0 112zm-32 40c-44.2 0-80 35.8-80 80 0 8.8 7.2 16 16 16l192 0c8.8 0 16-7.2 16-16 0-44.2-35.8-80-80-80l-64 0zM512 80c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16s16-7.2 16-16l0-64zM496 192c-8.8 0-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16s16-7.2 16-16l0-64c0-8.8-7.2-16-16-16zm16 144c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16s16-7.2 16-16l0-64z" />;
 }
 
 /* fa-calendar */
 function IconCalendar() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 448 512" d="M120 0c13.3 0 24 10.7 24 24l0 40 160 0 0-40c0-13.3 10.7-24 24-24s24 10.7 24 24l0 40 32 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 128C0 92.7 28.7 64 64 64l32 0 0-40c0-13.3 10.7-24 24-24zm0 112l-56 0c-8.8 0-16 7.2-16 16l0 48 352 0 0-48c0-8.8-7.2-16-16-16l-264 0zM48 224l0 192c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-192-352 0z" />;
 }
 
 /* fa-tag */
 function IconOffers() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
-      <line x1="7" y1="7" x2="7.01" y2="7"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 576 512" d="M96.1 88c0-13.3 10.7-24 24-24l156.1 0c6.4 0 12.5 2.5 17 7l208 208c9.4 9.4 9.4 24.6 0 33.9L345.1 469.1c-9.4 9.4-24.6 9.4-33.9 0l-208-208c-4.5-4.5-7-10.6-7-17L96.1 88zm24-72c-39.8 0-72 32.2-72 72l0 156.1c0 19.1 7.6 37.4 21.1 50.9l208 208c28.1 28.1 73.7 28.1 101.8 0L535.1 346.9c28.1-28.1 28.1-73.7 0-101.8l-208-208C313.6 23.6 295.3 16 276.2 16L120.1 16zm56 160a32 32 0 1 0 0-64 32 32 0 1 0 0 64z" />;
 }
 
 /* fa-address-card */
 function IconProfile() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <rect x="1" y="4" width="22" height="16" rx="2"/>
-      <circle cx="8" cy="11" r="2.5"/>
-      <path d="M4.5 20a3.5 3.5 0 017 0"/>
-      <line x1="14" y1="8" x2="21" y2="8"/>
-      <line x1="14" y1="12" x2="21" y2="12"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 576 512" d="M512 80c8.8 0 16 7.2 16 16l0 320c0 8.8-7.2 16-16 16L64 432c-8.8 0-16-7.2-16-16L48 96c0-8.8 7.2-16 16-16l448 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l448 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zM208 248a56 56 0 1 0 0-112 56 56 0 1 0 0 112zm-32 40c-44.2 0-80 35.8-80 80 0 8.8 7.2 16 16 16l192 0c8.8 0 16-7.2 16-16 0-44.2-35.8-80-80-80l-64 0zM376 144c-13.3 0-24 10.7-24 24s10.7 24 24 24l80 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-80 0zm0 96c-13.3 0-24 10.7-24 24s10.7 24 24 24l80 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-80 0z" />;
 }
 
 /* fa-right-from-bracket */
 function IconLogout() {
-  return (
-    <svg {...SZ} viewBox="0 0 24 24">
-      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-      <polyline points="16 17 21 12 16 7"/>
-      <line x1="21" y1="12" x2="9" y2="12"/>
-    </svg>
-  );
+  return <FaIcon viewBox="0 0 512 512" d="M505 273c9.4-9.4 9.4-24.6 0-33.9L361 95c-6.9-6.9-17.2-8.9-26.2-5.2S320 102.3 320 112l0 64-112 0c-26.5 0-48 21.5-48 48l0 64c0 26.5 21.5 48 48 48l112 0 0 64c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2L505 273zM368 200l0-30.1 86.1 86.1-86.1 86.1 0-30.1c0-13.3-10.7-24-24-24l-136 0 0-64 136 0c13.3 0 24-10.7 24-24zM168 80c13.3 0 24-10.7 24-24s-10.7-24-24-24L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l72 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-72 0c-26.5 0-48-21.5-48-48l0-256c0-26.5 21.5-48 48-48l72 0z" />;
+}
+
+/* fa-chart-simple */
+function IconBoardActions() {
+  return <FaIcon viewBox="0 0 576 512" d="M304 80l0 352-48 0 0-352 48 0zM256 32c-26.5 0-48 21.5-48 48l0 352c0 26.5 21.5 48 48 48l48 0c26.5 0 48-21.5 48-48l0-352c0-26.5-21.5-48-48-48l-48 0zM112 272l0 160-48 0 0-160 48 0zM64 224c-26.5 0-48 21.5-48 48l0 160c0 26.5 21.5 48 48 48l48 0c26.5 0 48-21.5 48-48l0-160c0-26.5-21.5-48-48-48l-48 0zm384-80l48 0 0 288-48 0 0-288zm-48 0l0 288c0 26.5 21.5 48 48 48l48 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-48 0c-26.5 0-48 21.5-48 48z" />;
+}
+
+/* fa-plus */
+function IconPlus() {
+  return <FaIcon viewBox="0 0 448 512" d="M248 56c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 176-176 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l176 0 0 176c0 13.3 10.7 24 24 24s24-10.7 24-24l0-176 176 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-176 0 0-176z" />;
+}
+
+/* fa-chevron-up */
+function IconChevronUp({ className }: { className?: string }) {
+  return <FaIcon size={12} className={className} viewBox="0 0 448 512" d="M207.5 103c9.4-9.4 24.6-9.4 33.9 0l200 200c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-183-183-183 183c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l200-200z" />;
 }
 
 /* fa-bell */
@@ -305,7 +262,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           data-vt-name={VT.QuickActionsBtn}
           className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0"
         >
-          <span className="text-[#247ae4] font-bold text-[14px]">+</span>
+          <span className="text-[#247ae4] flex items-center"><IconPlus /></span>
           <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
             Quick Actions
           </span>
@@ -316,7 +273,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           <NavItem icon={<IconInbox />} label="Inbox" active={false} uxId="inbox" />
           <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" />
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
-          <NavItem icon={<IconVote active={activePage === "elections"} />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
+          <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
           <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
           {isDemoMode() ? (
             <NavItem
@@ -360,16 +317,12 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
                 className="w-full flex items-center gap-[12px] pl-[10px] pr-[10px] py-[8px] rounded-[8px] hover:bg-[#f2f6fa] transition-colors cursor-pointer"
               >
                 <span className="flex items-center justify-center size-[24px] text-[#262630] shrink-0">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-                  </svg>
+                  <IconBoardActions />
                 </span>
                 <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[14px] flex-1 text-left text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>
                   Board Actions
                 </span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={`transition-transform duration-200 text-[#9ca3af] shrink-0 ${boardActionsOpen ? "" : "rotate-180"}`}>
-                  <path d="M18 15l-6-6-6 6"/>
-                </svg>
+                <IconChevronUp className={`transition-transform duration-200 text-[#9ca3af] shrink-0 ${boardActionsOpen ? "" : "rotate-180"}`} />
               </button>
 
               {/* Sub-items */}
