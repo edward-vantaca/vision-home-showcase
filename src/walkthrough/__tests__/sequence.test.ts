@@ -50,6 +50,24 @@ describe("homeVisionSequence", () => {
     expect(stops[stops.length - 1].to).toBe(VT.PaymentModalCloseBtn);
   });
 
+  it("ARC request follows Payments: Quick Actions -> ARC Request -> fence form, then scrolls the form", () => {
+    const ids = homeVisionSequence.map((s) => s.id);
+    const payments = ids.indexOf("payments");
+    expect(ids.slice(payments, payments + 3)).toEqual(["payments", "arc-request", "ask-hoai"]);
+    const arc = homeVisionSequence[payments + 1];
+    // One cursor beat, so stepping back from Ask HOAi resets the scene and replays it.
+    expect(arc.beats.map((b) => b.kind)).toEqual(["cursor"]);
+    const demo = arc.beats[0];
+    if (demo.kind !== "cursor") throw new Error("arc-request has no cursor beat");
+    const stops = [{ to: demo.to, action: demo.action }, ...(demo.then ?? [])];
+    expect(stops.map((s) => [s.to, s.action])).toEqual([
+      [VT.QuickActionsBtn, "click"],
+      [VT.QuickActionsArcRequestBtn, "click"],
+      [VT.ArcFenceFormLink, "click"],
+      [VT.ArcFormPage, "scroll"],
+    ]);
+  });
+
   it("AutoPay starts on the confirm screen Create account lands on (keeps the welcome banner)", () => {
     // Its appState re-mounts the onboarding flow on scene entry; the standalone
     // "autopay" screen has no welcome banner, so it would vanish mid-demo.

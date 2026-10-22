@@ -141,6 +141,31 @@ describe("CursorBeat", () => {
     expect(held - base).toBeCloseTo(1, 5);
   });
 
+  it("a scroll stop eases its target's scroll to the bottom over scrollMs", async () => {
+    const PAGE = "wt-cursor-test-page" as VTName;
+    const page = document.createElement("div");
+    page.setAttribute("data-vt-name", PAGE);
+    Object.defineProperty(page, "scrollHeight", { configurable: true, value: 2400 });
+    Object.defineProperty(page, "clientHeight", { configurable: true, value: 800 });
+    document.body.appendChild(page);
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    const { unmount } = render(<CursorBeat to={TARGET} action="click" />);
+    await nextFrames();
+    const base = timeline.mock.results[0].value.duration();
+    unmount();
+
+    render(<CursorBeat to={TARGET} action="click" then={[{ to: PAGE, action: "scroll", scrollMs: 6000 }]} />);
+    await nextFrames();
+    const tl = timeline.mock.results[1].value;
+    expect(tl.duration() - base).toBeCloseTo(6, 5);
+    act(() => {
+      tl.progress(1);
+    });
+    expect(page.scrollTop).toBe(1600);
+    page.remove();
+  });
+
   it("never runs after unmount, even if the animations finish later", async () => {
     const morph = fakeAnimation(700);
     document.getAnimations = () => [morph.animation];

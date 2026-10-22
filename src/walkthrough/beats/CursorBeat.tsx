@@ -139,6 +139,24 @@ export function CursorBeat({
               }
             });
             tl.to({}, { duration: 0.15 });
+          } else if (stop.action === "scroll") {
+            // "scroll" stops don't move the cursor either — the target (a
+            // scrollable page) eases down to its bottom, measured when the
+            // scroll starts since an earlier click may have just rendered it.
+            const scroll = { y: 0 };
+            let page: HTMLElement | null = null;
+            tl.call(() => {
+              page = document.querySelector<HTMLElement>(`[data-vt-name="${stop.to}"]`);
+              scroll.y = page?.scrollTop ?? 0;
+            });
+            tl.to(scroll, {
+              y: () => (page ? page.scrollHeight - page.clientHeight : scroll.y),
+              duration: (stop.scrollMs ?? 4000) / 1000,
+              ease: "power1.inOut",
+              onUpdate: () => {
+                if (page) page.scrollTop = scroll.y;
+              },
+            });
           } else {
             // Travel to this stop. Function values are evaluated when this tween
             // starts, i.e. after every earlier stop's click has committed.

@@ -6,6 +6,7 @@ import { autopayScene } from "./autopay";
 import { goToPortalScene } from "./goToPortal";
 import { dashboardScene } from "./dashboard";
 import { paymentsScene } from "./payments";
+import { arcRequestScene } from "./arcRequest";
 import { askHoaiScene } from "./askHoai";
 import { closingDashboardScene } from "./closingDashboard";
 
@@ -17,6 +18,7 @@ export const homeVisionSequence: Sequence = [
   goToPortalScene,
   dashboardScene,
   paymentsScene,
+  arcRequestScene,
   askHoaiScene,
   closingDashboardScene,
 ];

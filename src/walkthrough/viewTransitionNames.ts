@@ -23,6 +23,10 @@ export const VT = {
   PaymentModalContinueBtn: "wt-payment-modal-continue-btn",
   PaymentModalConfirmBtn: "wt-payment-modal-confirm-btn",
   PaymentModalCloseBtn: "wt-payment-modal-close-btn",
+  QuickActionsBtn: "wt-quick-actions-btn",
+  QuickActionsArcRequestBtn: "wt-quick-actions-arc-request-btn",
+  ArcFenceFormLink: "wt-arc-fence-form-link",
+  ArcFormPage: "wt-arc-form-page",
 } as const
 
 export type VTName = typeof VT[keyof typeof VT]

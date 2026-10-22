@@ -302,6 +302,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
         <button
           onClick={onOpenQuickActions}
           data-ux-id="sidebar-quick-actions"
+          data-vt-name={VT.QuickActionsBtn}
           className="w-full flex items-center justify-center gap-[10px] px-[23px] py-[12px] rounded-[8px] border border-[#247ae4] hover:bg-[#f0f7ff] transition-colors shrink-0"
         >
           <span className="text-[#247ae4] font-bold text-[14px]">+</span>
@@ -438,6 +439,7 @@ function QuickActionsModal({
       key: "arc",
       label: "ARC Request",
       uxId: "sidebar-quick-actions-arc-request",
+      vtName: VT.QuickActionsArcRequestBtn,
       onClick: onSelectArc,
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -510,6 +512,7 @@ function QuickActionsModal({
                 key={option.key}
                 type="button"
                 data-ux-id={option.uxId}
+                data-vt-name={option.vtName}
                 onClick={option.onClick}
                 className="group flex flex-col items-center justify-center gap-[14px] rounded-[12px] border border-[#e2eaf0] bg-white px-[16px] py-[32px] text-center transition-all hover:border-[#247ae4] hover:bg-[#f6faff] hover:shadow-[0_4px_12px_rgba(36,122,228,0.08)]"
               >
@@ -537,6 +540,7 @@ function QuickActionsModal({
                     type="button"
                     onClick={() => onPickArcForm(form)}
                     data-ux-id={`quick-actions-arc-form-${form.id}`}
+                    data-vt-name={form.id === "fence" ? VT.ArcFenceFormLink : undefined}
                     className="group flex w-full items-center justify-between gap-[14px] px-[6px] py-[14px] text-left transition-colors hover:bg-[#f7fafd]"
                   >
                     <span className="flex items-center gap-[14px] min-w-0">
@@ -2849,7 +2853,7 @@ function ArcFormPage({
   const labelBase = "font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]";
 
   return (
-    <div data-ux-id="arc-form-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="arc-form-page" data-vt-name={VT.ArcFormPage} className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="arc-form-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
@@ -3044,13 +3048,16 @@ function MainApp({ onRestart }: MainAppProps) {
   const { page: scenePage, sceneId, scene } = useCursor();
   // Only drive activePage when the WALKTHROUGH scene changes. Having
   // activePage in the deps would snap manual sidebar nav right back to the
-  // scene's page every time the user tried to go somewhere else.
+  // scene's page every time the user tried to go somewhere else. Keyed on the
+  // scene, not its page: a scene that clicked away (ARC request lands on the
+  // fence form) must still hand the next same-page scene a clean dashboard.
   useEffect(() => {
     if (scenePage && scenePage !== "inbox" && scenePage !== "onboarding") {
       setActivePage(scenePage);
     }
-
-  }, [scenePage]);
+    setQuickActionsView(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sceneId]);
 
   // Launcher-driven sync for the rest of MainApp's state. Reads scene.appState
   // on sceneId change — manual toggles between scenes are preserved because

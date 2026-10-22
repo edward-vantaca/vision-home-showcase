@@ -7,9 +7,11 @@ export type Point = { x: number; y: number };
 
 export type CursorStop = {
   to: VTName;
-  action?: "click" | "hover" | "tab";
+  action?: "click" | "hover" | "tab" | "scroll";
   typeText?: string;
   typeCps?: number;
+  /** "scroll" stops: how long the target takes to scroll to its bottom. */
+  scrollMs?: number;
   /** Pause after this stop's action before moving on. */
   holdMs?: number;
   /**
