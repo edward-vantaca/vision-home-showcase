@@ -41,6 +41,15 @@ describe("homeVisionSequence", () => {
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
+  it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {
+    const payments = homeVisionSequence.find((s) => s.id === "payments");
+    const demo = payments?.beats.find((b) => b.kind === "cursor");
+    if (demo?.kind !== "cursor") throw new Error("payments has no cursor beat");
+    const stops = [{ to: demo.to, releaseStage: demo.releaseStage }, ...(demo.then ?? [])];
+    expect(stops.filter((s) => s.releaseStage).map((s) => s.to)).toEqual([VT.PaymentModalCloseBtn]);
+    expect(stops[stops.length - 1].to).toBe(VT.PaymentModalCloseBtn);
+  });
+
   it("AutoPay starts on the confirm screen Create account lands on (keeps the welcome banner)", () => {
     // Its appState re-mounts the onboarding flow on scene entry; the standalone
     // "autopay" screen has no welcome banner, so it would vanish mid-demo.

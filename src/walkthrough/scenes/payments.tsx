@@ -15,17 +15,16 @@ export const paymentsScene: Scene = {
       caption: "Dues, balances, and AutoPay — right where you land.",
     },
     {
-      // The lift stays on stage while the cursor waits for it to land and
-      // clicks Make a Payment; once the modal covers the screen the widget is
-      // released back into the dashboard, so closing the modal reveals it.
+      // The lift and its blurred backdrop stay on stage while the cursor
+      // clicks Make a Payment and runs through the modal; closing the modal
+      // releases the widget back into the dashboard and fades the blur out.
       kind: "cursor",
       to: VT.PaymentsMakePaymentBtn,
       action: "click",
-      releaseStage: true,
       then: [
         { to: VT.PaymentModalContinueBtn, action: "click" },
         { to: VT.PaymentModalConfirmBtn, action: "click", holdMs: 1000 },
-        { to: VT.PaymentModalCloseBtn, action: "click" },
+        { to: VT.PaymentModalCloseBtn, action: "click", releaseStage: true },
       ],
       replayOnBack: true,
     },

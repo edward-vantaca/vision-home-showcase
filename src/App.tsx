@@ -675,7 +675,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
   return (
     <div
       data-ux-id="payment-modal-backdrop"
-      className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
+      className="fixed inset-0 z-[300] flex items-center justify-center px-[16px]"
       onMouseDown={onClose}
     >
       <div
