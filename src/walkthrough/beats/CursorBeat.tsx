@@ -5,6 +5,7 @@ import gsap from "gsap";
 import type { VTName } from "../viewTransitionNames";
 import type { CursorStop } from "../types";
 import { beatBusyRef } from "../cursor";
+import { DROP_FILE_EVENT } from "../dropFile";
 
 type Point = { x: number; y: number };
 
@@ -15,6 +16,14 @@ function resolveCenter(name: string): Point | null {
   if (!el) return null;
   const r = el.getBoundingClientRect();
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+// Where a drop stop's cursor enters from: just past the right edge, as if the
+// file were dragged in from the desktop.
+function offscreenRight(): Point {
+  const w = typeof window !== "undefined" ? window.innerWidth : 1200;
+  const h = typeof window !== "undefined" ? window.innerHeight : 800;
+  return { x: w + 60, y: h * 0.62 };
 }
 
 function defaultStart(): Point {
@@ -63,6 +72,7 @@ function animationsSettled(): Promise<void> | null {
 export function CursorBeat({
   to,
   action,
+  file,
   durationMs,
   direction,
   typeText,
@@ -75,7 +85,8 @@ export function CursorBeat({
   onHideStage,
 }: {
   to: VTName;
-  action?: "click" | "hover";
+  action?: "click" | "hover" | "drop";
+  file?: string;
   durationMs?: number;
   direction?: "forward" | "back";
   typeText?: string;
@@ -88,12 +99,17 @@ export function CursorBeat({
   onHideStage?: () => void;
 }) {
   const cursorRef = useRef<HTMLDivElement>(null);
+  const fileCardRef = useRef<HTMLDivElement>(null);
   // Latest callback without restarting the timeline when the parent re-renders.
   const onReleaseStageRef = useRef(onReleaseStage);
   onReleaseStageRef.current = onReleaseStage;
   const onHideStageRef = useRef(onHideStage);
   onHideStageRef.current = onHideStage;
-  const start = lastCursorPoint ?? defaultStart();
+  // A beat that opens by dragging a file in starts off-screen, so the cursor
+  // isn't parked on screen while it waits for the scene's animations to settle.
+  const dropsFirst = action === "drop" && direction !== "back";
+  const start = dropsFirst ? offscreenRight() : lastCursorPoint ?? defaultStart();
+  const carriedFile = [{ action, file }, ...(then ?? [])].find((s) => s.action === "drop")?.file;
 
   useGSAP(
     () => {
@@ -103,7 +119,7 @@ export function CursorBeat({
       // Block arrow-key advance/back while this beat's animation is running.
       beatBusyRef.current = true;
 
-      const primary: CursorStop = { to, action, typeText, typeCps, holdMs, releaseStage, hideStage };
+      const primary: CursorStop = { to, action, file, typeText, typeCps, holdMs, releaseStage, hideStage };
       const stops: CursorStop[] = direction === "back" ? [{ to }] : [primary, ...(then ?? [])];
 
       const duration = (durationMs ?? 1000) / 1000;
@@ -157,6 +173,32 @@ export function CursorBeat({
                 if (page) page.scrollTop = scroll.y;
               },
             });
+          } else if (stop.action === "drop") {
+            // Carry the file card in from off-screen, let go over the target:
+            // the card shrinks away as the drop event lands on the target.
+            const card = fileCardRef.current;
+            let point: Point | null = null;
+            tl.set(el, { x: () => offscreenRight().x, y: () => offscreenRight().y });
+            if (card) tl.set(card, { opacity: 1, scale: 1 });
+            tl.to(el, {
+              x: () => {
+                point = resolveCenter(stop.to);
+                return point ? point.x : Number(gsap.getProperty(el, "x"));
+              },
+              y: () => (point ? point.y : Number(gsap.getProperty(el, "y"))),
+              duration: duration * 1.2,
+              ease: "power2.inOut",
+              onComplete: () => {
+                if (point) lastCursorPoint = point;
+              },
+            });
+            tl.to({}, { duration: 0.35 });
+            tl.call(() => {
+              document
+                .querySelector<HTMLElement>(`[data-vt-name="${stop.to}"]`)
+                ?.dispatchEvent(new CustomEvent(DROP_FILE_EVENT, { bubbles: true, detail: { name: stop.file ?? "" } }));
+            });
+            if (card) tl.to(card, { opacity: 0, scale: 0.6, duration: 0.2, ease: "power2.in" });
           } else {
             // Travel to this stop. Function values are evaluated when this tween
             // starts, i.e. after every earlier stop's click has committed.
@@ -260,7 +302,7 @@ export function CursorBeat({
         beatBusyRef.current = false;
       };
     },
-    { dependencies: [to, action, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
+    { dependencies: [to, action, file, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
   );
 
   // Rendered into <body> rather than .wt-root so the cursor paints above the
@@ -281,6 +323,12 @@ export function CursorBeat({
           strokeLinejoin="round"
         />
       </svg>
+      {carriedFile && (
+        <div ref={fileCardRef} className="wt-cursor-file" style={{ opacity: 0 }}>
+          <span className="wt-cursor-file-badge">PDF</span>
+          <span className="wt-cursor-file-name">{carriedFile}</span>
+        </div>
+      )}
     </div>,
     document.body,
   );

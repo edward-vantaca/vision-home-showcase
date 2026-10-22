@@ -68,6 +68,19 @@ describe("homeVisionSequence", () => {
     ]);
   });
 
+  it("Ask HOAi drops the fence proposal into the chat, then asks to submit it as an ARC request", () => {
+    const askHoai = homeVisionSequence.find((s) => s.id === "ask-hoai");
+    const demo = askHoai?.beats[0];
+    if (demo?.kind !== "cursor") throw new Error("ask-hoai has no cursor beat");
+    expect([demo.to, demo.action, demo.file]).toEqual([VT.AskHoaiDropZone, "drop", "Fence Proposal.pdf"]);
+    const [type, send] = demo.then ?? [];
+    expect([type?.to, type?.typeText]).toEqual([
+      VT.AskHoaiInput,
+      "I have this fence proposal. Can you help me submit it as an ARC request?",
+    ]);
+    expect(send?.to).toBe(VT.AskHoaiSendBtn);
+  });
+
   it("AutoPay starts on the confirm screen Create account lands on (keeps the welcome banner)", () => {
     // Its appState re-mounts the onboarding flow on scene entry; the standalone
     // "autopay" screen has no welcome banner, so it would vanish mid-demo.

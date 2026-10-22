@@ -2,23 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight } from "lucide-react";
+import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight, X } from "lucide-react";
 import { VT } from "../walkthrough/viewTransitionNames";
+import { DROP_FILE_EVENT } from "../walkthrough/dropFile";
 
 // Bind useGSAP to this module's gsap instance. Under Vitest, @gsap/react's CJS
 // build can load a second copy of gsap, so without this its context would not
 // see (and on unmount would not kill) tweens created here.
 gsap.registerPlugin(useGSAP);
 
-type ChatMessage = { role: "user" | "agent"; text: string };
+type ChatMessage = { role: "user" | "agent"; text: string; attachment?: string };
 
 const AGENT_FENCE_REPLY =
-  "Absolutely — fence replacements at Waterfront require an Architectural Review Committee (ARC) request before any work begins.\n\n" +
-  "To get started I'll need:\n" +
-  "  • A sketch or photo showing the proposed fence (height, material, location)\n" +
-  "  • An estimate from a licensed contractor\n" +
-  "  • A quick plot showing your lot boundaries\n\n" +
-  "Want me to open a draft ARC request for 5201 N Roxboro St and pre-fill what I already know?";
+  "Got it — I've read your fence proposal: a 6 ft white vinyl privacy fence, about 120 linear ft along the rear property line.\n\n" +
+  "It meets Waterfront's fence guidelines. Want me to fill out the Fence Installation ARC request with these details and attach your proposal?";
 
 // The panel morphs between three `position: fixed` forms. Every animated
 // property (left, top/bottom, width, translate) is explicit in each form so
@@ -116,6 +113,9 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [agentTyping, setAgentTyping] = useState(false);
+  // File dropped on the input (the walkthrough drags one in), sent with the
+  // next message.
+  const [attachment, setAttachment] = useState<string | null>(null);
   // Every timer the scripted conversation schedules is tracked here so leaving
   // the scene (or unmounting) can stop the whole script at once. Timeouts and
   // intervals are kept apart because fake timers reject cross-clearing.
@@ -179,6 +179,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     setMessages([]);
     setAgentTyping(false);
     setInput("");
+    setAttachment(null);
   }
 
   // When the walkthrough advances past the Ask HOAi scene (focused flips to
@@ -212,6 +213,15 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focused]);
 
+  // A cursor "drop" stop lands a file on the input; it bubbles up to the panel.
+  useEffect(() => {
+    const root = panelRootRef.current;
+    if (!root) return;
+    const onDrop = (event: Event) => setAttachment((event as CustomEvent<{ name: string }>).detail.name);
+    root.addEventListener(DROP_FILE_EVENT, onDrop);
+    return () => root.removeEventListener(DROP_FILE_EVENT, onDrop);
+  }, []);
+
   // Unmount: stop the script and any pending reset.
   useEffect(
     () => () => {
@@ -231,10 +241,11 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   // flight; as a defensive fallback for any other caller, a push during a
   // morph reverts it, flushes its pending commit, then commits directly —
   // order is kept and the UI is never left half-faded.
-  const pushUserMessage = contextSafe((text: string) => {
+  const pushUserMessage = contextSafe((text: string, attached?: string) => {
     const commit = () => {
-      setMessages((prev) => [...prev, { role: "user", text }]);
+      setMessages((prev) => [...prev, { role: "user", text, attachment: attached }]);
       setInput("");
+      setAttachment(null);
     };
 
     if (morphRef.current) {
@@ -349,7 +360,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     // Morph welcome/questions out, slide the input down to the chat footer,
     // and fade the first user bubble in — all in one browser-driven transition
     // so the layout change feels like one motion instead of a jump.
-    pushUserMessage(text);
+    pushUserMessage(text, attachment ?? undefined);
     // Short pause, then show the typing indicator.
     later(() => setAgentTyping(true), 500);
     // Then type out the first reply; when it finishes, chain the user's follow-up.
@@ -398,18 +409,21 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
         <>
           <div ref={scrollRef} data-ash-section="thread" className="flex-1 overflow-y-auto px-5 pt-6 pb-4 flex flex-col gap-3">
             {messages.map((m, i) => (
-              <MessageBubble key={i} role={m.role} text={m.text} />
+              <MessageBubble key={i} role={m.role} text={m.text} attachment={m.attachment} />
             ))}
             {agentTyping && <TypingDots />}
           </div>
           <div
             data-ash-section="input"
+            data-vt-name={VT.AskHoaiDropZone}
             className="mx-5 mb-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
           >
             <ChatInput
               input={input}
               onChange={setInput}
               onSend={handleSend}
+              attachment={attachment}
+              onRemoveAttachment={() => setAttachment(null)}
             />
           </div>
         </>
@@ -425,12 +439,15 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
           {/* Input */}
           <div
             data-ash-section="input"
+            data-vt-name={VT.AskHoaiDropZone}
             className="mt-5 border-2 border-[#247ae4] rounded-xl p-3 bg-white"
           >
             <ChatInput
               input={input}
               onChange={setInput}
               onSend={handleSend}
+              attachment={attachment}
+              onRemoveAttachment={() => setAttachment(null)}
             />
           </div>
 
@@ -471,17 +488,48 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   );
 }
 
+function FileCard({ name, uxId, onRemove }: { name: string; uxId: string; onRemove?: () => void }) {
+  return (
+    <div
+      data-ux-id={uxId}
+      className="flex items-center gap-2.5 w-fit max-w-full rounded-lg border border-[#e2e8f0] bg-white py-2 pl-2 pr-3 shadow-[0_2px_8px_rgba(18,17,48,0.06)]"
+    >
+      <span className="grid place-items-center shrink-0 w-[26px] h-[32px] rounded-[4px] bg-[#e5484d] text-white text-[8px] font-bold tracking-[0.04em]">
+        PDF
+      </span>
+      <span className="flex flex-col min-w-0">
+        <span className="truncate text-[13px] font-medium text-[#262630]">{name}</span>
+        <span className="text-[11px] text-[#8a8a96]">PDF · 1.2 MB</span>
+      </span>
+      {onRemove && (
+        <button type="button" aria-label={`Remove ${name}`} onClick={onRemove} className="ml-1 p-0.5 rounded text-[#8a8a96] hover:text-[#262630]">
+          <X size={13} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ChatInput({
   input,
   onChange,
   onSend,
+  attachment,
+  onRemoveAttachment,
 }: {
   input: string;
   onChange: (v: string) => void;
   onSend: () => void;
+  attachment: string | null;
+  onRemoveAttachment: () => void;
 }) {
   return (
     <>
+      {attachment && (
+        <div className="mb-2 animate-[askhoai-file-in_320ms_cubic-bezier(0.34,1.56,0.64,1)]">
+          <FileCard name={attachment} uxId="askhoai-attachment-chip" onRemove={onRemoveAttachment} />
+        </div>
+      )}
       <textarea
         value={input}
         onChange={(e) => onChange(e.target.value)}
@@ -511,11 +559,14 @@ function ChatInput({
   );
 }
 
-function MessageBubble({ role, text }: { role: "user" | "agent"; text: string }) {
+function MessageBubble({ role, text, attachment }: { role: "user" | "agent"; text: string; attachment?: string }) {
   if (role === "user") {
     return (
-      <div className="self-end max-w-[80%] bg-[#247ae4] text-white text-[14px] leading-relaxed rounded-2xl rounded-br-md px-4 py-2.5 shadow-sm">
-        {text}
+      <div className="self-end max-w-[80%] flex flex-col items-end gap-1.5">
+        {attachment && <FileCard name={attachment} uxId="askhoai-message-attachment" />}
+        <div className="bg-[#247ae4] text-white text-[14px] leading-relaxed rounded-2xl rounded-br-md px-4 py-2.5 shadow-sm">
+          {text}
+        </div>
       </div>
     );
   }

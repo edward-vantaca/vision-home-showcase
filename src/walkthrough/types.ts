@@ -7,11 +7,13 @@ export type Point = { x: number; y: number };
 
 export type CursorStop = {
   to: VTName;
-  action?: "click" | "hover" | "tab" | "scroll";
+  action?: "click" | "hover" | "tab" | "scroll" | "drop";
   typeText?: string;
   typeCps?: number;
   /** "scroll" stops: how long the target takes to scroll to its bottom. */
   scrollMs?: number;
+  /** "drop" stops: the file the cursor carries in from off-screen and drops. */
+  file?: string;
   /** Pause after this stop's action before moving on. */
   holdMs?: number;
   /**
@@ -41,7 +43,8 @@ export type Beat =
   | {
       kind: "cursor";
       to: VTName;
-      action?: "click" | "hover";
+      action?: "click" | "hover" | "drop";
+      file?: string;
       durationMs?: number;
       caption?: string;
       reverseTo?: VTName;

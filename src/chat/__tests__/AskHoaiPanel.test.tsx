@@ -3,6 +3,7 @@ import { render, act, fireEvent } from "@testing-library/react";
 import gsap from "gsap";
 import type { ReactNode } from "react";
 import AskHoaiPanel from "../AskHoaiPanel";
+import { DROP_FILE_EVENT } from "../../walkthrough/dropFile";
 
 function panel(props: { open: boolean; focused?: boolean }) {
   const { container } = render(<AskHoaiPanel onCollapse={() => {}} {...props} />);
@@ -129,8 +130,8 @@ describe("AskHoaiPanel welcome -> thread morph", () => {
     expect(userBubbles).toHaveLength(1);
     const agentBubbles = thread.querySelectorAll(".whitespace-pre-wrap");
     expect(agentBubbles).toHaveLength(1);
-    expect(agentBubbles[0].textContent).toMatch(/^Absolutely/);
-    expect(agentBubbles[0].textContent).toMatch(/what I already know\?$/);
+    expect(agentBubbles[0].textContent).toMatch(/^Got it/);
+    expect(agentBubbles[0].textContent).toMatch(/attach your proposal\?$/);
     expect(thread.children).toHaveLength(2);
   });
 
@@ -246,5 +247,49 @@ describe("AskHoaiPanel welcome -> thread morph", () => {
     expect(container.querySelector('[data-ash-section="welcome"]')).toBeInTheDocument();
     expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  function dropFile(container: HTMLElement, name: string) {
+    const zone = container.querySelector<HTMLElement>('[data-vt-name="wt-askhoai-drop-zone"]')!;
+    act(() => {
+      zone.dispatchEvent(new CustomEvent(DROP_FILE_EVENT, { bubbles: true, detail: { name } }));
+    });
+  }
+
+  it("a file dropped on the input shows as an attachment chip", () => {
+    const { container } = render(<AskHoaiPanel open={true} onCollapse={() => {}} focused={true} />);
+    dropFile(container, "Fence Proposal.pdf");
+    const input = container.querySelector<HTMLElement>('[data-ash-section="input"]')!;
+    expect(input.querySelector('[data-ux-id="askhoai-attachment-chip"]')?.textContent).toContain("Fence Proposal.pdf");
+  });
+
+  it("sending carries the attachment into the user's message and clears the chip", () => {
+    const { container, welcomeEl, questionsEl } = (() => {
+      const utils = render(<AskHoaiPanel open={true} onCollapse={() => {}} focused={true} />);
+      dropFile(utils.container, "Fence Proposal.pdf");
+      const textarea = utils.container.querySelector<HTMLTextAreaElement>('[data-vt-name="wt-askhoai-input"]')!;
+      fireEvent.change(textarea, { target: { value: MSG } });
+      const welcomeEl = utils.container.querySelector<HTMLElement>('[data-ash-section="welcome"]')!;
+      const questionsEl = utils.container.querySelector<HTMLElement>('[data-ash-section="questions"]')!;
+      act(() => {
+        utils.container.querySelector<HTMLButtonElement>('[data-vt-name="wt-askhoai-send-btn"]')!.click();
+      });
+      return { ...utils, welcomeEl, questionsEl };
+    })();
+    completeMorph(container, welcomeEl, questionsEl);
+    const thread = container.querySelector<HTMLElement>('[data-ash-section="thread"]')!;
+    expect(thread.querySelector('[data-ux-id="askhoai-message-attachment"]')?.textContent).toContain("Fence Proposal.pdf");
+    expect(container.querySelector('[data-ux-id="askhoai-attachment-chip"]')).toBeNull();
+  });
+
+  it("leaving the scene clears a dropped attachment", () => {
+    const { container, rerender } = render(<AskHoaiPanel open={true} onCollapse={() => {}} focused={true} />);
+    dropFile(container, "Fence Proposal.pdf");
+    rerenderFocused(rerender, false);
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    rerenderFocused(rerender, true);
+    expect(container.querySelector('[data-ux-id="askhoai-attachment-chip"]')).toBeNull();
   });
 });

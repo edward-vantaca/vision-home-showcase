@@ -82,6 +82,7 @@ export function WalkthroughOverlay() {
         <CursorBeat
           to={beat.to}
           action={beat.action}
+          file={beat.file}
           durationMs={beat.durationMs}
           direction={direction}
           typeText={beat.typeText}

@@ -3,6 +3,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import gsap from "gsap";
 import { CursorBeat } from "../CursorBeat";
 import type { VTName } from "../../viewTransitionNames";
+import { DROP_FILE_EVENT } from "../../dropFile";
 
 const TARGET = "wt-cursor-test" as VTName;
 
@@ -164,6 +165,22 @@ describe("CursorBeat", () => {
     });
     expect(page.scrollTop).toBe(1600);
     page.remove();
+  });
+
+  it("a drop stop carries a file card in and drops that file on its target", async () => {
+    const dropped = vi.fn();
+    target.addEventListener(DROP_FILE_EVENT, (e) => dropped((e as CustomEvent<{ name: string }>).detail.name));
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    const { getByText } = render(<CursorBeat to={TARGET} action="drop" file="Fence Proposal.pdf" />);
+    expect(getByText("Fence Proposal.pdf")).toBeInTheDocument();
+    await nextFrames();
+    expect(dropped).not.toHaveBeenCalled();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+
+    expect(dropped).toHaveBeenCalledWith("Fence Proposal.pdf");
   });
 
   it("never runs after unmount, even if the animations finish later", async () => {

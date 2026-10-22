@@ -18,6 +18,7 @@ export const VT = {
   PortalBackToDone: "wt-portal-back-to-done",
   AskHoaiInput: "wt-askhoai-input",
   AskHoaiSendBtn: "wt-askhoai-send-btn",
+  AskHoaiDropZone: "wt-askhoai-drop-zone",
   PaymentsWidget: "wt-payments-widget",
   PaymentsMakePaymentBtn: "wt-payments-make-payment-btn",
   PaymentModalContinueBtn: "wt-payment-modal-continue-btn",
