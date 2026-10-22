@@ -2832,10 +2832,12 @@ function OffersPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 }
 
 function ArcFormPage({
+  formId,
   formLabel,
   onOpenSidebar,
   onCancel,
 }: {
+  formId: string;
   formLabel: string;
   onOpenSidebar: () => void;
   onCancel: () => void;
@@ -2848,9 +2850,22 @@ function ArcFormPage({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [attachment, setAttachment] = useState("");
+  const [fence, setFence] = useState({ material: "", style: "", height: "", color: "", length: "", gates: "", contractor: "" });
+  const setFenceField = (field: keyof typeof fence) => (event: { target: { value: string } }) =>
+    setFence((prev) => ({ ...prev, [field]: event.target.value }));
 
   const inputBase = "h-[44px] w-full rounded-[8px] border border-[#cfd3da] bg-white px-[14px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/40 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15";
   const labelBase = "font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]";
+  const subLabelBase = "font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]";
+  const selectBase = `${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`;
+  const selectChevron = { backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" };
+  const fenceSelects: ReadonlyArray<{ field: keyof typeof fence; label: string; placeholder: string; options: string[] }> = [
+    { field: "material", label: "Material", placeholder: "Select material", options: ["Wood (cedar)", "Wood (pressure-treated pine)", "Vinyl", "Aluminum", "Wrought iron", "Composite", "Chain link"] },
+    { field: "style", label: "Style", placeholder: "Select style", options: ["Privacy", "Semi-privacy / shadowbox", "Picket", "Split rail", "Ornamental"] },
+    { field: "height", label: "Height", placeholder: "Select height", options: ["3 ft", "4 ft", "5 ft", "6 ft"] },
+    { field: "color", label: "Color / Finish", placeholder: "Select color", options: ["Natural wood (clear sealant)", "White", "Tan", "Gray", "Black", "Brown stain"] },
+    { field: "gates", label: "Gates", placeholder: "Select gates", options: ["No gate", "1 walk gate", "2 walk gates", "Double drive gate"] },
+  ];
 
   return (
     <div data-ux-id="arc-form-page" data-vt-name={VT.ArcFormPage} className="flex-1 min-w-0 h-full overflow-y-auto">
@@ -2936,6 +2951,59 @@ function ArcFormPage({
               <option value="exterior">Exterior</option>
             </select>
           </label>
+
+          {formId === "fence" && (
+            <fieldset data-ux-id="arc-form-fence-details" className="flex flex-col gap-[16px] rounded-[10px] border border-[#e2eaf0] px-[18px] py-[18px]">
+              <legend className="sr-only">Fence Details</legend>
+              <div className="flex flex-col gap-[4px]">
+                <p className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Fence Details</p>
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Fences must not exceed 6 ft and must be set back from sidewalks per the Architectural Guidelines.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+                {fenceSelects.map((select) => (
+                  <label key={select.field} className="flex flex-col gap-[6px]">
+                    <span className={subLabelBase} style={{ fontVariationSettings: '"opsz" 14' }}>{select.label}</span>
+                    <select
+                      value={fence[select.field]}
+                      onChange={setFenceField(select.field)}
+                      data-ux-id={`arc-form-fence-${select.field}`}
+                      className={selectBase}
+                      style={selectChevron}
+                    >
+                      <option value="">{select.placeholder}</option>
+                      {select.options.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+                <label className="flex flex-col gap-[6px]">
+                  <span className={subLabelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Total Length (linear ft)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={fence.length}
+                    onChange={setFenceField("length")}
+                    placeholder="e.g. 120"
+                    data-ux-id="arc-form-fence-length"
+                    className={inputBase}
+                  />
+                </label>
+              </div>
+              <label className="flex flex-col gap-[6px]">
+                <span className={subLabelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Contractor</span>
+                <input
+                  value={fence.contractor}
+                  onChange={setFenceField("contractor")}
+                  placeholder="Company name, or self-installed"
+                  data-ux-id="arc-form-fence-contractor"
+                  className={inputBase}
+                />
+              </label>
+            </fieldset>
+          )}
 
           <fieldset className="flex flex-col gap-[12px] rounded-[10px] border border-[#e2eaf0] bg-[#f6f9fc] px-[18px] py-[18px]">
             <legend className="sr-only">Architectural Forms</legend>
@@ -3107,6 +3175,8 @@ function MainApp({ onRestart }: MainAppProps) {
           <AmenitiesPage onOpenSidebar={() => setSidebarOpen(true)} />
         ) : activePage === "arc-form" && arcForm ? (
           <ArcFormPage
+            key={arcForm.id}
+            formId={arcForm.id}
             formLabel={arcForm.label}
             onOpenSidebar={() => setSidebarOpen(true)}
             onCancel={() => navigate("dashboard")}
