@@ -187,19 +187,13 @@ describe("WalkthroughOverlay stage held through a cursor beat", () => {
     expect(widget.style.position).toBe("fixed");
     expect(backdropKind()).toBe("lift");
 
-    // Run the cursor timeline: click, then release the stage. The widget glides
-    // home (still pinned, transform back to identity) while the blur fades.
+    // Run the cursor timeline: click, then release the stage.
     act(() => {
       timeline.mock.results[0].value.progress(1);
     });
     await nextFrames();
-    expect(widget.style.position).toBe("fixed");
-    expect(widget.style.transform).toBe("translate(0px, 0px) scale(1)");
-    expect(widget.style.transition).toContain("transform");
-    expect(backdropKind()).toBe("cursor");
-
-    await step("advance"); // idle: styles restored once it's home
     expect(hasNoStyle(widget)).toBe(true);
+    expect(backdropKind()).toBe("cursor");
   });
 
   it("hideStage fades the staged widget out but keeps it lifted with the blur up", async () => {
@@ -224,10 +218,7 @@ describe("WalkthroughOverlay stage held through a cursor beat", () => {
       timeline.mock.results[0].value.progress(1);
     });
     await nextFrames();
-    // Released: glides home and fades back in (opacity returns to its original value).
-    expect(widget.style.position).toBe("fixed");
-    expect(widget.style.transform).toBe("translate(0px, 0px) scale(1)");
-    expect(widget.style.opacity).toBe("");
+    expect(hasNoStyle(widget)).toBe(true);
     expect(backdropKind()).toBe("cursor");
   });
 
