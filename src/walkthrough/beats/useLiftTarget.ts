@@ -47,6 +47,8 @@ type Entry = {
   rect: DOMRect;
   /** Transform the most recent claimant aimed for (may not be applied yet). */
   transform: string;
+  /** Invisible stand-in that keeps the element's layout slot while it's fixed. */
+  spacer: HTMLElement;
   pendingRestore: boolean;
 };
 
@@ -85,6 +87,25 @@ function warnOnContainingBlockAncestors(el: HTMLElement, name: string) {
       }
     }
   }
+}
+
+// position:fixed takes the element out of flow, so its siblings would close
+// the gap (the dashboard widget below slides up). Hold the slot with an empty
+// element carrying the same classes and inline styles (same grid/flex
+// placement, margins) at the measured size. No data-vt-name or id, so it is
+// never matched as a target. Call before mutating el's inline styles.
+function createSpacer(el: HTMLElement, rect: DOMRect): HTMLElement {
+  const spacer = document.createElement(el.tagName);
+  spacer.className = el.className;
+  spacer.style.cssText = el.style.cssText;
+  spacer.style.width = `${rect.width}px`;
+  spacer.style.height = `${rect.height}px`;
+  spacer.style.visibility = "hidden";
+  spacer.style.pointerEvents = "none";
+  spacer.setAttribute("aria-hidden", "true");
+  spacer.setAttribute("data-wt-lift-spacer", "");
+  el.before(spacer);
+  return spacer;
 }
 
 function liftTransform(rect: DOMRect, scale: number, position: "center" | Point): string {
@@ -151,6 +172,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
           saved,
           rect,
           transform: liftTransform(rect, scale, position),
+          spacer: createSpacer(el, rect),
           pendingRestore: false,
         };
         entries.set(el, entry);
@@ -208,6 +230,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
       queueMicrotask(() => {
         if (!entry.pendingRestore || entries.get(el) !== entry) return;
         Object.assign(el.style, entry.saved);
+        entry.spacer.remove();
         entries.delete(el);
       });
     };

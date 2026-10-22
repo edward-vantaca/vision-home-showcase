@@ -111,6 +111,41 @@ describe("LiftBeat", () => {
     expect(target.style.margin).toBe("8px");
   });
 
+  it("holds the target's layout slot with an invisible spacer while lifted", async () => {
+    const parent = document.createElement("div");
+    document.body.appendChild(parent);
+    added.push(parent);
+    const before = document.createElement("section");
+    const target = document.createElement("div");
+    target.setAttribute("data-vt-name", "wt-test");
+    target.className = "col-span-2 rounded-2xl";
+    target.id = "payments";
+    const after = document.createElement("section");
+    parent.append(before, target, after);
+    target.getBoundingClientRect = () =>
+      ({ top: 100, left: 40, width: 320, height: 180, right: 360, bottom: 280, x: 40, y: 100 }) as DOMRect;
+
+    const { unmount } = render(<LiftBeat target="wt-test" />);
+
+    const spacer = target.previousElementSibling as HTMLElement;
+    expect(spacer).not.toBe(before);
+    expect(Array.from(parent.children)).toEqual([before, spacer, target, after]);
+    // Same classes → same grid/flex slot; explicit size → same footprint.
+    expect(spacer.className).toBe("col-span-2 rounded-2xl");
+    expect(spacer.style.width).toBe("320px");
+    expect(spacer.style.height).toBe("180px");
+    expect(spacer.style.visibility).toBe("hidden");
+    expect(spacer.getAttribute("aria-hidden")).toBe("true");
+    // Must never be found as a lift/cursor target or collide on id.
+    expect(spacer.hasAttribute("data-vt-name")).toBe(false);
+    expect(spacer.id).toBe("");
+    expect(spacer.childElementCount).toBe(0);
+
+    unmount();
+    await flushMicrotasks();
+    expect(Array.from(parent.children)).toEqual([before, target, after]);
+  });
+
   it("ignores stale wt-stage-slot elements", () => {
     const stale = makeTarget();
     stale.classList.add("wt-stage-slot");

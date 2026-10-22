@@ -203,6 +203,21 @@ describe("lift → expand handoff", () => {
     expect(records.every((r) => (r.oldValue ?? "").includes("position: fixed"))).toBe(true);
   });
 
+  it("keeps exactly one spacer across a lift → expand handoff, removed at the end", async () => {
+    const target = makeTarget();
+    const parent = target.parentElement!;
+    const countSpacers = () => parent.querySelectorAll("[data-wt-lift-spacer]").length;
+
+    const { rerender, unmount } = render(<Stage kind="lift" />);
+    expect(countSpacers()).toBe(1);
+    rerender(<Stage kind="expand" />);
+    await flushMicrotasks();
+    expect(countSpacers()).toBe(1);
+    unmount();
+    await flushMicrotasks();
+    expect(countSpacers()).toBe(0);
+  });
+
   it("restores the original snapshot (not lifted values) after the handoff ends", async () => {
     const target = makeTarget({ position: "relative", width: "50%" });
 
