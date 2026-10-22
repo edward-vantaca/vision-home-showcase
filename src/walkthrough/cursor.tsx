@@ -21,6 +21,9 @@ export function cursorReducer(
       const { sceneIndex, beatIndex } = state.cursor;
       const scene = sequence[sceneIndex];
       if (!scene) return state;
+      if (state.replayOnAdvance) {
+        return { ...state, lastDirection: "forward", replayOnAdvance: false };
+      }
       if (beatIndex + 1 < scene.beats.length) {
         return { ...state, cursor: { sceneIndex, beatIndex: beatIndex + 1 }, lastDirection: "forward" };
       }
@@ -32,16 +35,22 @@ export function cursorReducer(
     case "back": {
       const { sceneIndex, beatIndex } = state.cursor;
       if (beatIndex > 0) {
-        return { ...state, cursor: { sceneIndex, beatIndex: beatIndex - 1 }, lastDirection: "back" };
+        return { ...state, cursor: { sceneIndex, beatIndex: beatIndex - 1 }, lastDirection: "back", replayOnAdvance: false };
       }
       if (sceneIndex > 0) {
         const prev = sequence[sceneIndex - 1];
-        return { ...state, cursor: { sceneIndex: sceneIndex - 1, beatIndex: prev.beats.length - 1 }, lastDirection: "back" };
+        const lastBeatIndex = prev.beats.length - 1;
+        return {
+          ...state,
+          cursor: { sceneIndex: sceneIndex - 1, beatIndex: lastBeatIndex },
+          lastDirection: "back",
+          replayOnAdvance: prev.beats[lastBeatIndex]?.kind === "cursor",
+        };
       }
       return state;
     }
     case "jumpTo":
-      return { ...state, cursor: action.cursor, lastDirection: "forward" };
+      return { ...state, cursor: action.cursor, lastDirection: "forward", replayOnAdvance: false };
     case "toggleHud":
       return { ...state, hudVisible: !state.hudVisible };
     default:

@@ -58,6 +58,10 @@ export type WalkthroughState = {
   cursor: Cursor;
   hudVisible: boolean;
   lastDirection?: "forward" | "back";
+  // Set when `back` crosses a scene boundary onto a cursor beat. The scene's
+  // appState resets the app to the scene's start, undoing that beat's click,
+  // so the next `advance` replays the beat forward instead of moving past it.
+  replayOnAdvance?: boolean;
 };
 
 export type WalkthroughAction =
