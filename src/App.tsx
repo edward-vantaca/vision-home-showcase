@@ -2856,7 +2856,6 @@ function ArcFormPage({
 
   const inputBase = "h-[44px] w-full rounded-[8px] border border-[#cfd3da] bg-white px-[14px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/40 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15";
   const labelBase = "font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]";
-  const subLabelBase = "font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]";
   const selectBase = `${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`;
   const selectChevron = { backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" };
   const fenceSelects: ReadonlyArray<{ field: keyof typeof fence; label: string; placeholder: string; options: string[] }> = [
@@ -2953,18 +2952,11 @@ function ArcFormPage({
           </label>
 
           {formId === "fence" && (
-            <fieldset data-ux-id="arc-form-fence-details" className="flex flex-col gap-[16px] rounded-[10px] border border-[#e2eaf0] px-[18px] py-[18px]">
-              <legend className="sr-only">Fence Details</legend>
-              <div className="flex flex-col gap-[4px]">
-                <p className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Fence Details</p>
-                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Fences must not exceed 6 ft and must be set back from sidewalks per the Architectural Guidelines.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+            <div data-ux-id="arc-form-fence-details" className="flex flex-col gap-[22px]">
+              <div className="grid grid-cols-1 gap-[22px] sm:grid-cols-2">
                 {fenceSelects.map((select) => (
-                  <label key={select.field} className="flex flex-col gap-[6px]">
-                    <span className={subLabelBase} style={{ fontVariationSettings: '"opsz" 14' }}>{select.label}</span>
+                  <label key={select.field} className="flex flex-col gap-[8px]">
+                    <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>{select.label}</span>
                     <select
                       value={fence[select.field]}
                       onChange={setFenceField(select.field)}
@@ -2979,8 +2971,8 @@ function ArcFormPage({
                     </select>
                   </label>
                 ))}
-                <label className="flex flex-col gap-[6px]">
-                  <span className={subLabelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Total Length (linear ft)</span>
+                <label className="flex flex-col gap-[8px]">
+                  <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Total Length (linear ft)</span>
                   <input
                     type="number"
                     min={0}
@@ -2992,8 +2984,8 @@ function ArcFormPage({
                   />
                 </label>
               </div>
-              <label className="flex flex-col gap-[6px]">
-                <span className={subLabelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Contractor</span>
+              <label className="flex flex-col gap-[8px]">
+                <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Contractor</span>
                 <input
                   value={fence.contractor}
                   onChange={setFenceField("contractor")}
@@ -3002,7 +2994,7 @@ function ArcFormPage({
                   className={inputBase}
                 />
               </label>
-            </fieldset>
+            </div>
           )}
 
           <fieldset className="flex flex-col gap-[12px] rounded-[10px] border border-[#e2eaf0] bg-[#f6f9fc] px-[18px] py-[18px]">
