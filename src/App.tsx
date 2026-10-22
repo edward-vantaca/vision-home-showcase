@@ -3216,6 +3216,10 @@ export default function App() {
   // When the walkthrough scrubs back from portal, we re-enter onboarding on
   // the done screen (not the default account screen).
   const [onboardingReturnScreen, setOnboardingReturnScreen] = useState<OnboardingScreen | undefined>(undefined);
+  // The register CTA "loads" the onboarding flow: a spinner covers it for about
+  // a second. Its fade-out is a finite CSS animation, so a walkthrough cursor
+  // beat started meanwhile waits it out before moving.
+  const [registerLoading, setRegisterLoading] = useState(false);
 
   // Scene-jump sync: when the launcher jumps to a scene whose appState
   // declares a different phase (and optional onboarding sub-screen), snap
@@ -3238,7 +3242,10 @@ export default function App() {
   if (phase === "inbox") {
     return (
       <InboxPage
-        onRegister={() => setPhase("onboarding")}
+        onRegister={() => {
+          setRegisterLoading(true);
+          setPhase("onboarding");
+        }}
         selectedId={selectedEmailId}
         onSelect={setSelectedEmailId}
       />
@@ -3255,11 +3262,25 @@ export default function App() {
           }}
           initialScreen={onboardingReturnScreen}
         />
+        {registerLoading && (
+          <div
+            data-ux-id="onboarding-loader"
+            className="fixed inset-0 z-[240] flex items-center justify-center bg-white animate-[onboarding-loader-out_1250ms_ease-out_forwards]"
+            onAnimationEnd={(event) => {
+              if (event.target === event.currentTarget) setRegisterLoading(false);
+            }}
+          >
+            <div role="status" aria-label="Loading" className="size-[44px] rounded-full border-[3px] border-[#d9e7f0] border-t-[#247ae4] animate-spin" />
+          </div>
+        )}
         {/* Walkthrough-only reverse hook: click target for ArrowLeft from the inbox CTA beat */}
         <button
           type="button"
           data-vt-name={VT.OnboardingBackToInbox}
-          onClick={() => setPhase("inbox")}
+          onClick={() => {
+            setRegisterLoading(false);
+            setPhase("inbox");
+          }}
           className="sr-only"
           tabIndex={-1}
           aria-hidden="true"
