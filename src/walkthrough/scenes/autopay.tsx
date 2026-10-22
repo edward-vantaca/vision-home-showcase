@@ -5,7 +5,7 @@ export const autopayScene: Scene = {
   id: "autopay",
   label: "AutoPay enrollment",
   page: "onboarding",
-  appState: { phase: "onboarding", onboardingScreen: "autopay" },
+  appState: { phase: "onboarding", onboardingScreen: "confirm" },
   beats: [
     {
       kind: "cursor",

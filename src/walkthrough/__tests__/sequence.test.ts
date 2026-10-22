@@ -41,6 +41,13 @@ describe("homeVisionSequence", () => {
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
+  it("AutoPay starts on the confirm screen Create account lands on (keeps the welcome banner)", () => {
+    // Its appState re-mounts the onboarding flow on scene entry; the standalone
+    // "autopay" screen has no welcome banner, so it would vanish mid-demo.
+    const autopay = homeVisionSequence.find((s) => s.id === "autopay");
+    expect(autopay?.appState).toEqual({ phase: "onboarding", onboardingScreen: "confirm" });
+  });
+
   it("every scene has at least one beat", () => {
     for (const scene of homeVisionSequence) {
       expect(scene.beats.length).toBeGreaterThan(0);
