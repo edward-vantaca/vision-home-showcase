@@ -179,6 +179,16 @@ function AddressCard() {
 type Page = "dashboard" | "elections" | "community" | "amenities" | "arc-form" | "offers";
 type DashboardView = "homeowner" | "board";
 
+/* ─── Inbox messages (dashboard widget; the sidebar badge counts its unread) ─── */
+const INBOX_WIDGET_MESSAGES = [
+  { unread: true, type: "Reminder", title: "Pool Party This Weekend!", preview: "Join us this Saturday for a splashin' good time at the community pool. The fun begins", tag: "Open", tagBg: "#d9ebfa", date: "July 6" },
+  { unread: false, type: "ARC Request", title: "Request received", preview: "We are reviewing your recent request and will be in touch shortly. Please have all", tag: "Updated", tagBg: "#d9ebfa", date: "July 1" },
+  { unread: true, type: "Alert", title: "Landscaping Schedule", preview: "The landscaping crew will be on site next Tuesday for regular maintenance. Please keep all pets indoors", tag: "Scheduled", tagBg: "transparent", date: "July 9" },
+  { unread: true, type: "Heads Up", title: "Package Delivery Changes", preview: "Effective immediately, all packages will be delivered to the front office. Please pick them up within 48 hours", tag: "Updated", tagBg: "transparent", date: "July 8" },
+  { unread: false, type: "Reminder", title: "Board Meeting Next Week", preview: "The next board meeting is scheduled for next Wednesday at 7 PM in the clubhouse. All residents are welcome", tag: "Scheduled", tagBg: "#d9ebfa", date: "July 7" },
+];
+const INBOX_UNREAD_COUNT = INBOX_WIDGET_MESSAGES.filter((msg) => msg.unread).length;
+
 interface NavItemProps {
   icon: React.ReactNode;
   label: string;
@@ -207,7 +217,7 @@ function NavItem({ icon, label, badge, active, onClick, uxId }: NavItemProps) {
         {label}
       </span>
       {badge !== undefined && (
-        <span className="bg-[#247ae4] rounded-full min-w-[16px] h-[16px] flex items-center justify-center">
+        <span data-ux-id="sidebar-nav-badge" className="bg-[#247ae4] rounded-full min-w-[16px] h-[16px] flex items-center justify-center">
           <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[12px] px-[3px]" style={{ fontVariationSettings: '"opsz" 14' }}>
             {badge}
           </span>
@@ -270,7 +280,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
 
         {/* Nav Items */}
         <div data-ux-id="sidebar-nav-list" className="flex flex-col gap-[13px] w-full shrink-0">
-          <NavItem icon={<IconInbox />} label="Inbox" active={false} uxId="inbox" />
+          <NavItem icon={<IconInbox />} label="Inbox" badge={INBOX_UNREAD_COUNT} active={false} uxId="inbox" />
           <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" />
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
           <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
@@ -1433,18 +1443,12 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
             </div>
             {/* Inbox rows */}
             <div className="w-full border-t border-[#d9d9d9]">
-              {[
-                { unread: true, type: "Reminder", title: "Pool Party This Weekend!", preview: "Join us this Saturday for a splashin' good time at the community pool. The fun begins", tag: "Open", tagBg: "#d9ebfa", date: "July 6" },
-                { unread: false, type: "ARC Request", title: "Request received", preview: "We are reviewing your recent request and will be in touch shortly. Please have all", tag: "Updated", tagBg: "#d9ebfa", date: "July 1" },
-                { unread: true, type: "Alert", title: "Landscaping Schedule", preview: "The landscaping crew will be on site next Tuesday for regular maintenance. Please keep all pets indoors", tag: "Scheduled", tagBg: "transparent", date: "July 9" },
-                { unread: true, type: "Heads Up", title: "Package Delivery Changes", preview: "Effective immediately, all packages will be delivered to the front office. Please pick them up within 48 hours", tag: "Updated", tagBg: "transparent", date: "July 8" },
-                { unread: false, type: "Reminder", title: "Board Meeting Next Week", preview: "The next board meeting is scheduled for next Wednesday at 7 PM in the clubhouse. All residents are welcome", tag: "Scheduled", tagBg: "#d9ebfa", date: "July 7" },
-              ].map((msg, i) => (
+              {INBOX_WIDGET_MESSAGES.map((msg, i) => (
                 <div key={i} data-ux-id={`inbox-row-${msg.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border-b border-[#d9d9d9] flex items-center cursor-pointer hover:bg-[#f9fbfd]">
                   <div className="flex gap-[12px] md:gap-[29px] items-center px-[14px] md:px-[22px] py-[12px] md:py-[14px] w-full">
                     <div className="shrink-0 size-[8px]">
                       {msg.unread && (
-                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <svg data-ux-id="inbox-row-unread-dot" width="8" height="8" viewBox="0 0 8 8" fill="none">
                           <circle cx="4" cy="4" r="4" fill="#247AE4"/>
                         </svg>
                       )}
