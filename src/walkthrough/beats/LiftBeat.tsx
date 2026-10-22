@@ -8,6 +8,8 @@ type Props = {
   position?: "center" | Point;
   /** Fade the lifted element out in place (e.g. while a modal covers it). */
   dissolve?: boolean;
+  /** Glide back into the element's own slot (see useLiftTarget `home`). */
+  home?: boolean;
 };
 
 /**
@@ -19,7 +21,7 @@ type Props = {
  * so a same-commit handoff to another beat on the same target doesn't snap
  * back), so nothing bleeds into the next scene. Renders nothing.
  */
-export function LiftBeat({ target, scale = 1.4, position = "center", dissolve = false }: Props) {
-  useLiftTarget(target, { scale, position, dissolve });
+export function LiftBeat({ target, scale = 1.4, position = "center", dissolve = false, home = false }: Props) {
+  useLiftTarget(target, { scale, position, dissolve, home });
   return null;
 }

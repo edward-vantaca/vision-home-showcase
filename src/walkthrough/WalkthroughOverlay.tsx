@@ -38,13 +38,16 @@ export function WalkthroughOverlay() {
   const [stage, setStage] = useState({ key: beatKey, hidden: false, released: false });
   if (stage.key !== beatKey) setStage({ key: beatKey, hidden: false, released: false });
   const visit = stage.key === beatKey ? stage : { key: beatKey, hidden: false, released: false };
-  const stageReleased = visit.released;
   const prevBeat =
     cursor.beatIndex > 0 ? scene?.beats[cursor.beatIndex - 1] : undefined;
-  const holdsStage =
+  const stageHeld =
     (beat?.kind === "annotate" || beat?.kind === "cursor") &&
-    (prevBeat?.kind === "lift" || prevBeat?.kind === "expand") &&
-    !stageReleased;
+    (prevBeat?.kind === "lift" || prevBeat?.kind === "expand");
+  // A released lift stays mounted for the rest of the visit so it can glide
+  // home; its final restore runs when the beat changes. A released expand
+  // simply lets go.
+  const holdsStage = stageHeld && !(visit.released && prevBeat?.kind === "expand");
+  const stageReleased = stageHeld && visit.released;
   const stageBeat: Beat | undefined = holdsStage ? prevBeat : beat;
 
   const target =
@@ -54,8 +57,8 @@ export function WalkthroughOverlay() {
   const rect = useTargetRect(target);
   const kind = beat?.kind ?? "idle";
   // The backdrop follows whatever holds the stage, so it stays up while a
-  // staged lift is held through a cursor beat.
-  const backdropKind = stageBeat?.kind ?? "idle";
+  // staged lift is held through a cursor beat, and fades once it's released.
+  const backdropKind = (stageReleased ? beat?.kind : stageBeat?.kind) ?? "idle";
   const caption = captionOf(beat);
 
   return (
@@ -71,7 +74,8 @@ export function WalkthroughOverlay() {
           target={stageBeat.target}
           scale={stageBeat.scale}
           position={stageBeat.position}
-          dissolve={holdsStage && visit.hidden}
+          dissolve={holdsStage && visit.hidden && !stageReleased}
+          home={stageReleased}
         />
       )}
       {stageBeat?.kind === "expand" && (

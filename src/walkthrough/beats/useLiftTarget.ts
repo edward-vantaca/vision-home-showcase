@@ -15,7 +15,15 @@ export type LiftOptions = {
    * beat that already lifted it, its current transform is kept as-is.
    */
   dissolve?: boolean;
+  /**
+   * Glide the element back to its own slot (transform back to identity, fully
+   * visible) while it stays pinned, e.g. once a demo on it is done. The final
+   * style restore still happens on unmount, by which point it is already home.
+   */
+  home?: boolean;
 };
+
+const HOME_TRANSFORM = "translate(0px, 0px) scale(1)";
 
 // One transition for every claim, so opacity also animates when a handoff
 // un-dissolves the element (expand -> lift back-scrub) instead of snapping.
@@ -141,7 +149,10 @@ function applyTarget(el: HTMLElement, entry: Entry, dissolve: boolean) {
  * just applies its own target styles; the existing transition carries the
  * change smoothly.
  */
-export function useLiftTarget(target: string, { scale = 1.4, position = "center", dissolve = false }: LiftOptions) {
+export function useLiftTarget(
+  target: string,
+  { scale = 1.4, position = "center", dissolve = false, home = false }: LiftOptions,
+) {
   // Primitive key so a parent re-render with a fresh object doesn't restart the lift.
   const positionKey = position === "center" ? "center" : `${position.x},${position.y}`;
 
@@ -157,9 +168,10 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
       if (existing) {
         existing.pendingRestore = false;
         entry = existing;
-        if (!dissolve) entry.transform = liftTransform(entry.rect, scale, position);
+        if (home) entry.transform = HOME_TRANSFORM;
+        else if (!dissolve) entry.transform = liftTransform(entry.rect, scale, position);
         el.style.transition = LIFT_TRANSITION;
-        applyTarget(el, entry, dissolve);
+        applyTarget(el, entry, dissolve && !home);
       } else {
         if (import.meta.env.DEV) warnOnContainingBlockAncestors(el, target);
         el.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
@@ -171,7 +183,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
         entry = {
           saved,
           rect,
-          transform: liftTransform(rect, scale, position),
+          transform: home ? HOME_TRANSFORM : liftTransform(rect, scale, position),
           spacer: createSpacer(el, rect),
           pendingRestore: false,
         };
@@ -185,7 +197,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
         el.style.width = `${rect.width}px`;
         el.style.height = `${rect.height}px`;
         el.style.margin = "0";
-        el.style.transform = "translate(0px, 0px) scale(1)";
+        el.style.transform = HOME_TRANSFORM;
         el.style.transition = LIFT_TRANSITION;
         // Above .wt-root (z-index 250) so the lifted element sits over the blurred backdrop.
         el.style.zIndex = "260";
@@ -195,7 +207,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
         void el.offsetWidth;
 
         const claimed = entry;
-        raf = requestAnimationFrame(() => applyTarget(el, claimed, dissolve));
+        raf = requestAnimationFrame(() => applyTarget(el, claimed, dissolve && !home));
       }
 
       claimedEl = el;
@@ -236,5 +248,5 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
     };
     // position is represented by positionKey
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target, scale, positionKey, dissolve]);
+  }, [target, scale, positionKey, dissolve, home]);
 }
