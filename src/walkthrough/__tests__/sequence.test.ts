@@ -22,6 +22,17 @@ describe("homeVisionSequence", () => {
     }
   });
 
+  it("rests on a motion-free dashboard scene between Enter portal and Payments", () => {
+    const ids = homeVisionSequence.map((s) => s.id);
+    const portal = ids.indexOf("go-to-portal");
+    expect(ids.slice(portal, portal + 3)).toEqual(["go-to-portal", "dashboard", "payments"]);
+    const dashboard = homeVisionSequence[portal + 1];
+    expect(dashboard.beats.every((b) => b.kind === "idle")).toBe(true);
+    // Same app state as Payments, so entering Payments changes nothing but the lift.
+    const payments = homeVisionSequence[portal + 2];
+    expect(dashboard.appState).toEqual(payments.appState);
+  });
+
   it("every scene has at least one beat", () => {
     for (const scene of homeVisionSequence) {
       expect(scene.beats.length).toBeGreaterThan(0);
