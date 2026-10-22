@@ -10,6 +10,13 @@ export type CursorStop = {
   action?: "click" | "hover" | "tab";
   typeText?: string;
   typeCps?: number;
+  /** Pause after this stop's action before moving on. */
+  holdMs?: number;
+  /**
+   * After this stop's click, release a lift/expand held on stage through the
+   * cursor beat (e.g. once a modal covers the screen).
+   */
+  releaseStage?: boolean;
 };
 
 export type AnnotateTrack =
@@ -24,7 +31,24 @@ export type Beat =
   | { kind: "expand"; target: VTName; content: ReactNode; caption?: string }
   | { kind: "annotate"; tracks: AnnotateTrack[]; durationMs?: number }
   | { kind: "narrate"; title?: string; body: string }
-  | { kind: "cursor"; to: VTName; action?: "click" | "hover"; durationMs?: number; caption?: string; reverseTo?: VTName; typeText?: string; typeCps?: number; then?: CursorStop[] }
+  | {
+      kind: "cursor";
+      to: VTName;
+      action?: "click" | "hover";
+      durationMs?: number;
+      caption?: string;
+      reverseTo?: VTName;
+      typeText?: string;
+      typeCps?: number;
+      holdMs?: number;
+      releaseStage?: boolean;
+      then?: CursorStop[];
+      /**
+       * The beat undoes its own effect (opens a modal and closes it again), so
+       * landing on it with `back` means the next `advance` replays it.
+       */
+      replayOnBack?: boolean;
+    }
   | { kind: "intro"; title: string; logoSrc?: string; wordmark?: string };
 
 export type AppPhase = "inbox" | "onboarding" | "portal";

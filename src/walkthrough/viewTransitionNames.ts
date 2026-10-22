@@ -19,6 +19,10 @@ export const VT = {
   AskHoaiInput: "wt-askhoai-input",
   AskHoaiSendBtn: "wt-askhoai-send-btn",
   PaymentsWidget: "wt-payments-widget",
+  PaymentsMakePaymentBtn: "wt-payments-make-payment-btn",
+  PaymentModalContinueBtn: "wt-payment-modal-continue-btn",
+  PaymentModalConfirmBtn: "wt-payment-modal-confirm-btn",
+  PaymentModalCloseBtn: "wt-payment-modal-close-btn",
 } as const
 
 export type VTName = typeof VT[keyof typeof VT]

@@ -35,7 +35,13 @@ export function cursorReducer(
     case "back": {
       const { sceneIndex, beatIndex } = state.cursor;
       if (beatIndex > 0) {
-        return { ...state, cursor: { sceneIndex, beatIndex: beatIndex - 1 }, lastDirection: "back", replayOnAdvance: false };
+        const prevBeat = sequence[sceneIndex]?.beats[beatIndex - 1];
+        return {
+          ...state,
+          cursor: { sceneIndex, beatIndex: beatIndex - 1 },
+          lastDirection: "back",
+          replayOnAdvance: prevBeat?.kind === "cursor" && prevBeat.replayOnBack === true,
+        };
       }
       if (sceneIndex > 0) {
         const prev = sequence[sceneIndex - 1];

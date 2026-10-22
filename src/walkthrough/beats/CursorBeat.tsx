@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { createPortal } from "react-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import type { VTName } from "../viewTransitionNames";
@@ -67,6 +68,9 @@ export function CursorBeat({
   typeText,
   typeCps,
   then,
+  holdMs,
+  releaseStage,
+  onReleaseStage,
 }: {
   to: VTName;
   action?: "click" | "hover";
@@ -75,8 +79,14 @@ export function CursorBeat({
   typeText?: string;
   typeCps?: number;
   then?: CursorStop[];
+  holdMs?: number;
+  releaseStage?: boolean;
+  onReleaseStage?: () => void;
 }) {
   const cursorRef = useRef<HTMLDivElement>(null);
+  // Latest callback without restarting the timeline when the parent re-renders.
+  const onReleaseStageRef = useRef(onReleaseStage);
+  onReleaseStageRef.current = onReleaseStage;
   const start = lastCursorPoint ?? defaultStart();
 
   useGSAP(
@@ -87,7 +97,7 @@ export function CursorBeat({
       // Block arrow-key advance/back while this beat's animation is running.
       beatBusyRef.current = true;
 
-      const primary: CursorStop = { to, action, typeText, typeCps };
+      const primary: CursorStop = { to, action, typeText, typeCps, holdMs, releaseStage };
       const stops: CursorStop[] = direction === "back" ? [{ to }] : [primary, ...(then ?? [])];
 
       const duration = (durationMs ?? 1000) / 1000;
@@ -95,10 +105,11 @@ export function CursorBeat({
 
       let tl: gsap.core.Timeline | null = null;
       const run = () => {
-        // Resolve every stop up front; a stop whose target can't be found is
-        // skipped (silent fail is a better fallback than a crash).
-        const resolved = stops.map((stop) => ({ stop, point: resolveCenter(stop.to) }));
-        if (resolved.length === 0 || !resolved[0].point) {
+        // Only the first stop must exist up front. Later stops are measured when
+        // the cursor sets off for them, since an earlier click may be what
+        // renders them (Make a Payment -> the modal's Continue button). A stop
+        // whose target is still missing then is skipped in place.
+        if (stops.length === 0 || !resolveCenter(stops[0].to)) {
           beatBusyRef.current = false;
           return;
         }
@@ -109,8 +120,7 @@ export function CursorBeat({
           },
         });
 
-        for (const { stop, point } of resolved) {
-          if (!point) continue;
+        for (const stop of stops) {
 
           // "tab" stops don't move the cursor — just advance focus to the
           // target (as if the user had pressed Tab). Cursor stays parked at
@@ -124,14 +134,19 @@ export function CursorBeat({
             });
             tl.to({}, { duration: 0.15 });
           } else {
-            // Travel to this stop.
+            // Travel to this stop. Function values are evaluated when this tween
+            // starts, i.e. after every earlier stop's click has committed.
+            let point: Point | null = null;
             tl.to(el, {
-              x: point.x,
-              y: point.y,
+              x: () => {
+                point = resolveCenter(stop.to);
+                return point ? point.x : Number(gsap.getProperty(el, "x"));
+              },
+              y: () => (point ? point.y : Number(gsap.getProperty(el, "y"))),
               duration,
               ease: "power2.inOut",
               onComplete: () => {
-                lastCursorPoint = point;
+                if (point) lastCursorPoint = point;
               },
             });
 
@@ -145,6 +160,9 @@ export function CursorBeat({
                   (el2 as HTMLInputElement).focus();
                 }
               });
+              if (stop.releaseStage) {
+                tl.call(() => onReleaseStageRef.current?.());
+              }
               tl.to(el, { scale: 1, duration: 0.14, ease: "power2.out" });
             }
           }
@@ -184,6 +202,10 @@ export function CursorBeat({
               targetEl?.blur();
             });
           }
+
+          if (stop.holdMs) {
+            tl.to({}, { duration: stop.holdMs / 1000 });
+          }
         }
       };
 
@@ -211,10 +233,12 @@ export function CursorBeat({
         beatBusyRef.current = false;
       };
     },
-    { dependencies: [to, action, durationMs, direction, typeText, typeCps, then] },
+    { dependencies: [to, action, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage] },
   );
 
-  return (
+  // Rendered into <body> rather than .wt-root so the cursor paints above the
+  // lifted element (z 260) and app modals (z 300), not inside .wt-root's z 250.
+  return createPortal(
     <div
       ref={cursorRef}
       data-testid="cursor-beat"
@@ -230,6 +254,7 @@ export function CursorBeat({
           strokeLinejoin="round"
         />
       </svg>
-    </div>
+    </div>,
+    document.body,
   );
 }

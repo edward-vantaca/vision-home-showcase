@@ -3,6 +3,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { WalkthroughProvider, useCursor } from "../cursor";
 import { WalkthroughOverlay } from "../WalkthroughOverlay";
 import type { Sequence } from "../types";
+import gsap from "gsap";
 import { VT } from "../viewTransitionNames";
 
 // Overlay-level integration: lift(T) -> expand(T) -> annotate -> idle on one
@@ -114,5 +115,89 @@ describe("WalkthroughOverlay sticky stage", () => {
 
     await step("back"); // idle, before the lift
     expect(hasNoStyle(target)).toBe(true);
+  });
+});
+
+// lift(W) -> cursor (clicks a button on the lifted widget, then releases the
+// stage once the modal it opens covers the screen) -> idle.
+describe("WalkthroughOverlay stage held through a cursor beat", () => {
+  const W = VT.PaymentsWidget;
+  const BTN = VT.PaymentsMakePaymentBtn;
+  const cursorSequence: Sequence = [
+    {
+      id: "payments",
+      page: "dashboard",
+      beats: [
+        { kind: "lift", target: W, scale: 1.15 },
+        { kind: "cursor", to: BTN, action: "click", releaseStage: true, replayOnBack: true },
+        { kind: "idle" },
+      ],
+    },
+  ];
+  let widget: HTMLElement;
+
+  const backdropKind = () => document.querySelector(".wt-backdrop")?.getAttribute("data-beat-kind");
+
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+    widget = document.createElement("div");
+    widget.setAttribute("data-vt-name", W);
+    widget.getBoundingClientRect = () => new DOMRect(40, 60, 300, 120);
+    const btn = document.createElement("button");
+    btn.setAttribute("data-vt-name", BTN);
+    widget.appendChild(btn);
+    document.body.appendChild(widget);
+    render(
+      <WalkthroughProvider sequence={cursorSequence}>
+        <Controls />
+        <WalkthroughOverlay />
+      </WalkthroughProvider>,
+    );
+  });
+
+  afterEach(async () => {
+    cleanup();
+    await nextFrames(1);
+    widget.remove();
+    controls = null;
+    // @ts-expect-error restore jsdom's lack of scrollIntoView
+    delete Element.prototype.scrollIntoView;
+    vi.restoreAllMocks();
+  });
+
+  it("keeps the widget lifted with the lift backdrop while the cursor approaches", async () => {
+    expect(widget.style.position).toBe("fixed");
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    await step("advance"); // cursor
+    expect(widget.style.position).toBe("fixed");
+    expect(backdropKind()).toBe("lift");
+
+    // Run the cursor timeline: click, then release the stage.
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    await nextFrames();
+    expect(hasNoStyle(widget)).toBe(true);
+    expect(backdropKind()).toBe("cursor");
+  });
+
+  it("re-stages the widget when scrubbing back onto the cursor beat", async () => {
+    const timeline = vi.spyOn(gsap, "timeline");
+    await step("advance"); // cursor
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    await nextFrames();
+    await step("advance"); // idle
+    expect(hasNoStyle(widget)).toBe(true);
+
+    await step("back"); // cursor, entered backward: lift is staged again
+    expect(widget.style.position).toBe("fixed");
+    expect(backdropKind()).toBe("lift");
+
+    await step("advance"); // replay forward: the stage must be held again, not "already released"
+    expect(widget.style.position).toBe("fixed");
+    expect(backdropKind()).toBe("lift");
   });
 });

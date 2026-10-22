@@ -76,7 +76,8 @@
   top: 0;
   left: 0;
   pointer-events: none;
-  z-index: 110;
+  /* Portaled to <body>: above lifted elements (260), app modals (300), HUD (310). */
+  z-index: 400;
   will-change: transform;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useCursor } from "./cursor";
 import { useTargetRect } from "./useTargetRect";
 import type { Beat } from "./types";
@@ -26,14 +27,23 @@ function captionOf(beat: Beat | undefined): string | null {
 export function WalkthroughOverlay() {
   const { beat, cursor, scene, direction } = useCursor();
 
-  // Sticky stage: when annotate is active, keep the preceding lift/expand mounted
-  // so the staged element stays on screen while GSAP paints annotations on top.
+  // Sticky stage: when annotate or cursor is active, keep the preceding
+  // lift/expand mounted so the staged element stays on screen while GSAP paints
+  // annotations on top or the cursor clicks something on it. A cursor stop with
+  // releaseStage lets the element go mid-beat (e.g. once a modal covers it).
+  // The release lasts only for the beat visit it happened in: any cursor or
+  // direction change (including a replay of the same beat) re-holds the stage.
+  const beatKey = `${cursor.sceneIndex}:${cursor.beatIndex}:${direction}`;
+  const [release, setRelease] = useState({ key: beatKey, released: false });
+  if (release.key !== beatKey) setRelease({ key: beatKey, released: false });
+  const stageReleased = release.key === beatKey && release.released;
   const prevBeat =
     cursor.beatIndex > 0 ? scene?.beats[cursor.beatIndex - 1] : undefined;
-  const stageBeat: Beat | undefined =
-    beat?.kind === "annotate" && (prevBeat?.kind === "lift" || prevBeat?.kind === "expand")
-      ? prevBeat
-      : beat;
+  const holdsStage =
+    (beat?.kind === "annotate" || beat?.kind === "cursor") &&
+    (prevBeat?.kind === "lift" || prevBeat?.kind === "expand") &&
+    !stageReleased;
+  const stageBeat: Beat | undefined = holdsStage ? prevBeat : beat;
 
   const target =
     stageBeat && (stageBeat.kind === "highlight" || stageBeat.kind === "lift" || stageBeat.kind === "expand")
@@ -41,11 +51,14 @@ export function WalkthroughOverlay() {
       : null;
   const rect = useTargetRect(target);
   const kind = beat?.kind ?? "idle";
+  // The backdrop follows whatever holds the stage, so it stays up while a
+  // staged lift is held through a cursor beat.
+  const backdropKind = stageBeat?.kind ?? "idle";
   const caption = captionOf(beat);
 
   return (
     <div className="wt-root" data-scene={scene?.id} aria-hidden={kind === "idle"}>
-      <div className="wt-backdrop" data-beat-kind={kind} />
+      <div className="wt-backdrop" data-beat-kind={backdropKind} />
       {kind === "highlight" && rect && (
         <div className="wt-cutout" style={{ clipPath: cutoutClipPath(rect) }} />
       )}
@@ -67,6 +80,9 @@ export function WalkthroughOverlay() {
           typeText={beat.typeText}
           typeCps={beat.typeCps}
           then={beat.then}
+          holdMs={beat.holdMs}
+          releaseStage={beat.releaseStage}
+          onReleaseStage={() => setRelease({ key: beatKey, released: true })}
         />
       )}
       {beat?.kind === "intro" && (

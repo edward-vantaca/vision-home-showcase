@@ -80,6 +80,30 @@ describe("cursorReducer", () => {
       expect(next.cursor).toEqual({ sceneIndex: 1, beatIndex: 0 });
     });
 
+    it("replays a self-reverting cursor beat (replayOnBack) re-entered within its scene", () => {
+      // The payment beat opens the modal and closes it again itself, so being
+      // "on" it after a back means its demo has to play again.
+      const paySeq: Sequence = [
+        {
+          id: "payments",
+          page: "dashboard",
+          beats: [
+            { kind: "lift", target: "wt-widget" as never },
+            { kind: "cursor", to: "wt-pay" as never, action: "click", replayOnBack: true },
+            { kind: "idle" },
+          ],
+        },
+      ];
+      const atIdle: WalkthroughState = { ...initial, cursor: { sceneIndex: 0, beatIndex: 2 } };
+      const backed = cursorReducer(atIdle, { type: "back" }, paySeq);
+      expect(backed.cursor).toEqual({ sceneIndex: 0, beatIndex: 1 });
+      const replayed = cursorReducer(backed, { type: "advance" }, paySeq);
+      expect(replayed.cursor).toEqual({ sceneIndex: 0, beatIndex: 1 });
+      expect(replayed.lastDirection).toBe("forward");
+      const onward = cursorReducer(replayed, { type: "advance" }, paySeq);
+      expect(onward.cursor).toEqual({ sceneIndex: 0, beatIndex: 2 });
+    });
+
     it("a second back after crossing the boundary clears the pending replay", () => {
       const threeSeq: Sequence = [
         { id: "x", page: "onboarding", beats: [{ kind: "idle" }, { kind: "cursor", to: "wt-btn" as never, action: "click" }] },

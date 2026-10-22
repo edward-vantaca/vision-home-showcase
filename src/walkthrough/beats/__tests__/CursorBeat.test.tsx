@@ -76,6 +76,56 @@ describe("CursorBeat", () => {
     expect(timeline).toHaveBeenCalledTimes(1);
   });
 
+  it("measures later stops when reached, so a target rendered by an earlier click is found", async () => {
+    // e.g. Make a Payment opens the modal whose Continue button doesn't exist yet.
+    const SECOND = "wt-cursor-test-second" as VTName;
+    const secondClicked = vi.fn();
+    target.addEventListener("click", () => {
+      const second = document.createElement("button");
+      second.setAttribute("data-vt-name", SECOND);
+      second.addEventListener("click", secondClicked);
+      document.body.appendChild(second);
+    });
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={TARGET} action="click" then={[{ to: SECOND, action: "click" }]} />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+
+    expect(secondClicked).toHaveBeenCalledTimes(1);
+    document.querySelector(`[data-vt-name="${SECOND}"]`)?.remove();
+  });
+
+  it("calls onReleaseStage right after a releaseStage stop's click", async () => {
+    const order: string[] = [];
+    target.addEventListener("click", () => order.push("click"));
+    const onReleaseStage = vi.fn(() => order.push("release"));
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={TARGET} action="click" releaseStage onReleaseStage={onReleaseStage} />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+
+    expect(order).toEqual(["click", "release"]);
+  });
+
+  it("holds for holdMs after a stop's action", async () => {
+    const timeline = vi.spyOn(gsap, "timeline");
+    const { unmount } = render(<CursorBeat to={TARGET} action="click" />);
+    await nextFrames();
+    const base = timeline.mock.results[0].value.duration();
+    unmount();
+
+    render(<CursorBeat to={TARGET} action="click" holdMs={1000} />);
+    await nextFrames();
+    const held = timeline.mock.results[1].value.duration();
+    expect(held - base).toBeCloseTo(1, 5);
+  });
+
   it("never runs after unmount, even if the animations finish later", async () => {
     const morph = fakeAnimation(700);
     document.getAnimations = () => [morph.animation];

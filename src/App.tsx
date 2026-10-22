@@ -675,7 +675,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
   return (
     <div
       data-ux-id="payment-modal-backdrop"
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
+      className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
       onMouseDown={onClose}
     >
       <div
@@ -691,6 +691,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
           <button
             onClick={onClose}
             data-ux-id="payment-modal-close-button"
+            data-vt-name={VT.PaymentModalCloseBtn}
             className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-[#f2f5f7] transition-colors shrink-0"
             aria-label="Close"
           >
@@ -1179,6 +1180,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
                 <button
                   onClick={() => setStep("review")}
                   data-ux-id="payment-modal-continue-button"
+                  data-vt-name={VT.PaymentModalContinueBtn}
                   className="w-full bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
                   style={{ fontVariationSettings: '"opsz" 14' }}
                 >
@@ -1236,6 +1238,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
                 <button
                   onClick={() => setStep("confirmation")}
                   data-ux-id="payment-modal-confirm-button"
+                  data-vt-name={VT.PaymentModalConfirmBtn}
                   className="flex-1 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
                   style={{ fontVariationSettings: '"opsz" 14' }}
                 >
@@ -1330,7 +1333,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
                   </div>
                 </div>
                 <div className="flex flex-col gap-[12px] md:gap-[22px] md:items-end pb-0 md:pb-[11px] md:pt-[14px] md:shrink-0">
-                  <button onClick={() => setPaymentModalOpen(true)} data-ux-id="payments-make-payment-button" className="bg-[#247ae4] flex items-center justify-center px-[24px] py-[10px] rounded-[8px] hover:bg-[#1a6ed0] transition-colors w-full md:w-auto">
+                  <button onClick={() => setPaymentModalOpen(true)} data-ux-id="payments-make-payment-button" data-vt-name={VT.PaymentsMakePaymentBtn} className="bg-[#247ae4] flex items-center justify-center px-[24px] py-[10px] rounded-[8px] hover:bg-[#1a6ed0] transition-colors w-full md:w-auto">
                     <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[16px] text-center whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Make a Payment</span>
                   </button>
                   <div className="flex flex-row md:flex-col gap-[16px] md:gap-[10px] md:items-end items-center">
