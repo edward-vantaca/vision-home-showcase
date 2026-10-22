@@ -1,0 +1,49 @@
+import { describe, expect, it } from "vitest";
+import { fireEvent, render } from "@testing-library/react";
+import App from "../App";
+import { WalkthroughProvider } from "../walkthrough/cursor";
+import type { Sequence } from "../walkthrough/types";
+
+const seq: Sequence = [
+  {
+    id: "portal",
+    page: "dashboard",
+    appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true },
+    beats: [{ kind: "idle" }],
+  },
+];
+
+function q(container: HTMLElement, selector: string) {
+  return container.querySelector<HTMLElement>(selector);
+}
+
+describe("Reservations", () => {
+  it("the Reservations nav item opens a page of upcoming reservations and bookable amenities", () => {
+    const { container } = render(
+      <WalkthroughProvider sequence={seq}>
+        <App />
+      </WalkthroughProvider>,
+    );
+    const nav = q(container, '[data-ux-id="sidebar-nav-reservations"]')!;
+    expect(nav.textContent).toContain("Reservations");
+    fireEvent.click(nav);
+
+    const page = q(container, '[data-ux-id="reservations-page"]')!;
+    expect(page).not.toBeNull();
+    expect(nav.className).toContain("bg-[#e8f1fd]");
+
+    const rows = page.querySelectorAll('[data-ux-id="reservations-table"] tbody tr');
+    expect(rows.length).toBeGreaterThan(0);
+
+    const cards = Array.from(page.querySelectorAll('[data-ux-id^="amenity-card-"]'));
+    expect(cards.map((c) => c.querySelector("h3")?.textContent)).toEqual([
+      "Tennis Court",
+      "Pickleball Court",
+      "Main Clubhouse",
+      "Sauna",
+    ]);
+    for (const card of cards) {
+      expect(card.querySelector("button")?.textContent).toBe("View Availability");
+    }
+  });
+});

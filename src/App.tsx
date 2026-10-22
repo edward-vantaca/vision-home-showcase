@@ -115,6 +115,51 @@ function IconChevronUp({ className }: { className?: string }) {
   return <FaIcon size={12} className={className} viewBox="0 0 448 512" d="M207.5 103c9.4-9.4 24.6-9.4 33.9 0l200 200c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-183-183-183 183c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l200-200z" />;
 }
 
+/* fa-bell-concierge */
+function IconBellConcierge() {
+  return <FaIcon viewBox="0 0 512 512" d="M216 64c-13.3 0-24 10.7-24 24s10.7 24 24 24l16 0 0 33.3C124.8 156.7 40.2 243.7 32.6 352l48.2 0c8.1-89.7 83.5-160 175.3-160s167.2 70.3 175.3 160l48.2 0C471.8 243.7 387.2 156.7 280 145.3l0-33.3 16 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-80 0zM24 400c-13.3 0-24 10.7-24 24s10.7 24 24 24l464 0c13.3 0 24-10.7 24-24s-10.7-24-24-24L24 400z" />;
+}
+
+/* fa-tennis-ball */
+function IconTennisBall() {
+  return <FaIcon viewBox="0 0 512 512" d="M248 463.8c0-55.2 21.1-110.4 63.3-152.6S408.6 248 463.8 248c-4.1-108.5-91.3-195.7-199.8-199.8 0 55.2-21.1 110.4-63.3 152.6S103.4 264 48.2 264C52.3 372.5 139.5 459.7 248 463.8zm48-3.7c82.8-16.1 148-81.4 164.1-164.1-41.7 1-83.1 17.3-114.9 49.2S297 418.4 296 460.2zM51.9 216c41.7-1 83.1-17.3 114.9-49.2S215 93.6 216 51.9C133.2 68 68 133.2 51.9 216zM0 256a256 256 0 1 1 512 0 256 256 0 1 1 -512 0z" />;
+}
+
+/* fa-pickleball */
+function IconPickleball() {
+  return <FaIcon viewBox="0 0 576 512" d="M448 544a128 128 0 1 1 0-256 128 128 0 1 1 0 256zm0-76a20 20 0 1 0 0 40 20 20 0 1 0 0-40zM257.8 28.3c34.4-34.3 90.1-34.4 124.4 0L517.5 163.5c26.9 26.9 32.6 66.9 17.4 99.4-13.8-7.9-28.8-13.9-44.7-17.8 8.4-15.2 6.2-34.7-6.7-47.7L348.3 62.2c-15.6-15.6-40.9-15.6-56.6 0L178 176 309.6 307.2c-10.2 13-18.6 27.4-24.9 43L155.4 221.3 167.9 333.3c.8 7.3-1.8 14.6-7.1 19.8L97.5 415.1c-8.5 8.3-8.5 21.9-.2 30.2l3.3 2.7c8.2 5.4 19.3 4.6 26.6-2.5l64-62.6 2-1.8c4.9-3.8 11.2-5.6 17.4-4.9l64.4 7.1c-2 10.6-3.1 21.5-3.1 32.7 0 5.2 .3 10.3 .7 15.3l-56-6.2-55.9 54.7C135.4 504.6 95.6 506 68.6 484l-5.2-4.7c-27.2-27.3-27-71.5 .5-98.5l54.9-53.8-11.3-101.8c-2.9-26.6 6.4-53 25.2-71.9l125-125zM376 396a20 20 0 1 0 0 40 20 20 0 1 0 0-40zm72 0a20 20 0 1 0 0 40 20 20 0 1 0 0-40zm72 0a20 20 0 1 0 0 40 20 20 0 1 0 0-40zm-72-72a20 20 0 1 0 0 40 20 20 0 1 0 0-40z" />;
+}
+
+/* fa-house-chimney */
+function IconHouseChimney() {
+  return <FaIcon viewBox="0 0 512 512" d="M272 6.1c-9.1-8.2-22.9-8.2-32 0L8 214.1c-9.9 8.8-10.7 24-1.8 33.9s24 10.7 33.9 1.8l8-7.2 0 205.3c0 35.3 28.7 64 64 64l288 0c35.3 0 64-28.7 64-64l0-205.3 8 7.2c9.9 8.8 25 8 33.9-1.8s8-25-1.8-33.9l-40-35.9 0-90.2c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 47.2-144-129.1zM416 199.7L416 448c0 8.8-7.2 16-16 16l-48 0 0-104c0-39.8-32.2-72-72-72l-48 0c-39.8 0-72 32.2-72 72l0 104-48 0c-8.8 0-16-7.2-16-16L96 199.7 256 56.2 416 199.7zM208 464l0-104c0-13.3 10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 104-96 0z" />;
+}
+
+/* fa-hot-tub-person */
+function IconHotTub() {
+  return <FaIcon viewBox="0 0 448 512" d="M240 40c0 13.6 5.8 26.5 15.8 35.6l26.5 23.8c24 21.6 37.7 52.3 37.7 84.6 0 13.3-10.7 24-24 24s-24-10.7-24-24c0-18.7-7.9-36.4-21.8-48.9l-26.5-23.8C203.5 93.1 192 67.2 192 40 192 26.7 202.7 16 216 16s24 10.7 24 24zM48 336l0 112c0 8.8 7.2 16 16 16l40 0 0-144-56 0 0 16zm117.4-64l-39.5-24.7c-7.6-4.8-16.4-7.3-25.4-7.3L64 240c-8.8 0-16 7.2-16 16l0 16 117.4 0zm75-9.7c10.2 6.4 21.9 9.7 33.9 9.7L384 272c35.3 0 64 28.7 64 64l0 112c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l36.5 0c18 0 35.6 5.1 50.9 14.6l89.1 55.7zM274.4 320l-26.4 0 0 144 48 0 0-144-21.6 0zm69.6 0l0 144 40 0c8.8 0 16-7.2 16-16l0-112c0-8.8-7.2-16-16-16l-40 0zm-144 0l-48 0 0 144 48 0 0-144zM328 16c13.3 0 24 10.7 24 24 0 13.6 5.8 26.5 15.8 35.6l26.5 23.8c24 21.6 37.7 52.3 37.7 84.6 0 13.3-10.7 24-24 24s-24-10.7-24-24c0-18.7-7.9-36.4-21.8-48.9l-26.5-23.8C315.5 93.1 304 67.2 304 40 304 26.7 314.7 16 328 16zM64 40a56 56 0 1 1 0 112 56 56 0 1 1 0-112z" />;
+}
+
+/* fa-chevron-left */
+function IconChevronLeft() {
+  return <FaIcon size={14} viewBox="0 0 320 512" d="M7.5 239c-9.4 9.4-9.4 24.6 0 33.9l200 200c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-183-183 183-183c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L7.5 239z" />;
+}
+
+/* fa-chevron-right */
+function IconChevronRightFa() {
+  return <FaIcon size={14} viewBox="0 0 320 512" d="M313.5 239c9.4 9.4 9.4 24.6 0 33.9l-200 200c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l183-183-183-183c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l200 200z" />;
+}
+
+/* fa-angles-left */
+function IconAnglesLeft() {
+  return <FaIcon size={14} viewBox="0 0 448 512" d="M15.5 239c-9.4 9.4-9.4 24.6 0 33.9l160 160c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-143-143 143-143c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L15.5 239zm352-160l-160 160c-9.4 9.4-9.4 24.6 0 33.9l160 160c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-143-143 143-143c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0z" />;
+}
+
+/* fa-angles-right */
+function IconAnglesRight() {
+  return <FaIcon size={14} viewBox="0 0 448 512" d="M81.5 433l160-160c9.4-9.4 9.4-24.6 0-33.9L81.5 79c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l143 143-143 143c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0zm192 0l160-160c9.4-9.4 9.4-24.6 0-33.9L273.5 79c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l143 143-143 143c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0z" />;
+}
+
 /* fa-bell */
 function IconBell({ width = 17, height = 19 }: { width?: number; height?: number }) {
   return (
@@ -176,7 +221,7 @@ function AddressCard() {
 }
 
 /* ─── Sidebar ─── */
-type Page = "dashboard" | "elections" | "community" | "amenities" | "arc-form" | "offers";
+type Page = "dashboard" | "elections" | "community" | "amenities" | "arc-form" | "offers" | "reservations";
 type DashboardView = "homeowner" | "board";
 
 /* ─── Inbox messages (dashboard widget; the sidebar badge counts its unread) ─── */
@@ -285,6 +330,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
           <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
           <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
+          <NavItem icon={<IconBellConcierge />} label="Reservations" active={activePage === "reservations"} onClick={() => onNavigate("reservations")} uxId="reservations" />
           {isDemoMode() ? (
             <NavItem
               icon={<IconHome />}
@@ -3049,6 +3095,151 @@ function ArcFormPage({
   );
 }
 
+/* ─── Reservations ─── */
+const MY_RESERVATIONS: ReadonlyArray<{ amenity: string; date: string; time: string; status: "Confirmed" | "Pending" }> = [
+  { amenity: "Tennis Court", date: "Nov 5, 2026", time: "7:00 AM - 8:00 AM", status: "Confirmed" },
+  { amenity: "Sauna", date: "Nov 7, 2026", time: "6:00 PM - 6:45 PM", status: "Confirmed" },
+  { amenity: "Pickleball Court", date: "Nov 12, 2026", time: "5:00 PM - 6:00 PM", status: "Pending" },
+  { amenity: "Main Clubhouse", date: "Nov 21, 2026", time: "2:00 PM - 6:00 PM", status: "Pending" },
+];
+
+// Clubhouse and sauna photos are expected at these paths; until they exist the
+// card shows a placeholder with the amenity's icon instead of a broken image.
+const BOOKABLE_AMENITIES: ReadonlyArray<{ slug: string; name: string; image: string; icon: React.ReactNode; details: string[] }> = [
+  { slug: "tennis", name: "Tennis Court", image: "/assets/community-tennis.jpg", icon: <IconTennisBall />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
+  { slug: "pickleball", name: "Pickleball Court", image: "/assets/community-tennis.jpg", icon: <IconPickleball />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
+  { slug: "clubhouse", name: "Main Clubhouse", image: "/assets/amenity-clubhouse.jpg", icon: <IconHouseChimney />, details: ["4 hr", "Up to 60 guests", "Daily 9:00 AM – 11:00 PM"] },
+  { slug: "sauna", name: "Sauna", image: "/assets/amenity-sauna.jpg", icon: <IconHotTub />, details: ["45 min", "Up to 6 guests", "Daily 6:00 AM – 10:00 PM"] },
+];
+
+function AmenityCardImage({ src, alt, icon }: { src: string; alt: string; icon: React.ReactNode }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className="flex aspect-[16/9] w-full items-center justify-center rounded-[12px] bg-[#eef4fb] text-[#247ae4] [&_svg]:h-[56px] [&_svg]:w-auto">
+        {icon}
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} onError={() => setFailed(true)} className="aspect-[16/9] w-full rounded-[12px] object-cover" />;
+}
+
+function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+  const dmSans = { fontVariationSettings: '"opsz" 14' };
+  return (
+    <div data-ux-id="reservations-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+      {/* Mobile top bar */}
+      <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
+        <button onClick={onOpenSidebar} data-ux-id="reservations-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
+        </button>
+        <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={dmSans}>Reservations</p>
+        <div className="w-[36px]" />
+      </div>
+
+      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0">
+        {/* Header — desktop only */}
+        <div className="hidden md:flex items-center justify-between w-full shrink-0">
+          <div className="flex flex-col flex-1 min-w-0">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={dmSans}>
+              Reservations
+            </p>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={dmSans}>
+              See what's coming up and book community amenities.
+            </p>
+          </div>
+          <AddressCard />
+        </div>
+
+        {/* My Reservations */}
+        <div data-ux-id="my-reservations" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
+          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal mb-[18px]" style={dmSans}>
+            My Reservations
+          </p>
+          <div className="overflow-x-auto">
+            <table data-ux-id="reservations-table" className="w-full min-w-[560px] border-t border-[#e2e8f0] text-left">
+              <thead>
+                <tr className="border-b border-[#e2e8f0]">
+                  {["Amenity Name", "Date", "Time", "Status"].map((heading) => (
+                    <th key={heading} className="py-[14px] pr-[16px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={dmSans}>
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {MY_RESERVATIONS.map((reservation) => (
+                  <tr key={`${reservation.amenity}-${reservation.date}`} className="border-b border-[#e2e8f0]">
+                    <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px]" style={dmSans}>{reservation.amenity}</td>
+                    <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px] whitespace-nowrap" style={dmSans}>{reservation.date}</td>
+                    <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px] whitespace-nowrap" style={dmSans}>{reservation.time}</td>
+                    <td className="py-[14px]">
+                      <span
+                        className={`inline-flex rounded-full px-[12px] py-[4px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px] ${
+                          reservation.status === "Pending" ? "bg-[#fdecdc] text-[#c4622d]" : "bg-[#dff3e6] text-[#1f7a43]"
+                        }`}
+                        style={dmSans}
+                      >
+                        {reservation.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Pagination — everything fits on one page */}
+          <div className="flex items-center justify-end gap-[14px] pt-[16px] text-[#262630]">
+            <span className="opacity-30"><IconAnglesLeft /></span>
+            <span className="opacity-30"><IconChevronLeft /></span>
+            <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={dmSans}>Page</span>
+            <span className="flex h-[32px] min-w-[40px] items-center justify-center rounded-[6px] border border-[#cfd3da] text-[14px]">1</span>
+            <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={dmSans}>of 1</span>
+            <span className="opacity-30"><IconChevronRightFa /></span>
+            <span className="opacity-30"><IconAnglesRight /></span>
+          </div>
+        </div>
+
+        <div className="w-full border-t border-[#d9e7f0]" />
+
+        {/* Bookable amenities */}
+        <div className="flex flex-col gap-[16px]">
+          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal" style={dmSans}>
+            Book an Amenity
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-[20px]">
+            {BOOKABLE_AMENITIES.map((amenity) => (
+              <div
+                key={amenity.slug}
+                data-ux-id={`amenity-card-${amenity.slug}`}
+                className="flex flex-col gap-[14px] bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] p-[18px]"
+              >
+                <AmenityCardImage src={amenity.image} alt={amenity.name} icon={amenity.icon} />
+                <div className="flex flex-col gap-[4px] flex-1">
+                  <h3 className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-tight" style={dmSans}>
+                    {amenity.name}
+                  </h3>
+                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={dmSans}>
+                    {amenity.details.join("  •  ")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  data-ux-id={`amenity-view-availability-${amenity.slug}`}
+                  className="w-full rounded-[8px] bg-[#247ae4] py-[11px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[15px] transition-colors hover:bg-[#1a6ed0]"
+                  style={dmSans}
+                >
+                  View Availability
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Portal (post-onboarding) ─── */
 type MainAppProps = {
   onRestart: () => void;
@@ -3130,6 +3321,8 @@ function MainApp({ onRestart }: MainAppProps) {
             onOpenSidebar={() => setSidebarOpen(true)}
             onCancel={() => navigate("dashboard")}
           />
+        ) : activePage === "reservations" ? (
+          <ReservationsPage onOpenSidebar={() => setSidebarOpen(true)} />
         ) : activePage === "offers" ? (
           <OffersPage onOpenSidebar={() => setSidebarOpen(true)} />
         ) : (
