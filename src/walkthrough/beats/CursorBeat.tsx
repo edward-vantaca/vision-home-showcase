@@ -71,6 +71,8 @@ export function CursorBeat({
   holdMs,
   releaseStage,
   onReleaseStage,
+  hideStage,
+  onHideStage,
 }: {
   to: VTName;
   action?: "click" | "hover";
@@ -82,11 +84,15 @@ export function CursorBeat({
   holdMs?: number;
   releaseStage?: boolean;
   onReleaseStage?: () => void;
+  hideStage?: boolean;
+  onHideStage?: () => void;
 }) {
   const cursorRef = useRef<HTMLDivElement>(null);
   // Latest callback without restarting the timeline when the parent re-renders.
   const onReleaseStageRef = useRef(onReleaseStage);
   onReleaseStageRef.current = onReleaseStage;
+  const onHideStageRef = useRef(onHideStage);
+  onHideStageRef.current = onHideStage;
   const start = lastCursorPoint ?? defaultStart();
 
   useGSAP(
@@ -97,7 +103,7 @@ export function CursorBeat({
       // Block arrow-key advance/back while this beat's animation is running.
       beatBusyRef.current = true;
 
-      const primary: CursorStop = { to, action, typeText, typeCps, holdMs, releaseStage };
+      const primary: CursorStop = { to, action, typeText, typeCps, holdMs, releaseStage, hideStage };
       const stops: CursorStop[] = direction === "back" ? [{ to }] : [primary, ...(then ?? [])];
 
       const duration = (durationMs ?? 1000) / 1000;
@@ -160,6 +166,9 @@ export function CursorBeat({
                   (el2 as HTMLInputElement).focus();
                 }
               });
+              if (stop.hideStage) {
+                tl.call(() => onHideStageRef.current?.());
+              }
               if (stop.releaseStage) {
                 tl.call(() => onReleaseStageRef.current?.());
               }
@@ -233,7 +242,7 @@ export function CursorBeat({
         beatBusyRef.current = false;
       };
     },
-    { dependencies: [to, action, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage] },
+    { dependencies: [to, action, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
   );
 
   // Rendered into <body> rather than .wt-root so the cursor paints above the

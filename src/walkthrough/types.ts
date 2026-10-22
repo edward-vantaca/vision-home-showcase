@@ -17,6 +17,11 @@ export type CursorStop = {
    * cursor beat (e.g. once a modal covers the screen).
    */
   releaseStage?: boolean;
+  /**
+   * After this stop's click, fade a stage held through the cursor beat out
+   * (it stays lifted, with the backdrop up) until a later releaseStage.
+   */
+  hideStage?: boolean;
 };
 
 export type AnnotateTrack =
@@ -42,6 +47,7 @@ export type Beat =
       typeCps?: number;
       holdMs?: number;
       releaseStage?: boolean;
+      hideStage?: boolean;
       then?: CursorStop[];
       /**
        * The beat undoes its own effect (opens a modal and closes it again), so

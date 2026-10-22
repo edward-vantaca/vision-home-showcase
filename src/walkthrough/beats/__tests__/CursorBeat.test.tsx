@@ -113,6 +113,21 @@ describe("CursorBeat", () => {
     expect(order).toEqual(["click", "release"]);
   });
 
+  it("calls onHideStage right after a hideStage stop's click", async () => {
+    const order: string[] = [];
+    target.addEventListener("click", () => order.push("click"));
+    const onHideStage = vi.fn(() => order.push("hide"));
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={TARGET} action="click" hideStage onHideStage={onHideStage} />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+
+    expect(order).toEqual(["click", "hide"]);
+  });
+
   it("holds for holdMs after a stop's action", async () => {
     const timeline = vi.spyOn(gsap, "timeline");
     const { unmount } = render(<CursorBeat to={TARGET} action="click" />);

@@ -6,6 +6,8 @@ type Props = {
   scale?: number;
   /** "center", or a Point the element's pre-scale top-left moves to. */
   position?: "center" | Point;
+  /** Fade the lifted element out in place (e.g. while a modal covers it). */
+  dissolve?: boolean;
 };
 
 /**
@@ -17,7 +19,7 @@ type Props = {
  * so a same-commit handoff to another beat on the same target doesn't snap
  * back), so nothing bleeds into the next scene. Renders nothing.
  */
-export function LiftBeat({ target, scale = 1.4, position = "center" }: Props) {
-  useLiftTarget(target, { scale, position });
+export function LiftBeat({ target, scale = 1.4, position = "center", dissolve = false }: Props) {
+  useLiftTarget(target, { scale, position, dissolve });
   return null;
 }

@@ -133,6 +133,20 @@ describe("WalkthroughOverlay stage held through a cursor beat", () => {
         { kind: "idle" },
       ],
     },
+    {
+      id: "payments-modal",
+      page: "dashboard",
+      beats: [
+        { kind: "lift", target: W, scale: 1.15 },
+        {
+          kind: "cursor",
+          to: BTN,
+          action: "click",
+          hideStage: true,
+          then: [{ to: BTN, action: "click", releaseStage: true }],
+        },
+      ],
+    },
   ];
   let widget: HTMLElement;
 
@@ -174,6 +188,32 @@ describe("WalkthroughOverlay stage held through a cursor beat", () => {
     expect(backdropKind()).toBe("lift");
 
     // Run the cursor timeline: click, then release the stage.
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    await nextFrames();
+    expect(hasNoStyle(widget)).toBe(true);
+    expect(backdropKind()).toBe("cursor");
+  });
+
+  it("hideStage fades the staged widget out but keeps it lifted with the blur up", async () => {
+    const timeline = vi.spyOn(gsap, "timeline");
+    act(() => {
+      controls!.jumpTo({ sceneIndex: 1, beatIndex: 1 }); // hide-then-release variant
+    });
+    await nextFrames();
+    // Scrub the timeline forward until the hide lands, stopping before the release.
+    const tl = timeline.mock.results[0].value;
+    for (let p = 0; p <= 1 && widget.style.opacity !== "0"; p += 0.02) {
+      act(() => {
+        tl.progress(p);
+      });
+    }
+    await nextFrames();
+    expect(widget.style.position).toBe("fixed");
+    expect(widget.style.opacity).toBe("0");
+    expect(backdropKind()).toBe("lift");
+
     act(() => {
       timeline.mock.results[0].value.progress(1);
     });

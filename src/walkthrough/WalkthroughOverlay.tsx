@@ -30,13 +30,15 @@ export function WalkthroughOverlay() {
   // Sticky stage: when annotate or cursor is active, keep the preceding
   // lift/expand mounted so the staged element stays on screen while GSAP paints
   // annotations on top or the cursor clicks something on it. A cursor stop with
-  // releaseStage lets the element go mid-beat (e.g. once a modal covers it).
-  // The release lasts only for the beat visit it happened in: any cursor or
-  // direction change (including a replay of the same beat) re-holds the stage.
+  // hideStage fades the held element out in place (a modal now covers it) and
+  // releaseStage lets it go mid-beat (e.g. once the modal closes). Both last
+  // only for the beat visit they happened in: any cursor or direction change
+  // (including a replay of the same beat) re-holds and re-shows the stage.
   const beatKey = `${cursor.sceneIndex}:${cursor.beatIndex}:${direction}`;
-  const [release, setRelease] = useState({ key: beatKey, released: false });
-  if (release.key !== beatKey) setRelease({ key: beatKey, released: false });
-  const stageReleased = release.key === beatKey && release.released;
+  const [stage, setStage] = useState({ key: beatKey, hidden: false, released: false });
+  if (stage.key !== beatKey) setStage({ key: beatKey, hidden: false, released: false });
+  const visit = stage.key === beatKey ? stage : { key: beatKey, hidden: false, released: false };
+  const stageReleased = visit.released;
   const prevBeat =
     cursor.beatIndex > 0 ? scene?.beats[cursor.beatIndex - 1] : undefined;
   const holdsStage =
@@ -65,7 +67,12 @@ export function WalkthroughOverlay() {
       {caption && <div className="wt-caption">{caption}</div>}
       {beat?.kind === "highlight" && <HighlightBeat target={beat.target} />}
       {stageBeat?.kind === "lift" && (
-        <LiftBeat target={stageBeat.target} scale={stageBeat.scale} position={stageBeat.position} />
+        <LiftBeat
+          target={stageBeat.target}
+          scale={stageBeat.scale}
+          position={stageBeat.position}
+          dissolve={holdsStage && visit.hidden}
+        />
       )}
       {stageBeat?.kind === "expand" && (
         <ExpandBeat target={stageBeat.target}>{stageBeat.content}</ExpandBeat>
@@ -82,7 +89,9 @@ export function WalkthroughOverlay() {
           then={beat.then}
           holdMs={beat.holdMs}
           releaseStage={beat.releaseStage}
-          onReleaseStage={() => setRelease({ key: beatKey, released: true })}
+          onReleaseStage={() => setStage((s) => ({ ...s, key: beatKey, released: true }))}
+          hideStage={beat.hideStage}
+          onHideStage={() => setStage((s) => ({ ...s, key: beatKey, hidden: true }))}
         />
       )}
       {beat?.kind === "intro" && (

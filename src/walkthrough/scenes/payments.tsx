@@ -16,14 +16,18 @@ export const paymentsScene: Scene = {
     },
     {
       // The lift and its blurred backdrop stay on stage while the cursor
-      // clicks Make a Payment and runs through the modal; closing the modal
-      // releases the widget back into the dashboard and fades the blur out.
+      // clicks Make a Payment. The widget fades out as the modal surfaces (the
+      // blur stays), the cursor walks the modal at a slower pace, and closing
+      // it releases the widget back into the dashboard as the blur fades out.
       kind: "cursor",
       to: VT.PaymentsMakePaymentBtn,
       action: "click",
+      hideStage: true,
+      holdMs: 900,
+      durationMs: 1300,
       then: [
-        { to: VT.PaymentModalContinueBtn, action: "click" },
-        { to: VT.PaymentModalConfirmBtn, action: "click", holdMs: 1000 },
+        { to: VT.PaymentModalContinueBtn, action: "click", holdMs: 900 },
+        { to: VT.PaymentModalConfirmBtn, action: "click", holdMs: 1200 },
         { to: VT.PaymentModalCloseBtn, action: "click", releaseStage: true },
       ],
       replayOnBack: true,
