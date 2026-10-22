@@ -3207,7 +3207,7 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal" style={dmSans}>
             Book an Amenity
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-[20px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
             {BOOKABLE_AMENITIES.map((amenity) => (
               <div
                 key={amenity.slug}
