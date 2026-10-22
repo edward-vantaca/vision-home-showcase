@@ -124,6 +124,8 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const stopTypingRef = useRef<(() => void) | null>(null);
   // Pending deferred reset after leaving the scene (see the !focused effect).
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The thread's fade-out once that deferred reset fires; non-null while in flight.
+  const resetFadeRef = useRef<gsap.core.Tween | null>(null);
   const wasFocusedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   // Scope for the welcome -> thread morph. The thread-view input sits outside
@@ -169,6 +171,12 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   }
 
   function cancelPendingReset(): boolean {
+    if (resetFadeRef.current) {
+      // revert() so the thread isn't left half-faded if it's ever shown again.
+      resetFadeRef.current.revert();
+      resetFadeRef.current = null;
+      return true;
+    }
     if (resetTimerRef.current === null) return false;
     clearTimeout(resetTimerRef.current);
     resetTimerRef.current = null;
@@ -182,10 +190,41 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     setAttachment(null);
   }
 
+  // Thread -> welcome, once the panel is back in the sidebar: the reverse of
+  // the welcome -> thread morph. (1) thread + input fade out, (2) the reset is
+  // committed synchronously via flushSync, (3) welcome, input, and common
+  // questions fade up into place. With no thread on screen it just resets.
+  const fadeToWelcome = contextSafe(() => {
+    const scope = panelRootRef.current;
+    const threadEl = scope?.querySelector<HTMLElement>('[data-ash-section="thread"]');
+    const inputEl = scope?.querySelector<HTMLElement>('[data-ash-section="input"]');
+    if (!scope || !threadEl || !inputEl) {
+      resetConversation();
+      return;
+    }
+    resetFadeRef.current = gsap.to([threadEl, inputEl], {
+      opacity: 0,
+      duration: 0.2,
+      ease: "power1.in",
+      onComplete: contextSafe(() => {
+        resetFadeRef.current = null;
+        flushSync(resetConversation);
+        const sections = ["welcome", "input", "questions"]
+          .map((name) => scope.querySelector<HTMLElement>(`[data-ash-section="${name}"]`))
+          .filter((el): el is HTMLElement => el !== null);
+        gsap.fromTo(
+          sections,
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", stagger: 0.06, clearProps: "opacity,transform" },
+        );
+      }),
+    });
+  });
+
   // When the walkthrough advances past the Ask HOAi scene (focused flips to
-  // false), stop the scripted conversation immediately, then reset it once the
-  // 700ms panel morph has finished so the thread doesn't swap to the welcome
-  // view mid-morph. Re-entering before then resets right away, so the scene
+  // false), stop the scripted conversation immediately, then fade back to the
+  // welcome view once the 700ms panel morph has finished so the thread doesn't
+  // swap mid-morph. Re-entering before then resets right away, so the scene
   // always starts from a fresh welcome view.
   useEffect(() => {
     if (!focused) {
@@ -202,7 +241,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
       if (wasFocusedRef.current) {
         resetTimerRef.current = setTimeout(() => {
           resetTimerRef.current = null;
-          resetConversation();
+          fadeToWelcome();
         }, PANEL_MORPH_MS);
       }
     } else if (cancelPendingReset()) {

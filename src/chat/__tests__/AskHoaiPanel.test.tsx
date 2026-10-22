@@ -222,18 +222,67 @@ describe("AskHoaiPanel welcome -> thread morph", () => {
     });
     rerenderFocused(rerender, false);
     // Script stops immediately...
-    const threadText = container.querySelector('[data-ash-section="thread"]')!.textContent;
+    const thread = container.querySelector<HTMLElement>('[data-ash-section="thread"]')!;
+    const threadText = thread.textContent;
     act(() => {
       vi.advanceTimersByTime(699);
     });
-    // ...but the thread stays on screen while the panel morphs back.
+    // ...but the thread stays on screen, untouched, while the panel morphs back.
     expect(container.querySelector('[data-ash-section="thread"]')!.textContent).toBe(threadText);
+    expect(gsap.getTweensOf(thread).length).toBe(0);
     expect(getByText(MSG)).toBeInTheDocument();
     act(() => {
       vi.advanceTimersByTime(1);
     });
+    // Then it starts fading out rather than snapping to the welcome view.
+    expect(container.querySelector('[data-ash-section="thread"]')).toBe(thread);
+    expect(gsap.getTweensOf(thread).length).toBeGreaterThan(0);
+  });
+
+  it("after the morph back, the thread fades out and the welcome view fades in", () => {
+    const { rerender, container, welcomeEl, questionsEl } = renderAndSend();
+    completeMorph(container, welcomeEl, questionsEl);
+    rerenderFocused(rerender, false);
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    const thread = container.querySelector<HTMLElement>('[data-ash-section="thread"]')!;
+    act(() => {
+      gsap.getTweensOf(thread).forEach((t) => t.progress(1));
+    });
     expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
-    expect(container.querySelector('[data-ash-section="welcome"]')).toBeInTheDocument();
+    const welcome = container.querySelector<HTMLElement>('[data-ash-section="welcome"]')!;
+    const questions = container.querySelector<HTMLElement>('[data-ash-section="questions"]')!;
+    const input = container.querySelector<HTMLElement>('[data-ash-section="input"]')!;
+    const fadeIn = gsap.getTweensOf([welcome, input, questions]);
+    expect(fadeIn.length).toBeGreaterThan(0);
+    act(() => {
+      fadeIn.forEach((t) => t.progress(1));
+    });
+    // No inline residue once the fade-in completes.
+    for (const el of [welcome, input, questions]) {
+      expect(el.style.opacity).toBe("");
+      expect(el.style.transform).toBe("");
+    }
+  });
+
+  it("re-entering mid fade-out resets right away to a clean welcome view", () => {
+    const { rerender, container, welcomeEl, questionsEl } = renderAndSend();
+    completeMorph(container, welcomeEl, questionsEl);
+    rerenderFocused(rerender, false);
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    const thread = container.querySelector<HTMLElement>('[data-ash-section="thread"]')!;
+    act(() => {
+      gsap.getTweensOf(thread).forEach((t) => t.progress(0.5));
+    });
+    rerenderFocused(rerender, true);
+    expect(gsap.getTweensOf(thread).length).toBe(0);
+    expect(container.querySelector('[data-ash-section="thread"]')).toBeNull();
+    const welcome = container.querySelector<HTMLElement>('[data-ash-section="welcome"]')!;
+    expect(welcome).toBeInTheDocument();
+    expect(welcome.style.opacity).toBe("");
   });
 
   it("re-entering before the deferred reset fires resets right away", () => {
