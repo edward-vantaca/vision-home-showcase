@@ -7,8 +7,7 @@ import { goToPortalScene } from "./goToPortal";
 import { dashboardScene } from "./dashboard";
 import { paymentsScene } from "./payments";
 import { askHoaiScene } from "./askHoai";
-import { boardActionsScene } from "./boardActions";
-import { amenityScene } from "./amenity";
+import { closingDashboardScene } from "./closingDashboard";
 
 export const homeVisionSequence: Sequence = [
   introScene,
@@ -19,6 +18,5 @@ export const homeVisionSequence: Sequence = [
   dashboardScene,
   paymentsScene,
   askHoaiScene,
-  boardActionsScene,
-  amenityScene,
+  closingDashboardScene,
 ];

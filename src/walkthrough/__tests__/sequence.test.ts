@@ -33,6 +33,14 @@ describe("homeVisionSequence", () => {
     expect(dashboard.appState).toEqual(payments.appState);
   });
 
+  it("ends on a still dashboard after Ask HOAi so the panel returns to the sidebar", () => {
+    const ids = homeVisionSequence.map((s) => s.id);
+    expect(ids.slice(-2)).toEqual(["ask-hoai", "closing-dashboard"]);
+    const closing = homeVisionSequence[homeVisionSequence.length - 1];
+    expect(closing.appState?.askHoaiOpen).toBe(true);
+    expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
+  });
+
   it("every scene has at least one beat", () => {
     for (const scene of homeVisionSequence) {
       expect(scene.beats.length).toBeGreaterThan(0);
