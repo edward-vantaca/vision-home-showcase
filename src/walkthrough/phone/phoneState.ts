@@ -16,22 +16,18 @@ export type PhoneState = {
   messages: PhoneMessage[];
 };
 
-/** State after beat `n` (0 lock with notification, 1 thread open, 2 reply typed, 3 answered). */
+/**
+ * State after beat `n`: 0 lock screen with the notification; 1 (the tap that
+ * opens the thread, types the reply and sends it) answered.
+ */
 export function settledPhoneState(beatIndex: number): PhoneState {
-  const broadcast: PhoneMessage = { from: "them", text: SMS_BROADCAST };
   if (beatIndex <= 0) return { notification: true, view: "lock", draft: "", messages: [] };
-  if (beatIndex === 1) {
-    return { notification: false, view: "thread", draft: "", messages: [broadcast] };
-  }
-  if (beatIndex === 2) {
-    return { notification: false, view: "thread", draft: SMS_REPLY, messages: [broadcast] };
-  }
   return {
     notification: false,
     view: "thread",
     draft: "",
     messages: [
-      broadcast,
+      { from: "them", text: SMS_BROADCAST },
       { from: "me", text: SMS_REPLY },
       { from: "them", text: SMS_ANSWER },
     ],

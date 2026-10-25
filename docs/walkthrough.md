@@ -259,8 +259,8 @@ the overlay from the scene flag) instead of the arrow.
   `min(72vh, 760px)`; styles are the `sms-*` rules in `walkthrough.css`. Lock
   screen with a static `Sunday, October 25` / `4:12`. No HOAi branding anywhere
   on the phone.
-- Four beats. State per beat comes from `phoneState.ts`: 0 lock screen with
-  the notification, 1 thread open on the broadcast, 2 reply typed, 3 answered.
+- Two beats. State per beat comes from `phoneState.ts`: 0 lock screen with
+  the notification, 1 answered (thread open, reply sent, answer in).
   Arriving forward on beat 0 starts with no notification. Landing on a cursor
   beat that's about to run (forward, or back with `replayOnAdvance`) shows the
   state *before* it so its clicks do the work; otherwise the state after it.
@@ -274,16 +274,19 @@ the overlay from the scene flag) instead of the arrow.
   shows the notification already there, with no animation and no hold.
   Leaving the beat or unmounting before the drop cancels it and releases the
   hold.
-- The three cursor beats (1–3) are real clicks: the notification opens the thread, the
-  input is typed into (`typeCps` 24), Send appends the reply. The input is a
+- Beat 1 is one cursor beat of real clicks (`then` stops): the notification
+  opens the thread, the input is typed into (`typeCps` 24), Send appends the
+  reply. The scripted tap holds busy until Send takes over the hold
+  (`THREAD_HOLD_FALLBACK_MS` 12 s backstop), so → can't cut the beat short; a
+  tap by hand outside the cursor beat holds nothing. The input is a
   one-row `<textarea>` that a layout effect resizes to its `scrollHeight` on
   every draft change, so the whole reply stays visible while it is typed. Send holds busy:
   typing dots at +500 ms, the answer at +1900 ms (`ANSWER_AT_MS`), then the
   hold is released. New bubbles fade up (`sms-bubble-in`, 300 ms).
 - The phone keeps its last state when the scene is left, so it slides out
   intact; timers and holds are cleared on every beat change. ← from the next
-  scene slides the phone back in on the last beat showing the pre-send state
-  (reply typed), and the next → re-sends.
+  scene slides the phone back in on beat 1 showing the lock screen with the
+  notification, and the next → replays the tap, reply and answer.
 - `PhoneStage` checks the cursor against its own `SMS_SCENE_ID`; that is its
   own scene, not a neighbour.
 

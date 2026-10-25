@@ -18,6 +18,8 @@ export const NOTIFICATION_DELAY_MS = 500;
 const NOTIFICATION_HOLD_FALLBACK_MS = 700;
 const TYPING_DOTS_AT_MS = 500;
 export const ANSWER_AT_MS = 1900;
+/** Backstop for the hold a scripted tap takes, in case Send never comes. */
+export const THREAD_HOLD_FALLBACK_MS = 12000;
 
 /**
  * The broadcast SMS scene's phone. Always renders; the layer around it
@@ -42,6 +44,7 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const releases = useRef<(() => void)[]>([]);
   const releaseNotification = useRef<() => void>(() => {});
+  const releaseThread = useRef<() => void>(() => {});
   const inputRef = useRef<HTMLTextAreaElement>(null);
   // Only the value at landing matters; a ref keeps it out of the effect's deps.
   const swipeIn = useRef(swipeInMs);
@@ -100,6 +103,13 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
   }, []);
 
   const openThread = () => {
+    // The scripted tap goes on to type and send in the same beat: keys stay
+    // held from the tap until Send takes over the hold.
+    if (inScene && isCursorBeat) {
+      const release = hold();
+      releaseThread.current = release;
+      later(THREAD_HOLD_FALLBACK_MS, release);
+    }
     // The broadcast is already in the thread when it opens; it doesn't animate in.
     setAnimateFrom(1);
     setPhone((p) => ({
@@ -114,6 +124,7 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
     const text = phone.draft;
     if (!text) return;
     const release = hold();
+    releaseThread.current();
     setPhone((p) => ({ ...p, draft: "", messages: [...p.messages, { from: "me", text }] }));
     later(TYPING_DOTS_AT_MS, () => setTyping(true));
     later(ANSWER_AT_MS, () => {

@@ -15,8 +15,15 @@ export const broadcastSmsScene: Scene = {
   stage: "phone",
   beats: [
     { kind: "idle" }, // swipe in; the notification drops in by itself
-    { kind: "cursor", to: VT.SmsNotification, action: "click" },
-    { kind: "cursor", to: VT.SmsInput, action: "click", typeText: SMS_REPLY, typeCps: 24 },
-    { kind: "cursor", to: VT.SmsSendBtn, action: "click" },
+    {
+      // One beat: tap the notification, then reply in the thread it opens.
+      kind: "cursor",
+      to: VT.SmsNotification,
+      action: "click",
+      then: [
+        { to: VT.SmsInput, action: "click", typeText: SMS_REPLY, typeCps: 24 },
+        { to: VT.SmsSendBtn, action: "click" },
+      ],
+    },
   ],
 };

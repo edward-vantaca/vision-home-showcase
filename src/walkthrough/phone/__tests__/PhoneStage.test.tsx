@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act, fireEvent, cleanup } from "@testing-library/react";
-import PhoneStage, { ANSWER_AT_MS, NOTIFICATION_DELAY_MS, SMS_SCENE_ID } from "../PhoneStage";
+import PhoneStage, { ANSWER_AT_MS, NOTIFICATION_DELAY_MS, SMS_SCENE_ID, THREAD_HOLD_FALLBACK_MS } from "../PhoneStage";
 import { SMS_ANSWER, SMS_BROADCAST, SMS_PREVIEW, SMS_REPLY } from "../phoneState";
 import { SWIPE_MS } from "../SceneSwipe";
 import { WalkthroughProvider, isWalkthroughBusy, useCursor } from "../../cursor";
@@ -14,9 +14,15 @@ const seq: Sequence = [
     page: "dashboard",
     beats: [
       { kind: "idle" },
-      { kind: "cursor", to: VT.SmsNotification, action: "click" },
-      { kind: "cursor", to: VT.SmsInput, action: "click", typeText: SMS_REPLY },
-      { kind: "cursor", to: VT.SmsSendBtn, action: "click" },
+      {
+        kind: "cursor",
+        to: VT.SmsNotification,
+        action: "click",
+        then: [
+          { to: VT.SmsInput, action: "click", typeText: SMS_REPLY },
+          { to: VT.SmsSendBtn, action: "click" },
+        ],
+      },
     ],
   },
   { id: "after", page: "dashboard", beats: [{ kind: "idle" }] },
@@ -49,9 +55,16 @@ const advanceBy = (ms: number) =>
     vi.advanceTimersByTime(ms);
   });
 
-/** Lands forward on beat 3 and lets the send script finish. */
-function settleOnBeat3(c: HTMLElement) {
-  jump(3);
+/** Does what beat 1's cursor does by hand: tap the notification, type the reply. */
+function tapAndType(c: HTMLElement) {
+  jump(1);
+  act(() => q(c, VT.SmsNotification)!.click());
+  fireEvent.change(q(c, VT.SmsInput)!, { target: { value: SMS_REPLY } });
+}
+
+/** Lands forward on beat 1 and plays it through to the answer. */
+function settleOnBeat1(c: HTMLElement) {
+  tapAndType(c);
   act(() => q(c, VT.SmsSendBtn)!.click());
   act(() => {
     vi.advanceTimersByTime(ANSWER_AT_MS);
@@ -71,7 +84,7 @@ describe("PhoneStage", () => {
 
   it("keeps its last state after leaving the scene", () => {
     const { container, getByText } = renderStage();
-    settleOnBeat3(container);
+    settleOnBeat1(container);
     expect(getByText(SMS_ANSWER)).toBeInTheDocument();
     act(() => nav.advance());
     expect(nav.sceneId).toBe("after");
@@ -186,18 +199,48 @@ describe("PhoneStage", () => {
     expect(q(container, VT.SmsInput)).not.toBeNull();
   });
 
-  it("opening the thread shows the broadcast without an unheld entrance animation", () => {
+  it("opening the thread shows the broadcast without an entrance animation", () => {
     const { container } = renderStage();
     jump(1);
     act(() => q(container, VT.SmsNotification)!.click());
     const bubble = container.querySelector("[data-sms-bubble]")!;
     expect(bubble.classList.contains("sms-bubble-in")).toBe(false);
+  });
+
+  it("the scripted tap holds keys while the reply is typed, until the answer arrives", () => {
+    const { container, getByText } = renderStage();
+    tapAndType(container);
+    expect(isWalkthroughBusy()).toBe(true);
+    act(() => q(container, VT.SmsSendBtn)!.click());
+    expect(isWalkthroughBusy()).toBe(true);
+    advanceBy(ANSWER_AT_MS);
+    expect(getByText(SMS_ANSWER)).toBeInTheDocument();
+    expect(isWalkthroughBusy()).toBe(false);
+  });
+
+  it("releases the tap's hold after THREAD_HOLD_FALLBACK_MS if the reply is never sent", () => {
+    const { container } = renderStage();
+    jump(1);
+    act(() => q(container, VT.SmsNotification)!.click());
+    advanceBy(THREAD_HOLD_FALLBACK_MS - 1);
+    expect(isWalkthroughBusy()).toBe(true);
+    advanceBy(1);
+    expect(isWalkthroughBusy()).toBe(false);
+  });
+
+  it("a hand tap on beat 0 opens the thread without holding keys", () => {
+    const { container } = renderStage();
+    jump(1);
+    act(() => nav.back());
+    act(() => q(container, VT.SmsNotification)!.click());
+    expect(q(container, VT.SmsInput)).not.toBeNull();
     expect(isWalkthroughBusy()).toBe(false);
   });
 
   it("the input is controlled by the draft", () => {
     const { container } = renderStage();
-    jump(2);
+    jump(1);
+    act(() => q(container, VT.SmsNotification)!.click());
     const input = q(container, VT.SmsInput) as HTMLInputElement;
     expect(input.value).toBe("");
     fireEvent.change(input, { target: { value: "Hi" } });
@@ -206,7 +249,8 @@ describe("PhoneStage", () => {
 
   it("the input grows to fit the whole draft as it is typed", () => {
     const { container } = renderStage();
-    jump(2);
+    jump(1);
+    act(() => q(container, VT.SmsNotification)!.click());
     const input = q(container, VT.SmsInput) as HTMLTextAreaElement;
     expect(input.tagName).toBe("TEXTAREA");
     Object.defineProperty(input, "scrollHeight", { configurable: true, get: () => (input.value ? 48 : 20) });
@@ -218,7 +262,7 @@ describe("PhoneStage", () => {
 
   it("send shows typing dots then the answer and releases busy", () => {
     const { container, getByText, queryByText, queryByLabelText } = renderStage();
-    jump(3);
+    tapAndType(container);
     expect((q(container, VT.SmsInput) as HTMLInputElement).value).toBe(SMS_REPLY);
     act(() => q(container, VT.SmsSendBtn)!.click());
     expect(isWalkthroughBusy()).toBe(true);
@@ -244,22 +288,23 @@ describe("PhoneStage", () => {
     jump(1);
     act(() => q(container, VT.SmsNotification)!.click());
     act(() => q(container, VT.SmsSendBtn)!.click());
-    expect(isWalkthroughBusy()).toBe(false);
     expect(container.querySelectorAll("[data-sms-bubble]").length).toBe(1);
+    expect(container.textContent).not.toContain(SMS_ANSWER);
   });
 
-  it("back from beat 3 to beat 2 restores the typed reply", () => {
+  it("back from the next scene shows the lock screen with the notification, ready to replay", () => {
     const { container, queryByText } = renderStage();
-    settleOnBeat3(container);
+    settleOnBeat1(container);
+    act(() => nav.advance());
     act(() => nav.back());
-    expect(nav.cursor).toEqual({ sceneIndex: 1, beatIndex: 2 });
-    expect((q(container, VT.SmsInput) as HTMLInputElement).value).toBe(SMS_REPLY);
+    expect(nav.cursor).toEqual({ sceneIndex: 1, beatIndex: 1 });
+    expect(q(container, VT.SmsNotification)).not.toBeNull();
     expect(queryByText(SMS_ANSWER)).toBeNull();
   });
 
   it("a cursor change mid-reply stops the script and releases busy", () => {
     const { container, queryByText } = renderStage();
-    jump(3);
+    tapAndType(container);
     act(() => q(container, VT.SmsSendBtn)!.click());
     expect(isWalkthroughBusy()).toBe(true);
     act(() => nav.back());
@@ -272,14 +317,14 @@ describe("PhoneStage", () => {
 
   it("never shows HOAi branding", () => {
     const { container } = renderStage();
-    settleOnBeat3(container);
+    settleOnBeat1(container);
     expect(container.textContent).toContain(SMS_ANSWER);
     expect(container.textContent).not.toMatch(/hoai/i);
   });
 
   it("unmount releases", () => {
     const { container, unmount } = renderStage();
-    jump(3);
+    tapAndType(container);
     act(() => q(container, VT.SmsSendBtn)!.click());
     act(() => {
       vi.advanceTimersByTime(600);

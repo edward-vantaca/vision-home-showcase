@@ -42,19 +42,20 @@ describe("homeVisionSequence", () => {
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
-  it("Broadcast SMS: the notification arrives by itself, then tap it, type the reply and send", () => {
+  it("Broadcast SMS: the notification arrives by itself, then one beat taps it, types the reply and sends", () => {
     const sms = homeVisionSequence.find((s) => s.id === "broadcast-sms");
     if (!sms) throw new Error("no broadcast-sms scene");
     // A phone scene: the app slides away, and the app underneath follows the app scene.
     expect(sms.stage).toBe("phone");
     expect(sms.appState).toBeUndefined();
-    expect(sms.beats.map((b) => b.kind)).toEqual(["idle", "cursor", "cursor", "cursor"]);
-    const cursorBeats = sms.beats.filter((b) => b.kind === "cursor");
-    expect(cursorBeats.map((b) => b.to)).toEqual([VT.SmsNotification, VT.SmsInput, VT.SmsSendBtn]);
-    expect(cursorBeats.map((b) => b.action)).toEqual(["click", "click", "click"]);
-    const type = sms.beats[2];
-    if (type.kind !== "cursor") throw new Error("beat 2 is not a cursor beat");
-    expect(type.typeText).toBe(SMS_REPLY);
+    expect(sms.beats.map((b) => b.kind)).toEqual(["idle", "cursor"]);
+    const tap = sms.beats[1];
+    if (tap.kind !== "cursor") throw new Error("beat 1 is not a cursor beat");
+    expect(tap.to).toBe(VT.SmsNotification);
+    expect(tap.action).toBe("click");
+    expect(tap.then?.map((s) => s.to)).toEqual([VT.SmsInput, VT.SmsSendBtn]);
+    expect(tap.then?.map((s) => s.action)).toEqual(["click", "click"]);
+    expect(tap.then?.[0].typeText).toBe(SMS_REPLY);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {
