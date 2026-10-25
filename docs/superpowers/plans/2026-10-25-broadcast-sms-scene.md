@@ -167,10 +167,10 @@ it("ignores ArrowRight / ArrowLeft while a busy hold is active", () => {
 
 **Interfaces:**
 - Consumes: `phoneStateOnLanding`, `settledPhoneState`, copy constants (Task 3); `useCursor()` incl. `replayOnAdvance`; `holdBusy` (Task 1).
-- Produces: `<PhoneStage />` with no props. It renders nothing when `sceneId !== "broadcast-sms"` (Task 5 wraps it in the sliding layer). Exports `SMS_SCENE_ID = "broadcast-sms"`, and the scene and other tasks import it from here.
+- Produces: `<PhoneStage />` with no props. It always renders the phone, and Task 5's `PhoneLayer` decides whether it's on screen. That keeps the phone visible while it slides out after the scene has already changed to `closing-dashboard`. Exports `SMS_SCENE_ID = "broadcast-sms"`, and the scene and other tasks import it from here.
 
 Behaviour:
-- On every cursor change while in the scene: stop any running reply script (releasing its hold), then `setState(phoneStateOnLanding(beatIndex, …))`, where `isCursorBeat` is `scene.beats[beatIndex].kind === "cursor"`.
+- On every cursor change **while `sceneId === SMS_SCENE_ID`**: stop any running reply script (releasing its hold), then `setState(phoneStateOnLanding(beatIndex, …))`, where `isCursorBeat` is `scene.beats[beatIndex].kind === "cursor"`. Outside the scene, keep the last state and stop the script.
 - Landing forward on beat 1: the notification mounts with `sms-notification-in`; hold busy for the 500ms animation (release on `animationend`, with a 700ms timeout fallback).
 - Notification is a `<button data-vt-name={VT.SmsNotification}>`; click → `view: "thread"`, `messages: [broadcast]`.
 - Input is a controlled `<input data-vt-name={VT.SmsInput}>` bound to `draft` (CursorBeat types through the native setter, so `onChange` must update `draft`).
