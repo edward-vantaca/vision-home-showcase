@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { homeVisionSequence } from "../scenes";
 import { VT } from "../viewTransitionNames";
+import { SMS_REPLY } from "../phone/phoneState";
 
 const vtValues = new Set(Object.values(VT));
 
@@ -33,12 +34,24 @@ describe("homeVisionSequence", () => {
     expect(dashboard.appState).toEqual(payments.appState);
   });
 
-  it("ends on a still dashboard after Ask HOAi so the panel returns to the sidebar", () => {
+  it("ends on a still dashboard after the broadcast SMS so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-2)).toEqual(["ask-hoai", "closing-dashboard"]);
+    expect(ids.slice(-3)).toEqual(["ask-hoai", "broadcast-sms", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
+  });
+
+  it("Broadcast SMS: lock screen, notification, then tap it, type the reply and send", () => {
+    const sms = homeVisionSequence.find((s) => s.id === "broadcast-sms");
+    if (!sms) throw new Error("no broadcast-sms scene");
+    expect(sms.beats.map((b) => b.kind)).toEqual(["idle", "idle", "cursor", "cursor", "cursor"]);
+    const cursorBeats = sms.beats.filter((b) => b.kind === "cursor");
+    expect(cursorBeats.map((b) => b.to)).toEqual([VT.SmsNotification, VT.SmsInput, VT.SmsSendBtn]);
+    expect(cursorBeats.map((b) => b.action)).toEqual(["click", "click", "click"]);
+    const type = sms.beats[3];
+    if (type.kind !== "cursor") throw new Error("beat 3 is not a cursor beat");
+    expect(type.typeText).toBe(SMS_REPLY);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {

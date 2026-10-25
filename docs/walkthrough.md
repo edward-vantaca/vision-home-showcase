@@ -5,7 +5,8 @@ rules that keep it trustworthy on stage. This is the current reference; when it
 disagrees with an older spec or handoff, this file wins (and if this file
 disagrees with the code, the code wins — fix this file).
 
-Last updated 2026-10-25 (branch `walkthrough-subsystem`).
+Last updated 2026-10-25 (branch `walkthrough-subsystem`): broadcast SMS scene,
+phone stage, scene swipe and busy holds.
 
 ## Mental model
 
@@ -24,7 +25,9 @@ working app.
 ```
 main.tsx
 └─ <WalkthroughRoot sequence={homeVisionSequence}>   src/walkthrough/WalkthroughRoot.tsx
-   ├─ <App/>                       the real app; reads useCursor() for scene sync
+   ├─ <AppSlide>                   slides the app out for the SMS scene (SceneSwipe.tsx)
+   │  └─ <App/>                    the real app; reads useCursor() for scene sync
+   ├─ <PhoneLayer/>                white layer holding the phone (z 220)
    ├─ <WalkthroughOverlay/>        renders the current beat (.wt-root, z 250)
    ├─ <WalkthroughHUD/>            prev / next pill, toggled with "."
    └─ <SceneLauncher/>             scene jumper, only with ?launcher in the URL
@@ -36,13 +39,16 @@ main.tsx
 | --- | --- |
 | `src/walkthrough/types.ts` | `Scene`, `Beat`, `CursorStop`, `SceneAppState` — the authoring API, with doc comments |
 | `src/walkthrough/scenes/*.tsx`, `scenes/index.ts` | One file per scene; `index.ts` is the running order |
-| `src/walkthrough/cursor.tsx` | Reducer (advance / back / jumpTo), `useCursor()`, `beatBusyRef` |
+| `src/walkthrough/cursor.tsx` | Reducer (advance / back / jumpTo), `useCursor()`, `beatBusyRef`, `holdBusy()` / `isWalkthroughBusy()` |
 | `src/walkthrough/keyboard.ts` | Presenter keys |
 | `src/walkthrough/WalkthroughOverlay.tsx` | Picks the beat component, sticky stage, backdrop kind |
 | `src/walkthrough/beats/*` | One component per beat kind; `useLiftTarget.ts` does lift/expand |
 | `src/walkthrough/walkthrough.css` | Backdrop, cursor, intro, file-card styles; `askhoai-*` keyframes |
 | `src/walkthrough/viewTransitionNames.ts` | `VT` — every element a beat can target (historic name; View Transitions are gone) |
 | `src/walkthrough/dropFile.ts` | `DROP_FILE_EVENT`, the event a cursor "drop" fires |
+| `src/walkthrough/phone/phoneState.ts` | SMS copy (`SMS_SENDER`, `SMS_BROADCAST`, `SMS_REPLY`, `SMS_ANSWER`) and the phone's state per beat |
+| `src/walkthrough/phone/PhoneStage.tsx`, `PhoneFrame.tsx` | The phone: lock screen, notification, SMS thread; `SMS_SCENE_ID` |
+| `src/walkthrough/phone/SceneSwipe.tsx` | `AppSlide` / `PhoneLayer` and `swipeFor`, the app ⇄ phone swipe |
 
 ## Authoring: scenes and beats
 
@@ -153,7 +159,8 @@ GSAP timeline, portaled to `<body>` at z 400.
   the arrow keys work again.
 - Drop: 0.35 s hover over the target, event fires, card shrinks away (0.2 s).
 - Scroll: `power1.inOut` over `scrollMs`.
-- `beatBusyRef` is true while the timeline runs; → / ← are ignored until it ends.
+- `beatBusyRef` is true while the timeline runs; → / ← are ignored until it ends
+  (see busy holds under Navigation rules).
 - Going ← onto a cursor beat only moves the pointer to the first stop (no
   clicks).
 
@@ -162,18 +169,60 @@ GSAP timeline, portaled to `<body>` at z 400.
 - One `position: fixed` panel with three forms — sidebar, focused (centred), and
   collapsed — each with an explicit `left` (never `auto`), so CSS morphs between
   them: `all 700ms cubic-bezier(0.65,0,0.35,1)`. Focused while the scene id is
-  `ask-hoai`; a white canvas (z 180) fades in behind it (500 ms).
+  `ask-hoai`, and on the broadcast SMS scene's first beat so it slides out with
+  the app unchanged (`askHoaiFocused` in `App.tsx`); a white canvas (z 180)
+  fades in behind it (500 ms). From SMS beat 1 the phone covers the screen, so
+  the panel morphs back and resets off-screen and the dashboard swipes back in
+  already in its closing state.
 - Welcome → conversation (GSAP): welcome + common questions fade up (350 ms),
   state commits via `flushSync`, the input FLIPs to the footer and the thread
   fades in (500 ms). Send is ignored while this runs.
 - Scripted conversation: typing dots at +500 ms, reply streams from +1900 ms
   (3 chars / 25 ms), follow-up typed 1.4 s later, then the acknowledgement. All
-  timers are tracked and cleared when the scene is left.
+  timers are tracked and cleared when the scene is left. A busy hold runs from
+  Send until the script finishes, so → can't leave mid-stream.
 - A file dropped on the input (`DROP_FILE_EVENT`) becomes an attachment chip and
   is sent with the next message.
 - Leaving the scene: script stops at once; after the 700 ms morph back, the
   thread fades out (200 ms) and welcome / input / questions fade up (400 ms,
   staggered). Re-entering mid-way resets immediately.
+
+### Scene swipe (`phone/SceneSwipe.tsx`)
+
+- `AppSlide` wraps the app; `PhoneLayer` is a plain white `position: fixed`
+  layer (z 220) holding the phone. Both follow the cursor through `swipeFor`.
+- On the SMS scene the app sits at `translateX(-100%)` and the layer at `0`;
+  everywhere else the layer is at `translateX(100%)`, `visibility: hidden`.
+- Only two moves animate, both going forward: ask-hoai → broadcast-sms (app
+  out, phone in) and broadcast-sms → closing-dashboard (back again). Both move
+  in lockstep: `transform 900ms cubic-bezier(0.65,0,0.35,1)`. Every other
+  change, ← included, is a hard cut. (Known quirk: a launcher jump from
+  ask-hoai to broadcast-sms also animates.)
+- The swipe holds busy from the scene change until the app wrapper's own
+  `transitionend` for `transform` (1100 ms fallback).
+- Outside the SMS scene, with no swipe in flight, the wrapper's transform is
+  `none`: a transform traps `position: fixed` descendants, which would break
+  lifts, the payment modal and the Ask HOAi panel.
+
+### Phone stage (`phone/PhoneStage.tsx`)
+
+- An iPhone-style frame (`PhoneFrame`) centred on white, sized from
+  `min(72vh, 760px)`; styles are the `sms-*` rules in `walkthrough.css`. Lock
+  screen with a static `Sunday, October 25` / `4:12`. No HOAi branding anywhere
+  on the phone.
+- State per beat comes from `phoneState.ts`: 0 empty lock screen, 1
+  notification, 2 thread open on the broadcast, 3 reply typed, 4 answered.
+  Landing on a cursor beat that's about to run (forward, or back with
+  `replayOnAdvance`) shows the state *before* it so its clicks do the work;
+  otherwise the state after it.
+- Beat 1 arriving forward drops the notification in (`sms-notification-in`,
+  500 ms overshoot) and holds busy until its `animationend` (700 ms fallback).
+- The cursor beats are real clicks: the notification opens the thread, the
+  input is typed into (`typeCps` 24), Send appends the reply. Send holds busy:
+  typing dots at +500 ms, the answer at +1900 ms (`ANSWER_AT_MS`), then the
+  hold is released. New bubbles fade up (`sms-bubble-in`, 300 ms).
+- The phone keeps its last state when the scene is left, so it slides out
+  intact; timers and holds are cleared on every beat change.
 
 ### Smaller app-side motions
 
@@ -187,7 +236,13 @@ GSAP timeline, portaled to `<body>` at z 400.
 
 - → (also Space, PageDown): next beat, then next scene. ← (PageUp): previous.
   Home / Esc: start. End: last beat. `.`: toggle HUD. Keys are ignored while
-  focus is in an input or while a beat is busy.
+  focus is in an input or while the walkthrough is busy.
+- **Busy** (`isWalkthroughBusy()`): a running cursor beat (`beatBusyRef`) or any
+  open `holdBusy()` hold. Holds are ref-counted and their release is
+  idempotent; timed app sequences take one — the Ask HOAi chat (Send → end of
+  script), the scene swipe, the phone's notification drop and its send →
+  answer. While busy, → and ← do nothing, from the keyboard **and** the HUD
+  buttons; the presenter just presses again once it settles.
 - **Scene start state**: every scene change re-applies that scene's `appState`
   — phase (App root), onboarding screen (re-keys `NewResidentFlow`), page,
   dashboard view, Ask HOAi open (MainApp). MainApp also closes Quick Actions on
@@ -212,6 +267,7 @@ GSAP timeline, portaled to `<body>` at z 400.
 | 190 | Ask HOAi panel (sidebar form) |
 | 195 | Elections / create-post modals |
 | 200 | Ask HOAi panel (focused form); Quick Actions modal |
+| 220 | Phone layer (white, SMS scene only) |
 | 240 | Onboarding loader |
 | 250 | `.wt-root` (backdrop, cutout, expand panel) |
 | 260 | A lifted / expanded element |
@@ -219,13 +275,19 @@ GSAP timeline, portaled to `<body>` at z 400.
 | 310 | HUD |
 | 400 | Scripted cursor + its file card |
 
+The app wrapper (`.wt-app-slide`) is transformed only during the SMS scene and
+its swipes. While it is, the whole app is one stacking context below the phone
+layer; the rest of the time its transform is `none`, so the app's own layers
+(lifts at 260, the payment modal at 300) stack against `.wt-root` as listed.
+
 ## Current scene order (`scenes/index.ts`)
 
 intro → inbox (open email, click register CTA) → onboarding (password, Create
 account) → autopay → go-to-portal → dashboard (still) → payments (lift, Make a
 Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
-closing-dashboard (still).
+broadcast-sms (swipe to the phone; storm broadcast arrives, tap it, reply,
+answer) → closing-dashboard (swipe back; still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).

@@ -45,4 +45,31 @@ describe("MainApp scene sync", () => {
     expect(q(container, "dashboard-page")).not.toBeNull();
     expect(q(container, "quick-actions-modal")).toBeNull();
   });
+
+  it("keeps the Ask HOAi panel focused only on the broadcast SMS scene's first beat", () => {
+    const smsSeq: Sequence = [
+      { id: "ask-hoai", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
+      { id: "broadcast-sms", page: "dashboard", appState: portal, beats: [{ kind: "idle" }, { kind: "idle" }] },
+    ];
+    const { container, getByTestId } = render(
+      <WalkthroughProvider sequence={smsSeq}>
+        <App />
+        <Next />
+      </WalkthroughProvider>,
+    );
+    const panel = () => q(container, "askhoai-panel")!;
+    const isFocused = () => panel().className.includes("left-1/2");
+
+    expect(isFocused()).toBe(true);
+    act(() => {
+      fireEvent.click(getByTestId("next"));
+    });
+    // Beat 0: the panel slides out with the app still in its focused form.
+    expect(isFocused()).toBe(true);
+    act(() => {
+      fireEvent.click(getByTestId("next"));
+    });
+    // Beat 1: it morphs back to the sidebar off-screen.
+    expect(isFocused()).toBe(false);
+  });
 });

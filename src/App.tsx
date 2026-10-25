@@ -9,6 +9,7 @@ import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
 import { VT } from "./walkthrough/viewTransitionNames";
+import { SMS_SCENE_ID } from "./walkthrough/phone/PhoneStage";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -3253,7 +3254,7 @@ function MainApp({ onRestart }: MainAppProps) {
   const [quickActionsView, setQuickActionsView] = useState<QuickActionsView | null>(null);
   const [arcForm, setArcForm] = useState<{ id: string; label: string } | null>(null);
 
-  const { page: scenePage, sceneId, scene } = useCursor();
+  const { page: scenePage, sceneId, scene, cursor } = useCursor();
   // Only drive activePage when the WALKTHROUGH scene changes. Having
   // activePage in the deps would snap manual sidebar nav right back to the
   // scene's page every time the user tried to go somewhere else. Keyed on the
@@ -3278,7 +3279,12 @@ function MainApp({ onRestart }: MainAppProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sceneId]);
 
-  const askHoaiFocused = sceneId === "ask-hoai";
+  // Still focused on the SMS scene's first beat, so the panel slides out with
+  // the app exactly as the audience last saw it. From beat 1 the phone covers
+  // the screen and the panel morphs back and resets off-screen, so the
+  // dashboard swipes back in already in its closing state.
+  const askHoaiFocused =
+    sceneId === "ask-hoai" || (sceneId === SMS_SCENE_ID && cursor.beatIndex === 0);
 
   const navigate = (page: Page) => {
     setActivePage(page);
