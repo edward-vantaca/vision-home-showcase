@@ -16,8 +16,8 @@ describe("AskHoaiPanel scripted chat holds the walkthrough busy", () => {
     gsap.killTweensOf("*");
   });
 
-  function renderAndSend() {
-    const utils = render(<AskHoaiPanel open focused onCollapse={() => {}} />);
+  function renderAndSend(focused = true) {
+    const utils = render(<AskHoaiPanel open focused={focused} onCollapse={() => {}} />);
     const textarea = utils.container.querySelector<HTMLTextAreaElement>('[data-vt-name="wt-askhoai-input"]')!;
     fireEvent.change(textarea, { target: { value: "Can I replace my fence?" } });
     act(() => {
@@ -51,6 +51,15 @@ describe("AskHoaiPanel scripted chat holds the walkthrough busy", () => {
     try {
       expect(isWalkthroughBusy()).toBe(true);
       rerender(<AskHoaiPanel open focused={false} onCollapse={() => {}} />);
+      expect(isWalkthroughBusy()).toBe(false);
+    } finally {
+      unmount();
+    }
+  });
+
+  it("a manual Send in the sidebar (not focused) takes no hold", () => {
+    const { unmount } = renderAndSend(false);
+    try {
       expect(isWalkthroughBusy()).toBe(false);
     } finally {
       unmount();

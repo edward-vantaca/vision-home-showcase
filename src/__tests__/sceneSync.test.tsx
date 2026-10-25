@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { act, fireEvent, render } from "@testing-library/react";
+import gsap from "gsap";
 import App from "../App";
-import { WalkthroughProvider, useCursor } from "../walkthrough/cursor";
+import { WalkthroughProvider, isWalkthroughBusy, useCursor } from "../walkthrough/cursor";
+import { SMS_SCENE_ID } from "../walkthrough/phone/PhoneStage";
 import type { Sequence } from "../walkthrough/types";
 
 const portal = { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true } as const;
@@ -15,6 +17,11 @@ const seq: Sequence = [
 function Next() {
   const { advance } = useCursor();
   return <button type="button" data-testid="next" onClick={advance}>next</button>;
+}
+
+function Back() {
+  const { back } = useCursor();
+  return <button type="button" data-testid="back" onClick={back}>back</button>;
 }
 
 function q(container: HTMLElement, uxId: string) {
@@ -49,7 +56,7 @@ describe("MainApp scene sync", () => {
   it("keeps the Ask HOAi panel focused only on the broadcast SMS scene's first beat", () => {
     const smsSeq: Sequence = [
       { id: "ask-hoai", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
-      { id: "broadcast-sms", page: "dashboard", appState: portal, beats: [{ kind: "idle" }, { kind: "idle" }] },
+      { id: SMS_SCENE_ID, page: "dashboard", appState: portal, beats: [{ kind: "idle" }, { kind: "idle" }] },
     ];
     const { container, getByTestId } = render(
       <WalkthroughProvider sequence={smsSeq}>
@@ -71,5 +78,50 @@ describe("MainApp scene sync", () => {
     });
     // Beat 1: it morphs back to the sidebar off-screen.
     expect(isFocused()).toBe(false);
+  });
+
+  it("← from the SMS scene's first beat hard-cuts ask-hoai back to a fresh welcome view", () => {
+    const smsSeq: Sequence = [
+      { id: "ask-hoai", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
+      { id: SMS_SCENE_ID, page: "dashboard", appState: portal, beats: [{ kind: "idle" }, { kind: "idle" }] },
+    ];
+    const { container, getByTestId, unmount } = render(
+      <WalkthroughProvider sequence={smsSeq}>
+        <App />
+        <Next />
+        <Back />
+      </WalkthroughProvider>,
+    );
+    try {
+      const panel = () => q(container, "askhoai-panel")!;
+      const section = (name: string) => panel().querySelector(`[data-ash-section="${name}"]`);
+
+      // Start the scripted chat and let the welcome -> thread morph commit.
+      const textarea = panel().querySelector<HTMLTextAreaElement>('[data-vt-name="wt-askhoai-input"]')!;
+      fireEvent.change(textarea, { target: { value: "Can I replace my fence?" } });
+      act(() => {
+        panel().querySelector<HTMLButtonElement>('[data-vt-name="wt-askhoai-send-btn"]')!.click();
+      });
+      act(() => {
+        gsap.getTweensOf([section("welcome"), section("questions")]).forEach((t) => t.progress(1));
+      });
+      expect(section("thread")).not.toBeNull();
+
+      act(() => {
+        fireEvent.click(getByTestId("next"));
+      });
+      // Beat 0: still focused, conversation untouched mid-swipe.
+      expect(section("thread")).not.toBeNull();
+
+      act(() => {
+        fireEvent.click(getByTestId("back"));
+      });
+      expect(section("thread")).toBeNull();
+      expect(section("welcome")).not.toBeNull();
+      expect(panel().textContent).not.toContain("Can I replace my fence?");
+      expect(isWalkthroughBusy()).toBe(false);
+    } finally {
+      unmount();
+    }
   });
 });

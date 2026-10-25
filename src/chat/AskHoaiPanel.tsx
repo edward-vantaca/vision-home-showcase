@@ -37,6 +37,10 @@ type Props = {
   open: boolean;
   onCollapse: () => void;
   focused?: boolean;
+  // True while the walkthrough has landed on the Ask HOAi scene by ← (from the
+  // SMS scene's first beat, where the panel is still focused). Rising to true
+  // hard-resets the panel, so the next → replays the drop and chat cleanly.
+  restart?: boolean;
 };
 
 export function AskHoaiIcon({ className = "" }: { className?: string }) {
@@ -110,7 +114,7 @@ const COMMON_QUESTIONS = [
   "What is the process to request a new pool key?",
 ];
 
-export default function AskHoaiPanel({ open, onCollapse, focused = false }: Props) {
+export default function AskHoaiPanel({ open, onCollapse, focused = false, restart = false }: Props) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [agentTyping, setAgentTyping] = useState(false);
@@ -234,8 +238,9 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   // When the walkthrough advances past the Ask HOAi scene (focused flips to
   // false), stop the scripted conversation immediately, then fade back to the
   // welcome view once the 700ms panel morph has finished so the thread doesn't
-  // swap mid-morph. Re-entering before then resets right away, so the scene
-  // always starts from a fresh welcome view.
+  // swap mid-morph. Re-focusing before then resets right away (SMS beat 1 -> 0
+  // re-focuses off-screen). ← into ask-hoai with `focused` unchanged is handled
+  // by the `restart` effect below.
   useEffect(() => {
     if (!focused) {
       // Drop an in-flight morph so it can't commit into the reset panel.
@@ -261,6 +266,22 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     // stopScript/cancelPendingReset/resetConversation only touch refs and setters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focused]);
+
+  // ← from the SMS scene's first beat to ask-hoai keeps `focused` true, so the
+  // effect above never runs. That move is a hard cut to the scene's start:
+  // stop the script and reset at once, with no fade.
+  useEffect(() => {
+    if (!restart) return;
+    if (morphRef.current) {
+      morphRef.current.tween.revert();
+      morphRef.current = null;
+    }
+    stopScript();
+    cancelPendingReset();
+    resetConversation();
+    // stopScript/cancelPendingReset/resetConversation only touch refs and setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restart]);
 
   // A cursor "drop" stop lands a file on the input; it bubbles up to the panel.
   useEffect(() => {
@@ -406,8 +427,12 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     if (morphRef.current) return;
     const text = input.trim();
     if (!text) return;
-    releaseScriptBusy();
-    releaseScriptBusyRef.current = holdBusy();
+    // Only the walkthrough's scripted chat (focused) blocks presenter keys; a
+    // manual send in the sidebar takes no hold.
+    if (focused) {
+      releaseScriptBusy();
+      releaseScriptBusyRef.current = holdBusy();
+    }
     // Morph welcome/questions out, slide the input down to the chat footer,
     // and fade the first user bubble in — all in one browser-driven transition
     // so the layout change feels like one motion instead of a jump.

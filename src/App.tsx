@@ -3254,7 +3254,7 @@ function MainApp({ onRestart }: MainAppProps) {
   const [quickActionsView, setQuickActionsView] = useState<QuickActionsView | null>(null);
   const [arcForm, setArcForm] = useState<{ id: string; label: string } | null>(null);
 
-  const { page: scenePage, sceneId, scene, cursor } = useCursor();
+  const { page: scenePage, sceneId, scene, cursor, direction } = useCursor();
   // Only drive activePage when the WALKTHROUGH scene changes. Having
   // activePage in the deps would snap manual sidebar nav right back to the
   // scene's page every time the user tried to go somewhere else. Keyed on the
@@ -3285,6 +3285,9 @@ function MainApp({ onRestart }: MainAppProps) {
   // dashboard swipes back in already in its closing state.
   const askHoaiFocused =
     sceneId === "ask-hoai" || (sceneId === SMS_SCENE_ID && cursor.beatIndex === 0);
+  // ← into ask-hoai (only reachable from SMS beat 0, where the panel is still
+  // focused) is a hard cut to the scene's start: the panel resets at once.
+  const askHoaiRestart = sceneId === "ask-hoai" && direction === "back";
 
   const navigate = (page: Page) => {
     setActivePage(page);
@@ -3340,7 +3343,7 @@ function MainApp({ onRestart }: MainAppProps) {
         aria-hidden="true"
         className={`fixed inset-0 bg-white z-[180] transition-opacity duration-500 ${askHoaiFocused ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       />
-      <AskHoaiPanel open={askHoaiOpen} onCollapse={() => setAskHoaiOpen(false)} focused={askHoaiFocused} />
+      <AskHoaiPanel open={askHoaiOpen} onCollapse={() => setAskHoaiOpen(false)} focused={askHoaiFocused} restart={askHoaiRestart} />
       {/* Floating view toggle — only on dashboard */}
       {activePage === "dashboard" && !askHoaiFocused && (
         <ViewToggle view={dashboardView} onChange={setDashboardView} />

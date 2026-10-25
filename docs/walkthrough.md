@@ -179,13 +179,21 @@ GSAP timeline, portaled to `<body>` at z 400.
   fades in (500 ms). Send is ignored while this runs.
 - Scripted conversation: typing dots at +500 ms, reply streams from +1900 ms
   (3 chars / 25 ms), follow-up typed 1.4 s later, then the acknowledgement. All
-  timers are tracked and cleared when the scene is left. A busy hold runs from
-  Send until the script finishes, so → can't leave mid-stream.
+  timers are tracked and cleared when the scene is left. While focused, a busy
+  hold runs from Send until the script finishes, so → can't leave mid-stream. A
+  manual Send in the sidebar takes no hold.
 - A file dropped on the input (`DROP_FILE_EVENT`) becomes an attachment chip and
   is sent with the next message.
-- Leaving the scene: script stops at once; after the 700 ms morph back, the
-  thread fades out (200 ms) and welcome / input / questions fade up (400 ms,
-  staggered). Re-entering mid-way resets immediately.
+- Unfocusing (SMS beat 0 → 1, or any jump away): script stops at once; after
+  the 700 ms morph back, the thread fades out (200 ms) and welcome / input /
+  questions fade up (400 ms, staggered). Re-focusing before that fade has run
+  resets immediately.
+- ← around SMS beat 0: from beat 1 the panel re-focuses off-screen (behind the
+  phone) and is already on the welcome view. From beat 0, ← to ask-hoai keeps
+  the panel focused, so nothing above fires; instead App passes `restart`
+  (`sceneId === "ask-hoai" && direction === "back"`) and the panel hard-cuts to
+  the welcome view (script stopped, hold released, no fade). The next → replays
+  the drop and the scripted chat once.
 
 ### Scene swipe (`phone/SceneSwipe.tsx`)
 
