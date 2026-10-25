@@ -3256,7 +3256,9 @@ function MainApp({ onRestart }: MainAppProps) {
   // Synced to the app scene, not the cursor's: on a phone scene the app
   // underneath keeps (beat 0) or jumps ahead to (beat 1+) a neighbouring
   // scene's state while it's off-screen. See WalkthroughState.appSceneIndex.
-  const { appPage: scenePage, appSceneId, appScene, direction } = useCursor();
+  // Effects are keyed on appSyncKey, which also bumps on ← out of a phone
+  // scene's beat 0 (same app scene, but it must be reset to its start).
+  const { appPage: scenePage, appSceneId, appScene, appSyncKey, direction } = useCursor();
   // Only drive activePage when the WALKTHROUGH scene changes. Having
   // activePage in the deps would snap manual sidebar nav right back to the
   // scene's page every time the user tried to go somewhere else. Keyed on the
@@ -3268,10 +3270,10 @@ function MainApp({ onRestart }: MainAppProps) {
     }
     setQuickActionsView(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appSceneId]);
+  }, [appSyncKey]);
 
   // Launcher-driven sync for the rest of MainApp's state. Reads appScene.appState
-  // on app scene change — manual toggles between scenes are preserved because
+  // on each appSyncKey bump — manual toggles between scenes are preserved because
   // this effect doesn't re-run while the user is interacting inside a scene.
   useEffect(() => {
     const target = appScene?.appState;
@@ -3279,7 +3281,7 @@ function MainApp({ onRestart }: MainAppProps) {
     if (target.dashboardView) setDashboardView(target.dashboardView);
     if (typeof target.askHoaiOpen === "boolean") setAskHoaiOpen(target.askHoaiOpen);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appSceneId]);
+  }, [appSyncKey]);
 
   // The ask-hoai scene's own focus. Keyed on the app scene, so on a phone
   // scene's first beat right after ask-hoai the panel stays focused and slides
@@ -3388,7 +3390,8 @@ export default function App() {
   // transitions (register click, finish onboarding) aren't double-driven.
   // Follows the app scene: a phone scene keeps (beat 0) or skips ahead to
   // (beat 1+) a neighbouring scene's phase while the app is off-screen.
-  const { appScene } = useCursor();
+  // Keyed on appSyncKey, so ← out of a phone scene's beat 0 re-applies it too.
+  const { appScene, appSyncKey } = useCursor();
   useEffect(() => {
     const target = appScene?.appState;
     if (!target) return;
@@ -3398,9 +3401,9 @@ export default function App() {
     } else {
       setOnboardingReturnScreen(undefined);
     }
-    // phase is intentionally not in deps — this runs on scene change only.
+    // phase is intentionally not in deps — this runs on appSyncKey bumps only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appScene?.id]);
+  }, [appSyncKey]);
   if (phase === "inbox") {
     return (
       <InboxPage

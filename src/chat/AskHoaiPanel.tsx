@@ -238,8 +238,8 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false, restar
   // When the walkthrough advances past the Ask HOAi scene (focused flips to
   // false), stop the scripted conversation immediately, then fade back to the
   // welcome view once the 700ms panel morph has finished so the thread doesn't
-  // swap mid-morph. Re-focusing before then resets right away. ← into ask-hoai with `focused` unchanged is handled
-  // by the `restart` effect below.
+  // swap mid-morph. Re-focusing before then resets right away. ← into ask-hoai
+  // with `focused` unchanged is handled by the `restart` effect below.
   useEffect(() => {
     if (!focused) {
       // Drop an in-flight morph so it can't commit into the reset panel.

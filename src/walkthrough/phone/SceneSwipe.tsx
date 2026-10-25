@@ -68,8 +68,8 @@ function useSwipe(holdKeys: boolean) {
 }
 
 /**
- * Wraps the app. Slides it off to the left for phone scenes. Outside them and with no swipe in flight its transform is `none`: a transform
- * would trap the app's `position: fixed` children (lifts, the payment modal).
+ * Wraps the app. Slides it off to the left for phone scenes. Outside them
+ * and with no swipe in flight its transform is `none`: a transform would trap the app's `position: fixed` children (lifts, the payment modal).
  */
 export function AppSlide({ children }: { children: ReactNode }) {
   const { offset, inFlight, ref } = useSwipe(true);

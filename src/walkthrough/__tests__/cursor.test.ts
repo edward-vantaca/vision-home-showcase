@@ -7,7 +7,7 @@ const seq: Sequence = [
   { id: "b", page: "amenities", beats: [{ kind: "idle" }, { kind: "idle" }, { kind: "idle" }] },
 ];
 
-const initial: WalkthroughState = { cursor: { sceneIndex: 0, beatIndex: 0 }, hudVisible: false, appSceneIndex: 0 };
+const initial: WalkthroughState = { cursor: { sceneIndex: 0, beatIndex: 0 }, hudVisible: false, appSceneIndex: 0, appSyncKey: 0 };
 
 describe("cursorReducer", () => {
   it("advances within a scene", () => {
@@ -146,6 +146,7 @@ describe("appSceneIndex: what the app underneath shows", () => {
     cursor: { sceneIndex, beatIndex },
     hudVisible: false,
     appSceneIndex,
+    appSyncKey: 0,
   });
 
   it("follows the cursor outside phone scenes", () => {
@@ -206,6 +207,47 @@ describe("appSceneIndex: what the app underneath shows", () => {
   it("toggleHud leaves it alone", () => {
     const next = cursorReducer(at(2, 1, 3), { type: "toggleHud" }, phoneSeq);
     expect(next.appSceneIndex).toBe(3);
+  });
+
+  describe("appSyncKey: bumps whenever the app must re-apply its scene's start state", () => {
+    const run = (state: WalkthroughState, ...actions: Parameters<typeof cursorReducer>[1][]) =>
+      actions.reduce((s, a) => cursorReducer(s, a, phoneSeq), state);
+
+    it("bumps on arriving at a different non-phone scene", () => {
+      expect(run(at(0, 0, 0), { type: "advance" }).appSyncKey).toBe(1);
+      expect(run(at(1, 0, 1), { type: "jumpTo", cursor: { sceneIndex: 0, beatIndex: 0 } }).appSyncKey).toBe(1);
+    });
+
+    it("doesn't bump moving within a scene, re-jumping to the current scene, or toggling the HUD", () => {
+      const oneScene: Sequence = [{ id: "x", page: "dashboard", beats: [{ kind: "idle" }, { kind: "idle" }] }];
+      expect(cursorReducer(at(0, 0, 0), { type: "advance" }, oneScene).appSyncKey).toBe(0);
+      expect(run(at(1, 0, 1), { type: "jumpTo", cursor: { sceneIndex: 1, beatIndex: 0 } }).appSyncKey).toBe(0);
+      expect(run(at(1, 0, 1), { type: "toggleHud" }).appSyncKey).toBe(0);
+    });
+
+    it("→ into a phone scene's beat 0 doesn't bump (nothing changes mid-slide); beat 1 does", () => {
+      const onBeat0 = run(at(1, 0, 1), { type: "advance" });
+      expect(onBeat0.appSyncKey).toBe(0);
+      const onBeat1 = run(onBeat0, { type: "advance" });
+      expect(onBeat1.appSceneIndex).toBe(3);
+      expect(onBeat1.appSyncKey).toBe(1);
+    });
+
+    it("← from beat 1 to beat 0 doesn't bump (the app keeps the next scene)", () => {
+      expect(run(at(2, 1, 3), { type: "back" }).appSyncKey).toBe(0);
+    });
+
+    it("← from a phone scene's beat 0 bumps even though the app scene stays the same", () => {
+      const next = run(at(2, 0, 1), { type: "back" });
+      expect(next.appSceneIndex).toBe(1);
+      expect(next.appSyncKey).toBe(1);
+    });
+
+    it("→ out of the phone scene onto the scene the app already shows bumps", () => {
+      const next = run(at(2, 3, 3), { type: "advance" });
+      expect(next.cursor).toEqual({ sceneIndex: 3, beatIndex: 0 });
+      expect(next.appSyncKey).toBe(1);
+    });
   });
 });
 

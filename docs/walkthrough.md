@@ -86,7 +86,10 @@ Captions (`caption`) are authored but **not shown** — `.wt-caption` is
 ### Phone scenes and the app scene
 
 A scene with `stage: "phone"` slides the app off-screen and shows the phone
-stage instead (today only `broadcast-sms`). A phone scene has **no
+stage instead (today only `broadcast-sms`). Note that the phone's *content* is
+still the SMS script: `PhoneStage` renders its lock screen / thread for the
+scene whose id is `SMS_SCENE_ID`, so a second phone scene would show the same
+phone until `PhoneStage` learns to render per scene. A phone scene has **no
 `appState`**: the app doesn't take its state from it. Instead the reducer keeps
 `appSceneIndex`, the scene the app underneath shows, and `useCursor()` returns
 it as `appScene` / `appSceneId` / `appPage`:
@@ -101,7 +104,13 @@ it as `appScene` / `appSceneId` / `appPage`:
 
 Everything in `App.tsx` that syncs the app to the walkthrough (root phase,
 MainApp page / view / Ask HOAi open, Ask HOAi focus and restart) reads the app
-scene. The overlay, HUD, beats and the phone read the cursor's own scene.
+scene. The sync effects are keyed on `appSyncKey` (also from `useCursor()`),
+a counter the reducer bumps when the app scene changes **or** the cursor
+arrives at a non-phone scene from a different scene. The second case is ←
+out of a phone scene's beat 0: the app scene stays the same, but the scene
+must still be put back to its start (its last cursor beat is replayed by
+`replayOnAdvance`). → onto a phone scene's beat 0 never bumps, so nothing
+changes while the app slides out. The overlay, HUD, beats and the phone read the cursor's own scene.
 
 ### Cursor beats
 
@@ -294,10 +303,11 @@ GSAP timeline, portaled to `<body>` at z 400.
   answer. While busy, → and ← do nothing, from the keyboard **and** the HUD
   buttons; the presenter just presses again once it settles.
 - **Scene start state**: the app follows the **app scene** (see "Phone scenes
-  and the app scene"). Every app-scene change re-applies that scene's
+  and the app scene"). Every `appSyncKey` bump (an app-scene change, or
+  arriving at a non-phone scene from another scene) re-applies that scene's
   `appState` — phase (App root), onboarding screen (re-keys
   `NewResidentFlow`), page, dashboard view, Ask HOAi open (MainApp). MainApp
-  also closes Quick Actions on every app-scene change, and resets the page even
+  also closes Quick Actions on every bump, and resets the page even
   when consecutive scenes share one (a scene that clicked away, like ARC
   request → fence form, must still hand the next scene a clean dashboard).
   Entering a phone scene on beat 0 changes nothing in the app; its beat 1

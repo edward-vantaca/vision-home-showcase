@@ -109,6 +109,12 @@ export type WalkthroughState = {
   // off-screen, it moves to the next non-phone scene so the app is already in
   // place when the phone slides away.
   appSceneIndex: number;
+  // Bumped whenever the app must (re-)apply its scene's start state: the app
+  // scene changes, or the cursor arrives at a non-phone scene from a different
+  // scene. The second case covers ← out of a phone scene's beat 0, where the
+  // app scene stays the same but the scene must still be reset to its start.
+  // App's sync effects are keyed on it.
+  appSyncKey: number;
 };
 
 export type WalkthroughAction =

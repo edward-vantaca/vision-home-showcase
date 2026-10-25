@@ -175,4 +175,47 @@ describe("MainApp scene sync", () => {
       unmount();
     }
   });
+
+  it("← out of a phone scene's beat 0 re-applies the previous scene's start state", () => {
+    // pageChanger's last beat is a cursor beat that navigates away (here: to
+    // the ARC fence form). No overlay runs beats in this test, so the click is
+    // made by hand.
+    const seq3: Sequence = [
+      {
+        id: "page-changer",
+        page: "dashboard",
+        appState: portal,
+        beats: [{ kind: "cursor", to: "wt-quick-actions" as never, action: "click" }],
+      },
+      phoneScene,
+      { id: "after", page: "community", appState: { ...portal, page: "community" }, beats: [{ kind: "idle" }] },
+    ];
+    const { container, unmount } = render(
+      <WalkthroughProvider sequence={seq3}>
+        <App />
+        <Probe />
+      </WalkthroughProvider>,
+    );
+    try {
+      fireEvent.click(q(container, "sidebar-quick-actions")!);
+      fireEvent.click(q(container, "sidebar-quick-actions-arc-request")!);
+      fireEvent.click(q(container, "quick-actions-arc-form-fence")!);
+      expect(q(container, "arc-form-page")).not.toBeNull();
+
+      act(() => nav.advance());
+      // Phone beat 0: the app slides out exactly as last seen.
+      expect(nav.sceneId).toBe(SMS_SCENE_ID);
+      expect(q(container, "arc-form-page")).not.toBeNull();
+
+      act(() => nav.back());
+      expect(nav.sceneId).toBe("page-changer");
+      expect(nav.replayOnAdvance).toBe(true);
+      // Back at the scene's start, so → replays the click on a clean dashboard.
+      expect(q(container, "arc-form-page")).toBeNull();
+      expect(q(container, "dashboard-page")).not.toBeNull();
+      expect(q(container, "quick-actions-modal")).toBeNull();
+    } finally {
+      unmount();
+    }
+  });
 });

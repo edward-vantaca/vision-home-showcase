@@ -50,7 +50,11 @@ export function cursorReducer(
   const next = moveCursor(state, action, sequence);
   if (next === state) return state;
   const appSceneIndex = appSceneIndexFor(next.cursor, state.appSceneIndex, sequence);
-  return appSceneIndex === next.appSceneIndex ? next : { ...next, appSceneIndex };
+  const arrivedAtAppScene =
+    next.cursor.sceneIndex !== state.cursor.sceneIndex && sequence[next.cursor.sceneIndex]?.stage !== "phone";
+  const resync = appSceneIndex !== state.appSceneIndex || arrivedAtAppScene;
+  if (!resync) return next;
+  return { ...next, appSceneIndex, appSyncKey: state.appSyncKey + 1 };
 }
 
 function moveCursor(
@@ -119,6 +123,7 @@ const initialState: WalkthroughState = {
   cursor: { sceneIndex: 0, beatIndex: 0 },
   hudVisible: false,
   appSceneIndex: 0,
+  appSyncKey: 0,
 };
 
 export function WalkthroughProvider({ sequence, children }: { sequence: Sequence; children: ReactNode }) {
@@ -183,6 +188,7 @@ export function useCursor() {
     appScene,
     appSceneId: appScene?.id,
     appPage: appScene?.page,
+    appSyncKey: state.appSyncKey,
     hudVisible: state.hudVisible,
     direction: state.lastDirection ?? "forward",
     replayOnAdvance: state.replayOnAdvance ?? false,
