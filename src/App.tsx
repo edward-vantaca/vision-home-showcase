@@ -3107,7 +3107,7 @@ const MY_RESERVATIONS: ReadonlyArray<{ amenity: string; date: string; time: stri
 // placeholder with the amenity's icon instead of a broken image.
 const BOOKABLE_AMENITIES: ReadonlyArray<{ slug: string; name: string; image: string; icon: React.ReactNode; details: string[] }> = [
   { slug: "tennis", name: "Tennis Court", image: "/assets/amenity-tennis.jpg", icon: <IconTennisBall />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
-  { slug: "pickleball", name: "Pickleball Court", image: "/assets/amenity-pickleball.png", icon: <IconPickleball />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
+  { slug: "pickleball", name: "Pickleball Court", image: "/assets/amenity-pickleball.jpg", icon: <IconPickleball />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
   { slug: "clubhouse", name: "Main Clubhouse", image: "/assets/amenity-clubhouse.jpg", icon: <IconHouseChimney />, details: ["4 hr", "Up to 60 guests", "Daily 9:00 AM – 11:00 PM"] },
   { slug: "sauna", name: "Sauna", image: "/assets/amenity-sauna.jpg", icon: <IconHotTub />, details: ["45 min", "Up to 6 guests", "Daily 6:00 AM – 10:00 PM"] },
 ];
