@@ -428,3 +428,20 @@
      reduced-motion case is handled at the beat level by reading matchMedia
      if needed (deferred — out of scope for Nov 3). */
 }
+
+/* Broadcast SMS swipe (phone/SceneSwipe.tsx). Transform, transition,
+   visibility and pointer-events are inline: the wrapper must have
+   `transform: none` outside the SMS scene (it would trap fixed children). */
+.wt-app-slide {
+  height: 100%;
+}
+
+.wt-phone-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}

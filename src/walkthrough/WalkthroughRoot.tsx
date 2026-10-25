@@ -4,13 +4,15 @@ import { useWalkthroughKeyboard } from "./keyboard";
 import { WalkthroughOverlay } from "./WalkthroughOverlay";
 import { WalkthroughHUD } from "./WalkthroughHUD";
 import { SceneLauncher } from "./SceneLauncher";
+import { AppSlide, PhoneLayer } from "./phone/SceneSwipe";
 import type { Sequence } from "./types";
 
 function Inner({ children }: { children: ReactNode }) {
   useWalkthroughKeyboard();
   return (
     <>
-      {children}
+      <AppSlide>{children}</AppSlide>
+      <PhoneLayer />
       <WalkthroughOverlay />
       <WalkthroughHUD />
       <SceneLauncher />
