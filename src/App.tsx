@@ -9,7 +9,6 @@ import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
 import { VT } from "./walkthrough/viewTransitionNames";
-import { SMS_SCENE_ID } from "./walkthrough/phone/PhoneStage";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -3254,7 +3253,10 @@ function MainApp({ onRestart }: MainAppProps) {
   const [quickActionsView, setQuickActionsView] = useState<QuickActionsView | null>(null);
   const [arcForm, setArcForm] = useState<{ id: string; label: string } | null>(null);
 
-  const { page: scenePage, sceneId, scene, cursor, direction } = useCursor();
+  // Synced to the app scene, not the cursor's: on a phone scene the app
+  // underneath keeps (beat 0) or jumps ahead to (beat 1+) a neighbouring
+  // scene's state while it's off-screen. See WalkthroughState.appSceneIndex.
+  const { appPage: scenePage, appSceneId, appScene, direction } = useCursor();
   // Only drive activePage when the WALKTHROUGH scene changes. Having
   // activePage in the deps would snap manual sidebar nav right back to the
   // scene's page every time the user tried to go somewhere else. Keyed on the
@@ -3266,28 +3268,27 @@ function MainApp({ onRestart }: MainAppProps) {
     }
     setQuickActionsView(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sceneId]);
+  }, [appSceneId]);
 
-  // Launcher-driven sync for the rest of MainApp's state. Reads scene.appState
-  // on sceneId change — manual toggles between scenes are preserved because
+  // Launcher-driven sync for the rest of MainApp's state. Reads appScene.appState
+  // on app scene change — manual toggles between scenes are preserved because
   // this effect doesn't re-run while the user is interacting inside a scene.
   useEffect(() => {
-    const target = scene?.appState;
+    const target = appScene?.appState;
     if (!target || target.phase !== "portal") return;
     if (target.dashboardView) setDashboardView(target.dashboardView);
     if (typeof target.askHoaiOpen === "boolean") setAskHoaiOpen(target.askHoaiOpen);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sceneId]);
+  }, [appSceneId]);
 
-  // Still focused on the SMS scene's first beat, so the panel slides out with
-  // the app exactly as the audience last saw it. From beat 1 the phone covers
-  // the screen and the panel morphs back and resets off-screen, so the
-  // dashboard swipes back in already in its closing state.
-  const askHoaiFocused =
-    sceneId === "ask-hoai" || (sceneId === SMS_SCENE_ID && cursor.beatIndex === 0);
-  // ← into ask-hoai (only reachable from SMS beat 0, where the panel is still
-  // focused) is a hard cut to the scene's start: the panel resets at once.
-  const askHoaiRestart = sceneId === "ask-hoai" && direction === "back";
+  // The ask-hoai scene's own focus. Keyed on the app scene, so on a phone
+  // scene's first beat right after ask-hoai the panel stays focused and slides
+  // out exactly as the audience last saw it; from beat 1 the app scene moves
+  // on and the panel morphs back and resets off-screen.
+  const askHoaiFocused = appSceneId === "ask-hoai";
+  // ← landing on ask-hoai as the app scene (e.g. back out of a phone scene
+  // that kept it focused) restarts the scene: the panel resets at once.
+  const askHoaiRestart = appSceneId === "ask-hoai" && direction === "back";
 
   const navigate = (page: Page) => {
     setActivePage(page);
@@ -3385,9 +3386,11 @@ export default function App() {
   // this root to that phase so the right subtree mounts before the scene's
   // beats start running. Guarded by appState so natural beat-driven phase
   // transitions (register click, finish onboarding) aren't double-driven.
-  const { scene } = useCursor();
+  // Follows the app scene: a phone scene keeps (beat 0) or skips ahead to
+  // (beat 1+) a neighbouring scene's phase while the app is off-screen.
+  const { appScene } = useCursor();
   useEffect(() => {
-    const target = scene?.appState;
+    const target = appScene?.appState;
     if (!target) return;
     if (target.phase !== phase) setPhase(target.phase);
     if (target.phase === "onboarding") {
@@ -3397,7 +3400,7 @@ export default function App() {
     }
     // phase is intentionally not in deps — this runs on scene change only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene?.id]);
+  }, [appScene?.id]);
   if (phase === "inbox") {
     return (
       <InboxPage

@@ -7,7 +7,7 @@ const seq: Sequence = [
   { id: "b", page: "amenities", beats: [{ kind: "idle" }, { kind: "idle" }, { kind: "idle" }] },
 ];
 
-const initial: WalkthroughState = { cursor: { sceneIndex: 0, beatIndex: 0 }, hudVisible: false };
+const initial: WalkthroughState = { cursor: { sceneIndex: 0, beatIndex: 0 }, hudVisible: false, appSceneIndex: 0 };
 
 describe("cursorReducer", () => {
   it("advances within a scene", () => {
@@ -131,6 +131,81 @@ describe("cursorReducer", () => {
   it("toggleHud flips hudVisible", () => {
     const next = cursorReducer(initial, { type: "toggleHud" }, seq);
     expect(next.hudVisible).toBe(true);
+  });
+});
+
+describe("appSceneIndex: what the app underneath shows", () => {
+  // a, b, a 4-beat phone scene, c.
+  const phoneSeq: Sequence = [
+    { id: "a", page: "dashboard", beats: [{ kind: "idle" }] },
+    { id: "b", page: "amenities", beats: [{ kind: "idle" }] },
+    { id: "phone", page: "dashboard", stage: "phone", beats: [{ kind: "idle" }, { kind: "idle" }, { kind: "idle" }, { kind: "idle" }] },
+    { id: "c", page: "community", beats: [{ kind: "idle" }] },
+  ];
+  const at = (sceneIndex: number, beatIndex: number, appSceneIndex: number): WalkthroughState => ({
+    cursor: { sceneIndex, beatIndex },
+    hudVisible: false,
+    appSceneIndex,
+  });
+
+  it("follows the cursor outside phone scenes", () => {
+    const next = cursorReducer(at(0, 0, 0), { type: "advance" }, phoneSeq);
+    expect(next.cursor).toEqual({ sceneIndex: 1, beatIndex: 0 });
+    expect(next.appSceneIndex).toBe(1);
+  });
+
+  it("→ into the phone scene's beat 0 keeps the previous scene", () => {
+    const next = cursorReducer(at(1, 0, 1), { type: "advance" }, phoneSeq);
+    expect(next.cursor).toEqual({ sceneIndex: 2, beatIndex: 0 });
+    expect(next.appSceneIndex).toBe(1);
+  });
+
+  it("beat 1 moves it to the next non-phone scene", () => {
+    const next = cursorReducer(at(2, 0, 1), { type: "advance" }, phoneSeq);
+    expect(next.cursor).toEqual({ sceneIndex: 2, beatIndex: 1 });
+    expect(next.appSceneIndex).toBe(3);
+  });
+
+  it("← to beat 0 keeps the next scene", () => {
+    const next = cursorReducer(at(2, 1, 3), { type: "back" }, phoneSeq);
+    expect(next.cursor).toEqual({ sceneIndex: 2, beatIndex: 0 });
+    expect(next.appSceneIndex).toBe(3);
+  });
+
+  it("← out of the phone scene into b gives b", () => {
+    const next = cursorReducer(at(2, 0, 3), { type: "back" }, phoneSeq);
+    expect(next.cursor).toEqual({ sceneIndex: 1, beatIndex: 0 });
+    expect(next.appSceneIndex).toBe(1);
+  });
+
+  it("← from c into the phone scene's last beat gives c", () => {
+    const next = cursorReducer(at(3, 0, 3), { type: "back" }, phoneSeq);
+    expect(next.cursor).toEqual({ sceneIndex: 2, beatIndex: 3 });
+    expect(next.appSceneIndex).toBe(3);
+  });
+
+  it("jumpTo the phone scene's beat 0 from a keeps a", () => {
+    const next = cursorReducer(at(0, 0, 0), { type: "jumpTo", cursor: { sceneIndex: 2, beatIndex: 0 } }, phoneSeq);
+    expect(next.appSceneIndex).toBe(0);
+  });
+
+  it("jumpTo the phone scene's beat 2 gives c", () => {
+    const next = cursorReducer(at(0, 0, 0), { type: "jumpTo", cursor: { sceneIndex: 2, beatIndex: 2 } }, phoneSeq);
+    expect(next.appSceneIndex).toBe(3);
+  });
+
+  it("a phone scene last in the sequence keeps the previous value", () => {
+    const lastSeq = phoneSeq.slice(0, 3);
+    const onBeat0 = cursorReducer(at(1, 0, 1), { type: "advance" }, lastSeq);
+    expect(onBeat0.appSceneIndex).toBe(1);
+    const onBeat1 = cursorReducer(onBeat0, { type: "advance" }, lastSeq);
+    expect(onBeat1.cursor).toEqual({ sceneIndex: 2, beatIndex: 1 });
+    expect(onBeat1.appSceneIndex).toBe(1);
+  });
+
+  it("toggleHud leaves it alone", () => {
+    const next = cursorReducer(at(2, 1, 3), { type: "toggleHud" }, phoneSeq);
+    expect(next.appSceneIndex).toBe(3);
   });
 });
 

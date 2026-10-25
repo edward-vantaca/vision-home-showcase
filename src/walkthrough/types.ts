@@ -83,6 +83,12 @@ export type Scene = {
   beats: Beat[];
   label?: string;
   appState?: SceneAppState;
+  /**
+   * The app slides off-screen and the phone stage is shown for this scene.
+   * A phone scene has no `appState`: the app underneath follows the app scene
+   * (see `WalkthroughState.appSceneIndex`).
+   */
+  stage?: "phone";
 };
 
 export type Sequence = Scene[];
@@ -97,6 +103,12 @@ export type WalkthroughState = {
   // appState resets the app to the scene's start, undoing that beat's click,
   // so the next `advance` replays the beat forward instead of moving past it.
   replayOnAdvance?: boolean;
+  // The scene the app underneath shows. Equals the cursor's scene except on a
+  // phone scene (`stage: "phone"`): on its beat 0 the app keeps the previous
+  // app scene (it slides out as last seen); from beat 1, with the app
+  // off-screen, it moves to the next non-phone scene so the app is already in
+  // place when the phone slides away.
+  appSceneIndex: number;
 };
 
 export type WalkthroughAction =

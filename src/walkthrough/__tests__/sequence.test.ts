@@ -45,6 +45,9 @@ describe("homeVisionSequence", () => {
   it("Broadcast SMS: the notification arrives by itself, then tap it, type the reply and send", () => {
     const sms = homeVisionSequence.find((s) => s.id === "broadcast-sms");
     if (!sms) throw new Error("no broadcast-sms scene");
+    // A phone scene: the app slides away, and the app underneath follows the app scene.
+    expect(sms.stage).toBe("phone");
+    expect(sms.appState).toBeUndefined();
     expect(sms.beats.map((b) => b.kind)).toEqual(["idle", "cursor", "cursor", "cursor"]);
     const cursorBeats = sms.beats.filter((b) => b.kind === "cursor");
     expect(cursorBeats.map((b) => b.to)).toEqual([VT.SmsNotification, VT.SmsInput, VT.SmsSendBtn]);

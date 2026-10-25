@@ -1,24 +1,23 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { holdBusy, useCursor } from "../cursor";
-import PhoneStage, { SMS_SCENE_ID } from "./PhoneStage";
+import PhoneStage from "./PhoneStage";
 
 /** How long the app ⇄ phone swipe takes, both ways. */
 export const SWIPE_MS = 1200;
 const SWIPE_TRANSITION = `transform ${SWIPE_MS}ms cubic-bezier(0.4,0,0.2,1)`;
 const SWIPE_FALLBACK_MS = 1500;
 
-/** Where the app sits and whether the move animates. */
+/**
+ * Where the app sits and whether the move animates. Entering or leaving a
+ * phone scene (`stage: "phone"`) always slides, whichever way and however it's
+ * reached (→, ←, a launcher jump). Only the first render (`prev` undefined)
+ * and moves between scenes of the same kind don't animate.
+ */
 export function swipeFor(
-  prevSceneId: string | undefined,
-  sceneId: string | undefined,
-  direction: "forward" | "back",
+  prev: { isPhone: boolean } | undefined,
+  isPhone: boolean,
 ): { offset: "none" | "out"; animate: boolean } {
-  const offset = sceneId === SMS_SCENE_ID ? "out" : "none";
-  const animate =
-    direction === "forward" &&
-    ((prevSceneId === "ask-hoai" && sceneId === SMS_SCENE_ID) ||
-      (prevSceneId === SMS_SCENE_ID && sceneId === "closing-dashboard"));
-  return { offset, animate };
+  return { offset: isPhone ? "out" : "none", animate: prev !== undefined && prev.isPhone !== isPhone };
 }
 
 /**
@@ -28,18 +27,20 @@ export function swipeFor(
  * `holdKeys`, presenter keys are held while it's in flight.
  */
 function useSwipe(holdKeys: boolean) {
-  const { sceneId, direction } = useCursor();
+  const { sceneId, scene } = useCursor();
+  const isPhone = scene?.stage === "phone";
   // Updated after each scene change, so during the render that first sees a
-  // new scene it still names the one we came from.
-  const prevSceneId = useRef(sceneId);
-  const { offset, animate } = swipeFor(prevSceneId.current, sceneId, direction);
+  // new scene it still describes the one we came from. Undefined until the
+  // first commit: mounting doesn't animate.
+  const prev = useRef<{ isPhone: boolean } | undefined>(undefined);
+  const { offset, animate } = swipeFor(prev.current, isPhone);
   const [moving, setMoving] = useState(false);
 
   // Keyed on the scene only: `animate` is this render's value, so a
   // StrictMode re-run sees the same one even though the ref has moved on.
   useLayoutEffect(() => {
     setMoving(animate);
-    prevSceneId.current = sceneId;
+    prev.current = { isPhone };
   }, [sceneId]);
 
   useEffect(() => {
@@ -67,8 +68,7 @@ function useSwipe(holdKeys: boolean) {
 }
 
 /**
- * Wraps the app. Slides it off to the left for the SMS scene. Outside that
- * scene and with no swipe in flight its transform is `none`: a transform
+ * Wraps the app. Slides it off to the left for phone scenes. Outside them and with no swipe in flight its transform is `none`: a transform
  * would trap the app's `position: fixed` children (lifts, the payment modal).
  */
 export function AppSlide({ children }: { children: ReactNode }) {

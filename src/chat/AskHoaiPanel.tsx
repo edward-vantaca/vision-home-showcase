@@ -238,8 +238,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false, restar
   // When the walkthrough advances past the Ask HOAi scene (focused flips to
   // false), stop the scripted conversation immediately, then fade back to the
   // welcome view once the 700ms panel morph has finished so the thread doesn't
-  // swap mid-morph. Re-focusing before then resets right away (SMS beat 1 -> 0
-  // re-focuses off-screen). ← into ask-hoai with `focused` unchanged is handled
+  // swap mid-morph. Re-focusing before then resets right away. ← into ask-hoai with `focused` unchanged is handled
   // by the `restart` effect below.
   useEffect(() => {
     if (!focused) {
@@ -267,9 +266,9 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false, restar
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focused]);
 
-  // ← from the SMS scene's first beat to ask-hoai keeps `focused` true, so the
-  // effect above never runs. That move is a hard cut to the scene's start:
-  // stop the script and reset at once, with no fade.
+  // ← back into ask-hoai with the app scene unchanged (e.g. from a phone
+  // scene's first beat) keeps `focused` true, so the effect above never runs.
+  // Restart the scene: stop the script and reset at once, with no fade.
   useEffect(() => {
     if (!restart) return;
     if (morphRef.current) {

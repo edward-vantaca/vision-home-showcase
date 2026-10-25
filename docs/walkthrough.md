@@ -5,8 +5,9 @@ rules that keep it trustworthy on stage. This is the current reference; when it
 disagrees with an older spec or handoff, this file wins (and if this file
 disagrees with the code, the code wins — fix this file).
 
-Last updated 2026-10-25 (branch `walkthrough-subsystem`): broadcast SMS scene
-(notification arrives by itself), phone stage, scene swipe and busy holds.
+Last updated 2026-10-25 (branch `walkthrough-subsystem`): phone scenes are
+independent of their neighbours (`stage: "phone"`, the app scene, a generic
+swipe); broadcast SMS scene, phone stage and busy holds.
 
 ## Mental model
 
@@ -25,8 +26,8 @@ working app.
 ```
 main.tsx
 └─ <WalkthroughRoot sequence={homeVisionSequence}>   src/walkthrough/WalkthroughRoot.tsx
-   ├─ <AppSlide>                   slides the app out for the SMS scene (SceneSwipe.tsx)
-   │  └─ <App/>                    the real app; reads useCursor() for scene sync
+   ├─ <AppSlide>                   slides the app out for phone scenes (SceneSwipe.tsx)
+   │  └─ <App/>                    the real app; syncs to useCursor()'s app scene
    ├─ <PhoneLayer/>                white layer holding the phone (z 220)
    ├─ <WalkthroughOverlay/>        renders the current beat (.wt-root, z 250)
    ├─ <WalkthroughHUD/>            prev / next pill, toggled with "."
@@ -81,6 +82,26 @@ every beat targets a known name and that names are unique).
 
 Captions (`caption`) are authored but **not shown** — `.wt-caption` is
 `display: none`.
+
+### Phone scenes and the app scene
+
+A scene with `stage: "phone"` slides the app off-screen and shows the phone
+stage instead (today only `broadcast-sms`). A phone scene has **no
+`appState`**: the app doesn't take its state from it. Instead the reducer keeps
+`appSceneIndex`, the scene the app underneath shows, and `useCursor()` returns
+it as `appScene` / `appSceneId` / `appPage`:
+
+- on a non-phone scene it is that scene;
+- on a phone scene's beat 0 it keeps its previous value, so the app slides out
+  exactly as the audience last saw it, whichever scene that was (→, ← or a
+  launcher jump);
+- on a phone scene's beat 1+ (the app is off-screen) it is the next non-phone
+  scene in the sequence (unchanged if there is none), so the app is already in
+  place when the phone slides away.
+
+Everything in `App.tsx` that syncs the app to the walkthrough (root phase,
+MainApp page / view / Ask HOAi open, Ask HOAi focus and restart) reads the app
+scene. The overlay, HUD, beats and the phone read the cursor's own scene.
 
 ### Cursor beats
 
@@ -168,13 +189,13 @@ GSAP timeline, portaled to `<body>` at z 400.
 
 - One `position: fixed` panel with three forms — sidebar, focused (centred), and
   collapsed — each with an explicit `left` (never `auto`), so CSS morphs between
-  them: `all 700ms cubic-bezier(0.65,0,0.35,1)`. Focused while the scene id is
-  `ask-hoai`, and on the broadcast SMS scene's first beat (swipe in, the
-  notification drops in) so it slides out with the app unchanged
-  (`askHoaiFocused` in `App.tsx`); a white canvas (z 180) fades in behind it
-  (500 ms). From SMS beat 1 (the thread opens) the panel morphs back and resets
-  off-screen behind the phone, and the dashboard swipes back in already in its
-  closing state.
+  them: `all 700ms cubic-bezier(0.65,0,0.35,1)`. Focused while the **app
+  scene** is `ask-hoai` (`askHoaiFocused = appSceneId === "ask-hoai"` in
+  `App.tsx`); a white canvas (z 180) fades in behind it (500 ms). So when a
+  phone scene follows ask-hoai, the panel stays focused on its beat 0 and
+  slides out with the app unchanged; from beat 1 the app scene moves on, the
+  panel morphs back and resets off-screen behind the phone, and the app swipes
+  back in already in the next scene's state.
 - Welcome → conversation (GSAP): welcome + common questions fade up (350 ms),
   state commits via `flushSync`, the input FLIPs to the footer and the thread
   fades in (500 ms). Send is ignored while this runs.
@@ -185,35 +206,39 @@ GSAP timeline, portaled to `<body>` at z 400.
   manual Send in the sidebar takes no hold.
 - A file dropped on the input (`DROP_FILE_EVENT`) becomes an attachment chip and
   is sent with the next message.
-- Unfocusing (SMS beat 0 → 1, or any jump away): script stops at once; after
+- Unfocusing (the app scene leaves ask-hoai: a phone scene's beat 0 → 1, or
+  any jump away): script stops at once; after
   the 700 ms morph back, the thread fades out (200 ms) and welcome / input /
   questions fade up (400 ms, staggered). Re-focusing before that fade has run
   resets immediately.
-- ← around SMS beat 0: from beat 1 the panel re-focuses off-screen (behind the
-  phone) and is already on the welcome view. From beat 0, ← to ask-hoai keeps
-  the panel focused, so nothing above fires; instead App passes `restart`
-  (`sceneId === "ask-hoai" && direction === "back"`) and the panel hard-cuts to
-  the welcome view (script stopped, hold released, no fade). The next → replays
-  the drop and the scripted chat once.
+- ← around a phone scene after ask-hoai: from beat 1 to beat 0 the app scene
+  stays on the next scene, so the panel stays unfocused off-screen. From beat 0,
+  ← to ask-hoai keeps the app scene (and `focused`) unchanged, so nothing above
+  fires; instead App passes `restart`
+  (`appSceneId === "ask-hoai" && direction === "back"`) and the panel resets to
+  the welcome view at once (script stopped, hold released, no fade) while the
+  app slides back in. The next → replays the drop and the scripted chat once.
 
 ### Scene swipe (`phone/SceneSwipe.tsx`)
 
 - `AppSlide` wraps the app; `PhoneLayer` is a plain white `position: fixed`
-  layer (z 220) holding the phone. Both follow the cursor through `swipeFor`.
-- On the SMS scene the app sits at `translateX(-100%)` and the layer at `0`;
+  layer (z 220) holding the phone. Both follow the cursor's scene through
+  `swipeFor(prev, isPhone)`, which only looks at the scene's `stage` flag,
+  never at scene ids.
+- On a phone scene the app sits at `translateX(-100%)` and the layer at `0`;
   everywhere else the layer is at `translateX(100%)`, `visibility: hidden`.
-- Only two moves animate, both going forward: ask-hoai → broadcast-sms (app
-  out, phone in) and broadcast-sms → closing-dashboard (back again). Both move
-  in lockstep: `transform 1200ms cubic-bezier(0.4,0,0.2,1)` (`SWIPE_MS`), a
+- Entering or leaving a phone scene **always** slides, in either direction and
+  however it's reached: →, ←, or a launcher jump from any scene. Only the very
+  first render and moves between scenes of the same kind (non-phone ⇄
+  non-phone, or within a phone scene) don't animate. App and phone move in
+  lockstep: `transform 1200ms cubic-bezier(0.4,0,0.2,1)` (`SWIPE_MS`), a
   decelerating curve that starts moving at once so it reads as a slide rather
-  than a pop. Every other
-  change, ← included, is a hard cut. (Known quirk: a launcher jump from
-  ask-hoai to broadcast-sms also animates.)
+  than a pop.
 - The swipe holds busy from the scene change until the app wrapper's own
   `transitionend` for `transform` (1500 ms fallback).
 - `PhoneLayer` passes `swipeInMs` (`SWIPE_MS` while swiping in, else 0) to the
   phone, which reads it on landing to time the notification.
-- Outside the SMS scene, with no swipe in flight, the wrapper's transform is
+- Outside phone scenes, with no swipe in flight, the wrapper's transform is
   `none`: a transform traps `position: fixed` descendants, which would break
   lifts, the payment modal and the Ask HOAi panel.
 
@@ -230,8 +255,9 @@ GSAP timeline, portaled to `<body>` at z 400.
   state *before* it so its clicks do the work; otherwise the state after it.
 - Beat 0 arriving forward drops the notification in by itself
   (`sms-notification-in`, 500 ms overshoot): `NOTIFICATION_DELAY_MS` (500 ms)
-  after the swipe lands, i.e. `SWIPE_MS + 500` = 1700 ms after → from
-  ask-hoai, or 500 ms after a launcher hard cut. Busy is held from landing
+  after the swipe lands, i.e. `SWIPE_MS + 500` = 1700 ms after any arrival
+  from another scene (all of which swipe), or 500 ms after a jump within the
+  scene. Busy is held from landing
   until its `animationend` (700 ms fallback after the drop), so keys stay
   blocked with no gap after the swipe. Reaching beat 0 by ← (from beat 1)
   shows the notification already there, with no animation and no hold.
@@ -242,7 +268,11 @@ GSAP timeline, portaled to `<body>` at z 400.
   typing dots at +500 ms, the answer at +1900 ms (`ANSWER_AT_MS`), then the
   hold is released. New bubbles fade up (`sms-bubble-in`, 300 ms).
 - The phone keeps its last state when the scene is left, so it slides out
-  intact; timers and holds are cleared on every beat change.
+  intact; timers and holds are cleared on every beat change. ← from the next
+  scene slides the phone back in on the last beat showing the pre-send state
+  (reply typed), and the next → re-sends.
+- `PhoneStage` checks the cursor against its own `SMS_SCENE_ID`; that is its
+  own scene, not a neighbour.
 
 ### Smaller app-side motions
 
@@ -263,12 +293,15 @@ GSAP timeline, portaled to `<body>` at z 400.
   script), the scene swipe, the phone's notification drop and its send →
   answer. While busy, → and ← do nothing, from the keyboard **and** the HUD
   buttons; the presenter just presses again once it settles.
-- **Scene start state**: every scene change re-applies that scene's `appState`
-  — phase (App root), onboarding screen (re-keys `NewResidentFlow`), page,
-  dashboard view, Ask HOAi open (MainApp). MainApp also closes Quick Actions on
-  every scene change, and resets the page even when consecutive scenes share
-  one (a scene that clicked away, like ARC request → fence form, must still
-  hand the next scene a clean dashboard).
+- **Scene start state**: the app follows the **app scene** (see "Phone scenes
+  and the app scene"). Every app-scene change re-applies that scene's
+  `appState` — phase (App root), onboarding screen (re-keys
+  `NewResidentFlow`), page, dashboard view, Ask HOAi open (MainApp). MainApp
+  also closes Quick Actions on every app-scene change, and resets the page even
+  when consecutive scenes share one (a scene that clicked away, like ARC
+  request → fence form, must still hand the next scene a clean dashboard).
+  Entering a phone scene on beat 0 changes nothing in the app; its beat 1
+  applies the next non-phone scene's `appState` off-screen.
 - **Back across a scene boundary** onto a cursor beat sets `replayOnAdvance`:
   the scene's `appState` has undone that click, so the next → replays it
   instead of skipping ahead.
@@ -287,7 +320,7 @@ GSAP timeline, portaled to `<body>` at z 400.
 | 190 | Ask HOAi panel (sidebar form) |
 | 195 | Elections / create-post modals |
 | 200 | Ask HOAi panel (focused form); Quick Actions modal |
-| 220 | Phone layer (white, SMS scene only) |
+| 220 | Phone layer (white, phone scenes only) |
 | 240 | Onboarding loader |
 | 250 | `.wt-root` (backdrop, cutout, expand panel) |
 | 260 | A lifted / expanded element |
@@ -295,8 +328,8 @@ GSAP timeline, portaled to `<body>` at z 400.
 | 310 | HUD |
 | 400 | Scripted cursor + its file card |
 
-The app wrapper (`.wt-app-slide`) is transformed only during the SMS scene and
-its swipes. While it is, the whole app is one stacking context below the phone
+The app wrapper (`.wt-app-slide`) is transformed only during phone scenes and
+their swipes. While it is, the whole app is one stacking context below the phone
 layer; the rest of the time its transform is `none`, so the app's own layers
 (lifts at 260, the payment modal at 300) stack against `.wt-root` as listed.
 
@@ -316,7 +349,12 @@ each in `index.ts` to restore).
 
 1. Tag the elements: `data-vt-name={VT.NewThing}` and add `NewThing` to `VT`.
 2. Write `scenes/newScene.tsx` with an `appState` that fully describes the start
-   (don't rely on what the previous scene left behind).
+   (don't rely on what the previous scene left behind). A phone scene sets
+   `stage: "phone"` and no `appState` instead.
+   **Scenes must not reference neighbouring scene ids.** No transition, sync or
+   panel behaviour may name the scene before or after it; use scene flags
+   (`stage`) and the app scene instead, so the order can be changed freely. A
+   scene may use its own id for its own logic.
 3. Add it to `scenes/index.ts`; extend `__tests__/sequence.test.ts` with its
    place and stops.
 4. Prefer one cursor beat for a chain of clicks — ← from the next scene then

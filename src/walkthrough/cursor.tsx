@@ -30,7 +30,30 @@ export function withTransition(update: () => void): void {
   update();
 }
 
+/** The scene the app underneath shows for `cursor`; see `WalkthroughState.appSceneIndex`. */
+export function appSceneIndexFor(cursor: Cursor, prevAppSceneIndex: number, sequence: Sequence): number {
+  const scene = sequence[cursor.sceneIndex];
+  if (scene?.stage !== "phone") return cursor.sceneIndex;
+  if (cursor.beatIndex === 0) return prevAppSceneIndex;
+  for (let i = cursor.sceneIndex + 1; i < sequence.length; i++) {
+    if (sequence[i].stage !== "phone") return i;
+  }
+  return prevAppSceneIndex;
+}
+
 export function cursorReducer(
+  state: WalkthroughState,
+  action: WalkthroughAction,
+  sequence: Sequence,
+): WalkthroughState {
+  if (action.type === "toggleHud") return { ...state, hudVisible: !state.hudVisible };
+  const next = moveCursor(state, action, sequence);
+  if (next === state) return state;
+  const appSceneIndex = appSceneIndexFor(next.cursor, state.appSceneIndex, sequence);
+  return appSceneIndex === next.appSceneIndex ? next : { ...next, appSceneIndex };
+}
+
+function moveCursor(
   state: WalkthroughState,
   action: WalkthroughAction,
   sequence: Sequence,
@@ -76,8 +99,6 @@ export function cursorReducer(
     }
     case "jumpTo":
       return { ...state, cursor: action.cursor, lastDirection: "forward", replayOnAdvance: false };
-    case "toggleHud":
-      return { ...state, hudVisible: !state.hudVisible };
     default:
       return state;
   }
@@ -97,6 +118,7 @@ const WalkthroughContext = createContext<Ctx | null>(null);
 const initialState: WalkthroughState = {
   cursor: { sceneIndex: 0, beatIndex: 0 },
   hudVisible: false,
+  appSceneIndex: 0,
 };
 
 export function WalkthroughProvider({ sequence, children }: { sequence: Sequence; children: ReactNode }) {
@@ -150,12 +172,17 @@ export function useCursor() {
   const { state, sequence } = ctx;
   const scene: Scene | undefined = sequence[state.cursor.sceneIndex];
   const beat: Beat | undefined = scene?.beats[state.cursor.beatIndex];
+  // What the app underneath shows; differs from `scene` only around phone scenes.
+  const appScene: Scene | undefined = sequence[state.appSceneIndex];
   return {
     cursor: state.cursor,
     scene,
     beat,
     sceneId: scene?.id,
     page: scene?.page,
+    appScene,
+    appSceneId: appScene?.id,
+    appPage: appScene?.page,
     hudVisible: state.hudVisible,
     direction: state.lastDirection ?? "forward",
     replayOnAdvance: state.replayOnAdvance ?? false,

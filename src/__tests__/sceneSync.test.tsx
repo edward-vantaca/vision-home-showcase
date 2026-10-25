@@ -14,6 +14,21 @@ const seq: Sequence = [
   { id: "second", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
 ];
 
+// A phone scene: no appState of its own; the app underneath follows the app scene.
+const phoneScene: Sequence[number] = {
+  id: SMS_SCENE_ID,
+  page: "dashboard",
+  stage: "phone",
+  beats: [{ kind: "idle" }, { kind: "idle" }],
+};
+
+let nav: ReturnType<typeof useCursor>;
+
+function Probe() {
+  nav = useCursor();
+  return null;
+}
+
 function Next() {
   const { advance } = useCursor();
   return <button type="button" data-testid="next" onClick={advance}>next</button>;
@@ -53,10 +68,11 @@ describe("MainApp scene sync", () => {
     expect(q(container, "quick-actions-modal")).toBeNull();
   });
 
-  it("keeps the Ask HOAi panel focused only on the broadcast SMS scene's first beat", () => {
+  it("keeps the Ask HOAi panel focused through the app scene: on a phone scene's first beat after ask-hoai, not from beat 1", () => {
     const smsSeq: Sequence = [
       { id: "ask-hoai", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
-      { id: SMS_SCENE_ID, page: "dashboard", appState: portal, beats: [{ kind: "idle" }, { kind: "idle" }] },
+      phoneScene,
+      { id: "after", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
     ];
     const { container, getByTestId } = render(
       <WalkthroughProvider sequence={smsSeq}>
@@ -83,7 +99,8 @@ describe("MainApp scene sync", () => {
   it("← from the SMS scene's first beat hard-cuts ask-hoai back to a fresh welcome view", () => {
     const smsSeq: Sequence = [
       { id: "ask-hoai", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
-      { id: SMS_SCENE_ID, page: "dashboard", appState: portal, beats: [{ kind: "idle" }, { kind: "idle" }] },
+      phoneScene,
+      { id: "after", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
     ];
     const { container, getByTestId, unmount } = render(
       <WalkthroughProvider sequence={smsSeq}>
@@ -120,6 +137,40 @@ describe("MainApp scene sync", () => {
       expect(section("welcome")).not.toBeNull();
       expect(panel().textContent).not.toContain("Can I replace my fence?");
       expect(isWalkthroughBusy()).toBe(false);
+    } finally {
+      unmount();
+    }
+  });
+
+  it("a launcher jump into a phone scene keeps the app on the scene it came from during beat 0", () => {
+    const jumpSeq: Sequence = [
+      { id: "start", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
+      { id: "elsewhere", page: "community", appState: { ...portal, page: "community" }, beats: [{ kind: "idle" }] },
+      phoneScene,
+      { id: "after", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
+    ];
+    const { container, unmount } = render(
+      <WalkthroughProvider sequence={jumpSeq}>
+        <App />
+        <Probe />
+      </WalkthroughProvider>,
+    );
+    try {
+      act(() => nav.jumpTo({ sceneIndex: 1, beatIndex: 0 }));
+      expect(q(container, "community-feed-page")).not.toBeNull();
+
+      act(() => nav.jumpTo({ sceneIndex: 2, beatIndex: 0 }));
+      expect(nav.appSceneId).toBe("elsewhere");
+      expect(nav.appPage).toBe("community");
+      // The phone scene's own page is the dashboard, but the app slides out as last seen.
+      expect(q(container, "community-feed-page")).not.toBeNull();
+      expect(q(container, "dashboard-page")).toBeNull();
+
+      act(() => nav.advance());
+      // Beat 1, off-screen: the app is already in the next scene's state.
+      expect(nav.appSceneId).toBe("after");
+      expect(q(container, "dashboard-page")).not.toBeNull();
+      expect(q(container, "community-feed-page")).toBeNull();
     } finally {
       unmount();
     }
