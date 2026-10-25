@@ -3359,10 +3359,7 @@ function MainApp({ onRestart }: MainAppProps) {
         className={`fixed inset-0 bg-white z-[180] transition-opacity duration-500 ${askHoaiFocused ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       />
       <AskHoaiPanel open={askHoaiOpen} onCollapse={() => setAskHoaiOpen(false)} focused={askHoaiFocused} restart={askHoaiRestart} />
-      {/* Floating view toggle — only on dashboard */}
-      {activePage === "dashboard" && !askHoaiFocused && (
-        <ViewToggle view={dashboardView} onChange={setDashboardView} />
-      )}
+      {/* Floating homeowner/board view toggle hidden for now; scenes set dashboardView. */}
       {quickActionsView && (
         <QuickActionsModal
           view={quickActionsView}
