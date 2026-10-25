@@ -1,8 +1,9 @@
 import { StrictMode } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act, fireEvent, cleanup } from "@testing-library/react";
-import { AppSlide, PhoneLayer, swipeFor } from "../SceneSwipe";
-import { SMS_SCENE_ID } from "../PhoneStage";
+import { AppSlide, PhoneLayer, SWIPE_MS, swipeFor } from "../SceneSwipe";
+import { NOTIFICATION_DELAY_MS, SMS_SCENE_ID } from "../PhoneStage";
+import { VT } from "../../viewTransitionNames";
 import { WalkthroughProvider, isWalkthroughBusy, useCursor } from "../../cursor";
 import type { Sequence } from "../../types";
 
@@ -19,14 +20,16 @@ function Probe() {
   return null;
 }
 
-function renderSwipe() {
+// Without the phone, the only hold is the swipe's own (landing forward on the
+// SMS scene's beat 0 also holds busy until the notification has dropped in).
+function renderSwipe({ withPhone = true } = {}) {
   const utils = render(
     <StrictMode>
       <WalkthroughProvider sequence={seq}>
         <AppSlide>
           <div>app</div>
         </AppSlide>
-        <PhoneLayer />
+        {withPhone && <PhoneLayer />}
         <Probe />
       </WalkthroughProvider>
     </StrictMode>,
@@ -85,16 +88,24 @@ describe("AppSlide / PhoneLayer", () => {
     expect(layer.style.pointerEvents).toBe("none");
   });
 
-  it("swipe holds busy until the transition ends", () => {
+  it("the swipe is a 1200ms decelerating slide", () => {
+    expect(SWIPE_MS).toBe(1200);
     const { wrapper, layer } = renderSwipe();
     jump(0, 1);
     act(() => nav.advance());
     expect(nav.sceneId).toBe(SMS_SCENE_ID);
-    expect(isWalkthroughBusy()).toBe(true);
     expect(wrapper.style.transform).toBe("translateX(-100%)");
-    expect(wrapper.style.transition).toBe("transform 900ms cubic-bezier(0.65,0,0.35,1)");
+    expect(wrapper.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
     expect(layer.style.transform).toBe("translateX(0)");
+    expect(layer.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
     expect(layer.style.visibility).not.toBe("hidden");
+  });
+
+  it("swipe holds busy until the transition ends", () => {
+    const { wrapper } = renderSwipe({ withPhone: false });
+    jump(0, 1);
+    act(() => nav.advance());
+    expect(isWalkthroughBusy()).toBe(true);
     act(() => {
       fireEvent.transitionEnd(wrapper, { propertyName: "opacity" });
     });
@@ -103,12 +114,12 @@ describe("AppSlide / PhoneLayer", () => {
     expect(isWalkthroughBusy()).toBe(false);
   });
 
-  it("releases the hold after 1100ms if no transitionend arrives", () => {
-    renderSwipe();
+  it("releases the hold after 1500ms if no transitionend arrives", () => {
+    renderSwipe({ withPhone: false });
     jump(0, 1);
     act(() => nav.advance());
     act(() => {
-      vi.advanceTimersByTime(1099);
+      vi.advanceTimersByTime(1499);
     });
     expect(isWalkthroughBusy()).toBe(true);
     act(() => {
@@ -117,15 +128,42 @@ describe("AppSlide / PhoneLayer", () => {
     expect(isWalkthroughBusy()).toBe(false);
   });
 
+  it("swiping in, the notification drops 500ms after the swipe lands with keys held throughout", () => {
+    const { wrapper, layer, container } = renderSwipe();
+    const notification = () => container.querySelector<HTMLElement>(`[data-vt-name="${VT.SmsNotification}"]`);
+    jump(0, 1);
+    act(() => nav.advance());
+    expect(notification()).toBeNull();
+    expect(isWalkthroughBusy()).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(SWIPE_MS);
+    });
+    endTransform(wrapper);
+    endTransform(layer);
+    expect(isWalkthroughBusy()).toBe(true);
+    expect(notification()).toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(NOTIFICATION_DELAY_MS - 1);
+    });
+    expect(notification()).toBeNull();
+    expect(isWalkthroughBusy()).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(notification()!.classList.contains("sms-notification-in")).toBe(true);
+    expect(isWalkthroughBusy()).toBe(true);
+    act(() => {
+      fireEvent.animationEnd(notification()!);
+    });
+    expect(isWalkthroughBusy()).toBe(false);
+  });
+
   it("swipe back clears the transform afterwards", () => {
     const { wrapper, layer } = renderSwipe();
-    // Land on the phone with a hard cut (not from ask-hoai, which would swipe).
+    // Land on the phone's beat 1 with a hard cut (not from ask-hoai, which
+    // would swipe; not on beat 0, whose notification drop holds busy).
     jump(2, 0);
     jump(1, 1);
-    // Let the phone's own notification drop (its hold, not ours) finish.
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
     expect(isWalkthroughBusy()).toBe(false);
     expect(wrapper.style.transform).toBe("translateX(-100%)");
     act(() => nav.advance());

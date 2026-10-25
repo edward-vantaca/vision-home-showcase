@@ -2,8 +2,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { holdBusy, useCursor } from "../cursor";
 import PhoneStage, { SMS_SCENE_ID } from "./PhoneStage";
 
-const SWIPE_TRANSITION = "transform 900ms cubic-bezier(0.65,0,0.35,1)";
-const SWIPE_FALLBACK_MS = 1100;
+/** How long the app ⇄ phone swipe takes, both ways. */
+export const SWIPE_MS = 1200;
+const SWIPE_TRANSITION = `transform ${SWIPE_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+const SWIPE_FALLBACK_MS = 1500;
 
 /** Where the app sits and whether the move animates. */
 export function swipeFor(
@@ -87,6 +89,8 @@ export function AppSlide({ children }: { children: ReactNode }) {
 export function PhoneLayer() {
   const { offset, inFlight, ref } = useSwipe(false);
   const offScreen = offset === "none" && !inFlight;
+  // Read by the phone when it lands, so its notification waits for the swipe.
+  const swipeInMs = offset === "out" && inFlight ? SWIPE_MS : 0;
   return (
     <div
       ref={ref}
@@ -99,7 +103,7 @@ export function PhoneLayer() {
         pointerEvents: offScreen ? "none" : undefined,
       }}
     >
-      <PhoneStage />
+      <PhoneStage swipeInMs={swipeInMs} />
     </div>
   );
 }

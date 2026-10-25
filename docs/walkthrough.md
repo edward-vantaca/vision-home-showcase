@@ -5,8 +5,8 @@ rules that keep it trustworthy on stage. This is the current reference; when it
 disagrees with an older spec or handoff, this file wins (and if this file
 disagrees with the code, the code wins — fix this file).
 
-Last updated 2026-10-25 (branch `walkthrough-subsystem`): broadcast SMS scene,
-phone stage, scene swipe and busy holds.
+Last updated 2026-10-25 (branch `walkthrough-subsystem`): broadcast SMS scene
+(notification arrives by itself), phone stage, scene swipe and busy holds.
 
 ## Mental model
 
@@ -169,11 +169,12 @@ GSAP timeline, portaled to `<body>` at z 400.
 - One `position: fixed` panel with three forms — sidebar, focused (centred), and
   collapsed — each with an explicit `left` (never `auto`), so CSS morphs between
   them: `all 700ms cubic-bezier(0.65,0,0.35,1)`. Focused while the scene id is
-  `ask-hoai`, and on the broadcast SMS scene's first beat so it slides out with
-  the app unchanged (`askHoaiFocused` in `App.tsx`); a white canvas (z 180)
-  fades in behind it (500 ms). From SMS beat 1 the phone covers the screen, so
-  the panel morphs back and resets off-screen and the dashboard swipes back in
-  already in its closing state.
+  `ask-hoai`, and on the broadcast SMS scene's first beat (swipe in, the
+  notification drops in) so it slides out with the app unchanged
+  (`askHoaiFocused` in `App.tsx`); a white canvas (z 180) fades in behind it
+  (500 ms). From SMS beat 1 (the thread opens) the panel morphs back and resets
+  off-screen behind the phone, and the dashboard swipes back in already in its
+  closing state.
 - Welcome → conversation (GSAP): welcome + common questions fade up (350 ms),
   state commits via `flushSync`, the input FLIPs to the footer and the thread
   fades in (500 ms). Send is ignored while this runs.
@@ -203,11 +204,15 @@ GSAP timeline, portaled to `<body>` at z 400.
   everywhere else the layer is at `translateX(100%)`, `visibility: hidden`.
 - Only two moves animate, both going forward: ask-hoai → broadcast-sms (app
   out, phone in) and broadcast-sms → closing-dashboard (back again). Both move
-  in lockstep: `transform 900ms cubic-bezier(0.65,0,0.35,1)`. Every other
+  in lockstep: `transform 1200ms cubic-bezier(0.4,0,0.2,1)` (`SWIPE_MS`), a
+  decelerating curve that starts moving at once so it reads as a slide rather
+  than a pop. Every other
   change, ← included, is a hard cut. (Known quirk: a launcher jump from
   ask-hoai to broadcast-sms also animates.)
 - The swipe holds busy from the scene change until the app wrapper's own
-  `transitionend` for `transform` (1100 ms fallback).
+  `transitionend` for `transform` (1500 ms fallback).
+- `PhoneLayer` passes `swipeInMs` (`SWIPE_MS` while swiping in, else 0) to the
+  phone, which reads it on landing to time the notification.
 - Outside the SMS scene, with no swipe in flight, the wrapper's transform is
   `none`: a transform traps `position: fixed` descendants, which would break
   lifts, the payment modal and the Ask HOAi panel.
@@ -218,14 +223,21 @@ GSAP timeline, portaled to `<body>` at z 400.
   `min(72vh, 760px)`; styles are the `sms-*` rules in `walkthrough.css`. Lock
   screen with a static `Sunday, October 25` / `4:12`. No HOAi branding anywhere
   on the phone.
-- State per beat comes from `phoneState.ts`: 0 empty lock screen, 1
-  notification, 2 thread open on the broadcast, 3 reply typed, 4 answered.
-  Landing on a cursor beat that's about to run (forward, or back with
-  `replayOnAdvance`) shows the state *before* it so its clicks do the work;
-  otherwise the state after it.
-- Beat 1 arriving forward drops the notification in (`sms-notification-in`,
-  500 ms overshoot) and holds busy until its `animationend` (700 ms fallback).
-- The cursor beats are real clicks: the notification opens the thread, the
+- Four beats. State per beat comes from `phoneState.ts`: 0 lock screen with
+  the notification, 1 thread open on the broadcast, 2 reply typed, 3 answered.
+  Arriving forward on beat 0 starts with no notification. Landing on a cursor
+  beat that's about to run (forward, or back with `replayOnAdvance`) shows the
+  state *before* it so its clicks do the work; otherwise the state after it.
+- Beat 0 arriving forward drops the notification in by itself
+  (`sms-notification-in`, 500 ms overshoot): `NOTIFICATION_DELAY_MS` (500 ms)
+  after the swipe lands, i.e. `SWIPE_MS + 500` = 1700 ms after → from
+  ask-hoai, or 500 ms after a launcher hard cut. Busy is held from landing
+  until its `animationend` (700 ms fallback after the drop), so keys stay
+  blocked with no gap after the swipe. Reaching beat 0 by ← (from beat 1)
+  shows the notification already there, with no animation and no hold.
+  Leaving the beat or unmounting before the drop cancels it and releases the
+  hold.
+- The three cursor beats (1–3) are real clicks: the notification opens the thread, the
   input is typed into (`typeCps` 24), Send appends the reply. Send holds busy:
   typing dots at +500 ms, the answer at +1900 ms (`ANSWER_AT_MS`), then the
   hold is released. New bubbles fade up (`sms-bubble-in`, 300 ms).
@@ -294,8 +306,8 @@ intro → inbox (open email, click register CTA) → onboarding (password, Creat
 account) → autopay → go-to-portal → dashboard (still) → payments (lift, Make a
 Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
-broadcast-sms (swipe to the phone; storm broadcast arrives, tap it, reply,
-answer) → closing-dashboard (swipe back; still).
+broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
+it, reply, answer) → closing-dashboard (swipe back; still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).

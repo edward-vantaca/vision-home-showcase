@@ -42,15 +42,15 @@ describe("homeVisionSequence", () => {
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
-  it("Broadcast SMS: lock screen, notification, then tap it, type the reply and send", () => {
+  it("Broadcast SMS: the notification arrives by itself, then tap it, type the reply and send", () => {
     const sms = homeVisionSequence.find((s) => s.id === "broadcast-sms");
     if (!sms) throw new Error("no broadcast-sms scene");
-    expect(sms.beats.map((b) => b.kind)).toEqual(["idle", "idle", "cursor", "cursor", "cursor"]);
+    expect(sms.beats.map((b) => b.kind)).toEqual(["idle", "cursor", "cursor", "cursor"]);
     const cursorBeats = sms.beats.filter((b) => b.kind === "cursor");
     expect(cursorBeats.map((b) => b.to)).toEqual([VT.SmsNotification, VT.SmsInput, VT.SmsSendBtn]);
     expect(cursorBeats.map((b) => b.action)).toEqual(["click", "click", "click"]);
-    const type = sms.beats[3];
-    if (type.kind !== "cursor") throw new Error("beat 3 is not a cursor beat");
+    const type = sms.beats[2];
+    if (type.kind !== "cursor") throw new Error("beat 2 is not a cursor beat");
     expect(type.typeText).toBe(SMS_REPLY);
   });
 

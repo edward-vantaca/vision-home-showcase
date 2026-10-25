@@ -14,15 +14,14 @@ export type PhoneState = {
   messages: PhoneMessage[];
 };
 
-/** State after beat `n` (0 lock, 1 notification, 2 thread open, 3 reply typed, 4 answered). */
+/** State after beat `n` (0 lock with notification, 1 thread open, 2 reply typed, 3 answered). */
 export function settledPhoneState(beatIndex: number): PhoneState {
   const broadcast: PhoneMessage = { from: "them", text: SMS_BROADCAST };
-  if (beatIndex <= 0) return { notification: false, view: "lock", draft: "", messages: [] };
-  if (beatIndex === 1) return { notification: true, view: "lock", draft: "", messages: [] };
-  if (beatIndex === 2) {
+  if (beatIndex <= 0) return { notification: true, view: "lock", draft: "", messages: [] };
+  if (beatIndex === 1) {
     return { notification: false, view: "thread", draft: "", messages: [broadcast] };
   }
-  if (beatIndex === 3) {
+  if (beatIndex === 2) {
     return { notification: false, view: "thread", draft: SMS_REPLY, messages: [broadcast] };
   }
   return {
@@ -38,15 +37,19 @@ export function settledPhoneState(beatIndex: number): PhoneState {
 }
 
 /**
- * What to show when the cursor lands on `beatIndex`. A cursor beat that is
- * about to run (forward arrival, or back with replayOnAdvance) shows the
- * state *before* it so its clicks have something to do; otherwise the
- * state after it.
+ * What to show when the cursor lands on `beatIndex`. Arriving forward on
+ * beat 0 shows the lock screen without the notification, which then drops
+ * in by itself. A cursor beat that is about to run (forward arrival, or back
+ * with replayOnAdvance) shows the state *before* it so its clicks have
+ * something to do; otherwise the state after it.
  */
 export function phoneStateOnLanding(
   beatIndex: number,
   opts: { isCursorBeat: boolean; direction: "forward" | "back"; replayOnAdvance: boolean },
 ): PhoneState {
+  if (beatIndex <= 0 && opts.direction === "forward") {
+    return { ...settledPhoneState(0), notification: false };
+  }
   const aboutToRun =
     opts.isCursorBeat && (opts.direction === "forward" || opts.replayOnAdvance);
   return settledPhoneState(aboutToRun ? beatIndex - 1 : beatIndex);

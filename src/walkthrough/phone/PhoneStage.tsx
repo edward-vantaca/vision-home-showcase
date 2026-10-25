@@ -7,12 +7,13 @@ import {
   SMS_BROADCAST,
   SMS_SENDER,
   phoneStateOnLanding,
-  settledPhoneState,
   type PhoneState,
 } from "./phoneState";
 
 export const SMS_SCENE_ID = "broadcast-sms";
 
+/** How long after landing (and after any swipe in) the notification drops in. */
+export const NOTIFICATION_DELAY_MS = 500;
 const NOTIFICATION_HOLD_FALLBACK_MS = 700;
 const TYPING_DOTS_AT_MS = 500;
 export const ANSWER_AT_MS = 1900;
@@ -21,10 +22,17 @@ export const ANSWER_AT_MS = 1900;
  * The broadcast SMS scene's phone. Always renders; the layer around it
  * decides whether it's on screen. Follows the cursor only while the scene is
  * current and keeps its last state otherwise, so it can slide out intact.
+ *
+ * `swipeInMs`: the length of the swipe bringing the phone in, if one is in
+ * flight (0 for a hard cut). Read when the phone lands, so the notification
+ * drops in `NOTIFICATION_DELAY_MS` after the swipe has finished.
  */
-export default function PhoneStage() {
+export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
   const { sceneId, scene, cursor, direction, replayOnAdvance } = useCursor();
-  const [phone, setPhone] = useState<PhoneState>(() => settledPhoneState(0));
+  // Starts as a forward landing on beat 0 would: no notification yet.
+  const [phone, setPhone] = useState<PhoneState>(() =>
+    phoneStateOnLanding(0, { isCursorBeat: false, direction: "forward", replayOnAdvance: false }),
+  );
   const [typing, setTyping] = useState(false);
   const [animateNotification, setAnimateNotification] = useState(false);
   // Messages at or after this index were added by the send script and animate in.
@@ -33,6 +41,9 @@ export default function PhoneStage() {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const releases = useRef<(() => void)[]>([]);
   const releaseNotification = useRef<() => void>(() => {});
+  // Only the value at landing matters; a ref keeps it out of the effect's deps.
+  const swipeIn = useRef(swipeInMs);
+  swipeIn.current = swipeInMs;
 
   const stopScript = useCallback(() => {
     timers.current.forEach(clearTimeout);
@@ -61,12 +72,17 @@ export default function PhoneStage() {
       const next = phoneStateOnLanding(beatIndex, { isCursorBeat, direction, replayOnAdvance });
       setPhone(next);
       setAnimateFrom(next.messages.length);
-      const notificationDrops = beatIndex === 1 && direction === "forward";
-      setAnimateNotification(notificationDrops);
-      if (notificationDrops) {
+      setAnimateNotification(false);
+      if (beatIndex === 0 && direction === "forward") {
+        // Keys stay held from landing until the notification has dropped in,
+        // so there's no gap after the swipe's own hold.
         const release = hold();
         releaseNotification.current = release;
-        later(NOTIFICATION_HOLD_FALLBACK_MS, release);
+        later(swipeIn.current + NOTIFICATION_DELAY_MS, () => {
+          setAnimateNotification(true);
+          setPhone((p) => ({ ...p, notification: true }));
+          later(NOTIFICATION_HOLD_FALLBACK_MS, release);
+        });
       }
     }
     return stopScript;
