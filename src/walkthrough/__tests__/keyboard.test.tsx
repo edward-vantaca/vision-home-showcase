@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
-import { fireEvent } from "@testing-library/dom";
+import { renderHook, fireEvent } from "@testing-library/react";
 import { useWalkthroughKeyboard } from "../keyboard";
-import { WalkthroughProvider, useCursor } from "../cursor";
+import { WalkthroughProvider, useCursor, holdBusy } from "../cursor";
 import type { Sequence } from "../types";
 
 const seq: Sequence = [
@@ -55,5 +54,15 @@ describe("useWalkthroughKeyboard", () => {
     fireEvent.keyDown(input, { key: "ArrowRight" });
     expect(result.current.cursor).toEqual({ sceneIndex: 0, beatIndex: 0 });
     input.remove();
+  });
+
+  it("ignores ArrowRight / ArrowLeft while a busy hold is active", () => {
+    const { result } = renderHook(() => useAll(), { wrapper });
+    const release = holdBusy();
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    expect(result.current.cursor).toEqual({ sceneIndex: 0, beatIndex: 0 });
+    release();
+    fireEvent.keyDown(window, { key: "ArrowRight" });
+    expect(result.current.cursor).toEqual({ sceneIndex: 0, beatIndex: 1 });
   });
 });

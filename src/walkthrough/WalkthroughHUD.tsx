@@ -1,7 +1,13 @@
-import { useCursor } from "./cursor";
+import { useCursor, isWalkthroughBusy } from "./cursor";
 
 export function WalkthroughHUD() {
   const { cursor, scene, sequence, hudVisible, advance, back } = useCursor();
+  const guardedBack = () => {
+    if (!isWalkthroughBusy()) back();
+  };
+  const guardedAdvance = () => {
+    if (!isWalkthroughBusy()) advance();
+  };
   if (!hudVisible || !scene) return null;
   const sceneCount = sequence.length;
   const beatCount = scene.beats.length;
@@ -12,7 +18,7 @@ export function WalkthroughHUD() {
     >
       <button
         type="button"
-        onClick={back}
+        onClick={guardedBack}
         className="rounded-full px-3 py-1 text-sm font-medium hover:bg-black/5"
       >
         ← prev
@@ -30,7 +36,7 @@ export function WalkthroughHUD() {
       </div>
       <button
         type="button"
-        onClick={advance}
+        onClick={guardedAdvance}
         className="rounded-full px-3 py-1 text-sm font-medium hover:bg-black/5"
       >
         next →

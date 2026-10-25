@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { cursorReducer, withTransition } from "../cursor";
+import { cursorReducer, withTransition, holdBusy, isWalkthroughBusy } from "../cursor";
 import type { Sequence, WalkthroughState } from "../types";
 
 const seq: Sequence = [
@@ -139,5 +139,27 @@ describe("withTransition", () => {
     const update = vi.fn();
     withTransition(update);
     expect(update).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("busy holds", () => {
+  it("holdBusy makes the walkthrough busy until every hold is released", () => {
+    const a = holdBusy();
+    const b = holdBusy();
+    expect(isWalkthroughBusy()).toBe(true);
+    a();
+    expect(isWalkthroughBusy()).toBe(true);
+    b();
+    expect(isWalkthroughBusy()).toBe(false);
+  });
+
+  it("release is idempotent", () => {
+    const a = holdBusy();
+    const b = holdBusy();
+    a();
+    a();
+    expect(isWalkthroughBusy()).toBe(true);
+    b();
+    expect(isWalkthroughBusy()).toBe(false);
   });
 });

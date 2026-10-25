@@ -1,11 +1,30 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from "react";
 import type { Beat, Cursor, Scene, Sequence, WalkthroughAction, WalkthroughState } from "./types";
 
-// Shared between beats and the keyboard handler. Beats flip this to `true` while
-// their animation is running so arrow keys don't skip past mid-sequence; the
-// keyboard handler reads it before dispatching advance/back. Mutable ref — no
-// re-renders needed when the flag flips.
+// Shared between beats and the keyboard handler. Beats flip `beatBusyRef` to
+// `true` while their animation is running so arrow keys don't skip past
+// mid-sequence; the keyboard handler and HUD read `isWalkthroughBusy()` before
+// dispatching advance/back. Mutable ref — no re-renders needed when it flips.
 export const beatBusyRef = { current: false };
+
+// Ref-counted holds for timed sequences that live outside a cursor beat (app
+// animations, chat typing, phone slides). Each `holdBusy()` must be released;
+// the release function is idempotent.
+let busyHolds = 0;
+
+export function holdBusy(): () => void {
+  busyHolds += 1;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    busyHolds -= 1;
+  };
+}
+
+export function isWalkthroughBusy(): boolean {
+  return beatBusyRef.current || busyHolds > 0;
+}
 
 export function withTransition(update: () => void): void {
   update();
