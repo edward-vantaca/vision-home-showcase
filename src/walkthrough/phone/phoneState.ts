@@ -1,6 +1,8 @@
 export const SMS_SENDER = "Waterfront Community Estates";
 export const SMS_BROADCAST =
   "⚠️ Severe storms are moving through the area this evening. Local flooding is possible. Please avoid low-lying roads and stay indoors. — Waterfront Community Estates Management";
+/** The lock-screen notification shows only the warning itself. */
+export const SMS_PREVIEW = SMS_BROADCAST.slice(0, SMS_BROADCAST.indexOf("possible.") + "possible.".length);
 export const SMS_REPLY = "Are any of the amenities still open?";
 export const SMS_ANSWER =
   "No, the gym, pool, and clubhouse are all closed until further notice. We'll text you as soon as they reopen.";

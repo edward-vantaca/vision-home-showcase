@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act, fireEvent, cleanup } from "@testing-library/react";
 import PhoneStage, { ANSWER_AT_MS, NOTIFICATION_DELAY_MS, SMS_SCENE_ID } from "../PhoneStage";
-import { SMS_ANSWER, SMS_BROADCAST, SMS_REPLY } from "../phoneState";
+import { SMS_ANSWER, SMS_BROADCAST, SMS_PREVIEW, SMS_REPLY } from "../phoneState";
 import { SWIPE_MS } from "../SceneSwipe";
 import { WalkthroughProvider, isWalkthroughBusy, useCursor } from "../../cursor";
 import { VT } from "../../viewTransitionNames";
@@ -166,6 +166,15 @@ describe("PhoneStage", () => {
     expect(n).not.toBeNull();
     expect(n.classList.contains("sms-notification-in")).toBe(false);
     expect(isWalkthroughBusy()).toBe(false);
+  });
+
+  it("the lock-screen notification shows the warning up to 'flooding is possible.'", () => {
+    const { container } = renderStage();
+    jump(1);
+    const preview = q(container, VT.SmsNotification)!.querySelector(".sms-notification-preview")!;
+    expect(preview.textContent).toBe(SMS_PREVIEW);
+    expect(SMS_PREVIEW).toMatch(/Local flooding is possible\.$/);
+    expect(SMS_BROADCAST.startsWith(SMS_PREVIEW)).toBe(true);
   });
 
   it("clicking the notification opens the thread with the broadcast", () => {

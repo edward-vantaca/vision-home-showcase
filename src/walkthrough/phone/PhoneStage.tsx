@@ -5,6 +5,7 @@ import PhoneFrame from "./PhoneFrame";
 import {
   SMS_ANSWER,
   SMS_BROADCAST,
+  SMS_PREVIEW,
   SMS_SENDER,
   phoneStateOnLanding,
   type PhoneState,
@@ -140,7 +141,7 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
                 <span>now</span>
               </span>
               <span className="sms-notification-sender">{SMS_SENDER}</span>
-              <span className="sms-notification-preview">{SMS_BROADCAST}</span>
+              <span className="sms-notification-preview">{SMS_PREVIEW}</span>
             </button>
           )}
         </div>

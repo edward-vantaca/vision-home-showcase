@@ -47,7 +47,7 @@ main.tsx
 | `src/walkthrough/walkthrough.css` | Backdrop, cursor, intro, file-card styles; `askhoai-*` keyframes |
 | `src/walkthrough/viewTransitionNames.ts` | `VT` — every element a beat can target (historic name; View Transitions are gone) |
 | `src/walkthrough/dropFile.ts` | `DROP_FILE_EVENT`, the event a cursor "drop" fires |
-| `src/walkthrough/phone/phoneState.ts` | SMS copy (`SMS_SENDER`, `SMS_BROADCAST`, `SMS_REPLY`, `SMS_ANSWER`) and the phone's state per beat |
+| `src/walkthrough/phone/phoneState.ts` | SMS copy (`SMS_SENDER`, `SMS_BROADCAST`, `SMS_PREVIEW` (the notification text, shown in full up to "flooding is possible."), `SMS_REPLY`, `SMS_ANSWER`) and the phone's state per beat |
 | `src/walkthrough/phone/PhoneStage.tsx`, `PhoneFrame.tsx` | The phone: lock screen, notification, SMS thread; `SMS_SCENE_ID` |
 | `src/walkthrough/phone/SceneSwipe.tsx` | `AppSlide` / `PhoneLayer` and `swipeFor`, the app ⇄ phone swipe |
 
