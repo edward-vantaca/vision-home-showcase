@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act, fireEvent, cleanup } from "@testing-library/react";
-import PhoneStage, { SMS_SCENE_ID } from "../PhoneStage";
+import PhoneStage, { ANSWER_AT_MS, SMS_SCENE_ID } from "../PhoneStage";
 import { SMS_ANSWER, SMS_BROADCAST, SMS_REPLY } from "../phoneState";
 import { WalkthroughProvider, isWalkthroughBusy, useCursor } from "../../cursor";
 import { VT } from "../../viewTransitionNames";
@@ -54,7 +54,7 @@ function settleOnBeat4(c: HTMLElement) {
   jump(4);
   act(() => q(c, VT.SmsSendBtn)!.click());
   act(() => {
-    vi.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(ANSWER_AT_MS);
   });
 }
 
@@ -119,6 +119,16 @@ describe("PhoneStage", () => {
     expect(q(container, VT.SmsNotification)).toBeNull();
     expect(getByText(SMS_BROADCAST)).toBeInTheDocument();
     expect(q(container, VT.SmsInput)).not.toBeNull();
+  });
+
+  it("opening the thread shows the broadcast without an unheld entrance animation", () => {
+    const { container } = renderStage();
+    jump(2);
+    finishNotification(container);
+    act(() => q(container, VT.SmsNotification)!.click());
+    const bubble = container.querySelector("[data-sms-bubble]")!;
+    expect(bubble.classList.contains("sms-bubble-in")).toBe(false);
+    expect(isWalkthroughBusy()).toBe(false);
   });
 
   it("the input is controlled by the draft", () => {

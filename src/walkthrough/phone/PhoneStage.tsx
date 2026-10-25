@@ -15,7 +15,7 @@ export const SMS_SCENE_ID = "broadcast-sms";
 
 const NOTIFICATION_HOLD_FALLBACK_MS = 700;
 const TYPING_DOTS_AT_MS = 500;
-const ANSWER_AT_MS = 1900;
+export const ANSWER_AT_MS = 1900;
 
 /**
  * The broadcast SMS scene's phone. Always renders; the layer around it
@@ -82,6 +82,8 @@ export default function PhoneStage() {
   }, []);
 
   const openThread = () => {
+    // The broadcast is already in the thread when it opens; it doesn't animate in.
+    setAnimateFrom(1);
     setPhone((p) => ({
       ...p,
       notification: false,
