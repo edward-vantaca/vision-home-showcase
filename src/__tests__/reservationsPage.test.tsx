@@ -40,8 +40,11 @@ describe("Reservations", () => {
       "Tennis Court",
       "Pickleball Court",
       "Main Clubhouse",
-      "Sauna",
+      "Basketball Court",
+      "Lounge Meeting Room",
+      "Conference Room",
     ]);
+    expect(page.textContent).not.toContain("Sauna");
     for (const card of cards) {
       expect(card.querySelector("button")?.textContent).toBe("View Availability");
     }

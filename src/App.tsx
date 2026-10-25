@@ -135,9 +135,19 @@ function IconHouseChimney() {
   return <FaIcon viewBox="0 0 512 512" d="M272 6.1c-9.1-8.2-22.9-8.2-32 0L8 214.1c-9.9 8.8-10.7 24-1.8 33.9s24 10.7 33.9 1.8l8-7.2 0 205.3c0 35.3 28.7 64 64 64l288 0c35.3 0 64-28.7 64-64l0-205.3 8 7.2c9.9 8.8 25 8 33.9-1.8s8-25-1.8-33.9l-40-35.9 0-90.2c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 47.2-144-129.1zM416 199.7L416 448c0 8.8-7.2 16-16 16l-48 0 0-104c0-39.8-32.2-72-72-72l-48 0c-39.8 0-72 32.2-72 72l0 104-48 0c-8.8 0-16-7.2-16-16L96 199.7 256 56.2 416 199.7zM208 464l0-104c0-13.3 10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 104-96 0z" />;
 }
 
-/* fa-hot-tub-person */
-function IconHotTub() {
-  return <FaIcon viewBox="0 0 448 512" d="M240 40c0 13.6 5.8 26.5 15.8 35.6l26.5 23.8c24 21.6 37.7 52.3 37.7 84.6 0 13.3-10.7 24-24 24s-24-10.7-24-24c0-18.7-7.9-36.4-21.8-48.9l-26.5-23.8C203.5 93.1 192 67.2 192 40 192 26.7 202.7 16 216 16s24 10.7 24 24zM48 336l0 112c0 8.8 7.2 16 16 16l40 0 0-144-56 0 0 16zm117.4-64l-39.5-24.7c-7.6-4.8-16.4-7.3-25.4-7.3L64 240c-8.8 0-16 7.2-16 16l0 16 117.4 0zm75-9.7c10.2 6.4 21.9 9.7 33.9 9.7L384 272c35.3 0 64 28.7 64 64l0 112c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l36.5 0c18 0 35.6 5.1 50.9 14.6l89.1 55.7zM274.4 320l-26.4 0 0 144 48 0 0-144-21.6 0zm69.6 0l0 144 40 0c8.8 0 16-7.2 16-16l0-112c0-8.8-7.2-16-16-16l-40 0zm-144 0l-48 0 0 144 48 0 0-144zM328 16c13.3 0 24 10.7 24 24 0 13.6 5.8 26.5 15.8 35.6l26.5 23.8c24 21.6 37.7 52.3 37.7 84.6 0 13.3-10.7 24-24 24s-24-10.7-24-24c0-18.7-7.9-36.4-21.8-48.9l-26.5-23.8C315.5 93.1 304 67.2 304 40 304 26.7 314.7 16 328 16zM64 40a56 56 0 1 1 0 112 56 56 0 1 1 0-112z" />;
+/* fa-basketball */
+function IconBasketball() {
+  return <FaIcon viewBox="0 0 512 512" d="M304 458.4c0-.8 0-1.6 0-2.4 0-33.3 10.7-64.1 28.9-89.2l52.2 52.2c-23.5 18.6-51 32.2-81.1 39.4zM256.2 464l-.2 0c-48.8 0-93.7-16.8-129.1-44.9L256 289.9 298.6 332.6c-26.7 34-42.6 76.9-42.6 123.4 0 2.7 .1 5.3 .2 8zm76.4-165.4L289.9 256 419.1 126.9C447.2 162.3 464 207.2 464 256l0 .2c-2.7-.1-5.3-.2-8-.2-46.6 0-89.4 15.9-123.4 42.6zM458.4 304c-7.1 30.1-20.8 57.7-39.4 81.1l-52.2-52.2c25-18.2 55.9-28.9 89.2-28.9 .8 0 1.6 0 2.4 0zM256 222.1l-42.6-42.6c26.7-34 42.6-76.9 42.6-123.4 0-2.7-.1-5.3-.2-8l.2 0c48.8 0 93.7 16.8 129.1 44.9L256 222.1zm-76.9-76.9L126.9 92.9c23.5-18.6 51-32.2 81.1-39.4 0 .8 0 1.6 0 2.4 0 33.3-10.7 64.1-28.9 89.2zm-33.9 33.9c-25 18.2-55.9 28.9-89.2 28.9-.8 0-1.6 0-2.4 0 7.1-30.1 20.8-57.7 39.4-81.1l52.2 52.2zM48 255.8c2.7 .1 5.3 .2 8 .2 46.6 0 89.4-15.9 123.4-42.6L222.1 256 92.9 385.1C64.8 349.7 48 304.8 48 256l0-.2zM256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512z" />;
+}
+
+/* fa-couch */
+function IconCouch() {
+  return <FaIcon viewBox="0 0 640 512" d="M112 192l0 44.1c17.2 11.5 29.2 30.3 31.6 51.9l352.9 0c2.4-21.6 14.4-40.4 31.6-51.9l0-44.1c0-44.2-35.8-80-80-80l-256 0c-44.2 0-80 35.8-80 80zM64 224.4L64 192c0-70.7 57.3-128 128-128l256 0c70.7 0 128 57.3 128 128l0 32.4c36 4 64 34.5 64 71.6l0 64c0 48.6-39.4 88-88 88L88 448c-48.6 0-88-39.4-88-88l0-64c0-37.1 28-67.6 64-71.6zM48 296l0 64c0 22.1 17.9 40 40 40l464 0c22.1 0 40-17.9 40-40l0-64c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 16c0 13.3-10.7 24-24 24l-400 0c-13.3 0-24-10.7-24-24l0-16c0-13.3-10.7-24-24-24s-24 10.7-24 24z" />;
+}
+
+/* fa-screen-users */
+function IconScreenUsers() {
+  return <FaIcon viewBox="0 0 640 512" d="M576 64c0-35.3-28.7-64-64-64L128 0C92.7 0 64 28.7 64 64l0 148.7c10.1-3 20.9-4.7 32-4.7 5.4 0 10.8 .4 16 1.1L112 64c0-8.8 7.2-16 16-16l384 0c8.8 0 16 7.2 16 16l0 145.1c5.2-.7 10.6-1.1 16-1.1 11.1 0 21.9 1.6 32 4.7L576 64zM160 320a64 64 0 1 0 -128 0 64 64 0 1 0 128 0zM0 480c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32 0-35.3-28.7-64-64-64l-64 0c-35.3 0-64 28.7-64 64zM384 320a64 64 0 1 0 -128 0 64 64 0 1 0 128 0zM224 480c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32 0-35.3-28.7-64-64-64l-64 0c-35.3 0-64 28.7-64 64zm320-96a64 64 0 1 0 0-128 64 64 0 1 0 0 128zm-32 32c-35.3 0-64 28.7-64 64 0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32 0-35.3-28.7-64-64-64l-64 0z" />;
 }
 
 /* fa-chevron-left */
@@ -3098,18 +3108,20 @@ function ArcFormPage({
 /* ─── Reservations ─── */
 const MY_RESERVATIONS: ReadonlyArray<{ amenity: string; date: string; time: string; status: "Confirmed" | "Pending" }> = [
   { amenity: "Tennis Court", date: "Nov 5, 2026", time: "7:00 AM - 8:00 AM", status: "Confirmed" },
-  { amenity: "Sauna", date: "Nov 7, 2026", time: "6:00 PM - 6:45 PM", status: "Confirmed" },
+  { amenity: "Basketball Court", date: "Nov 7, 2026", time: "6:00 PM - 7:00 PM", status: "Confirmed" },
   { amenity: "Pickleball Court", date: "Nov 12, 2026", time: "5:00 PM - 6:00 PM", status: "Pending" },
   { amenity: "Main Clubhouse", date: "Nov 21, 2026", time: "2:00 PM - 6:00 PM", status: "Pending" },
 ];
 
-// The sauna photo is expected at its path; until it exists the card shows a
-// placeholder with the amenity's icon instead of a broken image.
+// If a photo fails to load, the card shows a placeholder with the amenity's
+// icon instead of a broken image.
 const BOOKABLE_AMENITIES: ReadonlyArray<{ slug: string; name: string; image: string; icon: React.ReactNode; details: string[] }> = [
   { slug: "tennis", name: "Tennis Court", image: "/assets/amenity-tennis.jpg", icon: <IconTennisBall />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
   { slug: "pickleball", name: "Pickleball Court", image: "/assets/amenity-pickleball.jpg", icon: <IconPickleball />, details: ["1 hr", "Up to 4 guests", "Daily 7:00 AM – 9:00 PM"] },
   { slug: "clubhouse", name: "Main Clubhouse", image: "/assets/amenity-clubhouse.jpg", icon: <IconHouseChimney />, details: ["4 hr", "Up to 60 guests", "Daily 9:00 AM – 11:00 PM"] },
-  { slug: "sauna", name: "Sauna", image: "/assets/amenity-sauna.jpg", icon: <IconHotTub />, details: ["45 min", "Up to 6 guests", "Daily 6:00 AM – 10:00 PM"] },
+  { slug: "basketball", name: "Basketball Court", image: "/assets/amenity-basketball.jpg", icon: <IconBasketball />, details: ["1 hr", "Up to 10 guests", "Daily 7:00 AM – 9:00 PM"] },
+  { slug: "lounge", name: "Lounge Meeting Room", image: "/assets/amenity-lounge.jpg", icon: <IconCouch />, details: ["2 hr", "Up to 20 guests", "Daily 8:00 AM – 10:00 PM"] },
+  { slug: "conference", name: "Conference Room", image: "/assets/amenity-conference.jpg", icon: <IconScreenUsers />, details: ["2 hr", "Up to 10 guests", "Daily 8:00 AM – 10:00 PM"] },
 ];
 
 function AmenityCardImage({ src, alt, icon }: { src: string; alt: string; icon: React.ReactNode }) {
