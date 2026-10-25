@@ -1,3 +1,5 @@
+> **Superseded.** This describes the original View Transitions-based walkthrough, which has been removed. Current reference: [docs/walkthrough.md](../../walkthrough.md).
+
 # Curated Walkthrough — Design Spec
 
 **Date:** 2026-10-09 (original); **Revised:** 2026-10-14
