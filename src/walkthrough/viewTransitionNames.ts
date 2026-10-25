@@ -28,6 +28,9 @@ export const VT = {
   QuickActionsArcRequestBtn: "wt-quick-actions-arc-request-btn",
   ArcFenceFormLink: "wt-arc-fence-form-link",
   ArcFormPage: "wt-arc-form-page",
+  SmsNotification: "wt-sms-notification",
+  SmsInput: "wt-sms-input",
+  SmsSendBtn: "wt-sms-send-btn",
 } as const
 
 export type VTName = typeof VT[keyof typeof VT]
