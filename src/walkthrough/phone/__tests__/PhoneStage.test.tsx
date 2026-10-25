@@ -204,6 +204,18 @@ describe("PhoneStage", () => {
     expect((q(container, VT.SmsInput) as HTMLInputElement).value).toBe("Hi");
   });
 
+  it("the input grows to fit the whole draft as it is typed", () => {
+    const { container } = renderStage();
+    jump(2);
+    const input = q(container, VT.SmsInput) as HTMLTextAreaElement;
+    expect(input.tagName).toBe("TEXTAREA");
+    Object.defineProperty(input, "scrollHeight", { configurable: true, get: () => (input.value ? 48 : 20) });
+    fireEvent.change(input, { target: { value: SMS_REPLY } });
+    expect(input.style.height).toBe("48px");
+    fireEvent.change(input, { target: { value: "" } });
+    expect(input.style.height).toBe("20px");
+  });
+
   it("send shows typing dots then the answer and releases busy", () => {
     const { container, getByText, queryByText, queryByLabelText } = renderStage();
     jump(3);

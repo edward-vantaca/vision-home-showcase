@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { holdBusy, useCursor } from "../cursor";
 import { VT } from "../viewTransitionNames";
 import PhoneFrame from "./PhoneFrame";
@@ -42,6 +42,7 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const releases = useRef<(() => void)[]>([]);
   const releaseNotification = useRef<() => void>(() => {});
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   // Only the value at landing matters; a ref keeps it out of the effect's deps.
   const swipeIn = useRef(swipeInMs);
   swipeIn.current = swipeInMs;
@@ -122,6 +123,14 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
     });
   };
 
+  // The reply box grows with the draft so the whole message stays visible.
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [phone.draft, phone.view]);
+
   return (
     <PhoneFrame>
       {phone.view === "lock" ? (
@@ -170,9 +179,11 @@ export default function PhoneStage({ swipeInMs = 0 }: { swipeInMs?: number }) {
             )}
           </div>
           <div className="sms-compose">
-            <input
+            <textarea
               data-vt-name={VT.SmsInput}
               className="sms-input"
+              ref={inputRef}
+              rows={1}
               placeholder="Text Message"
               value={phone.draft}
               onChange={(e) => {

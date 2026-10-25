@@ -275,7 +275,9 @@ the overlay from the scene flag) instead of the arrow.
   Leaving the beat or unmounting before the drop cancels it and releases the
   hold.
 - The three cursor beats (1–3) are real clicks: the notification opens the thread, the
-  input is typed into (`typeCps` 24), Send appends the reply. Send holds busy:
+  input is typed into (`typeCps` 24), Send appends the reply. The input is a
+  one-row `<textarea>` that a layout effect resizes to its `scrollHeight` on
+  every draft change, so the whole reply stays visible while it is typed. Send holds busy:
   typing dots at +500 ms, the answer at +1900 ms (`ANSWER_AT_MS`), then the
   hold is released. New bubbles fade up (`sms-bubble-in`, 300 ms).
 - The phone keeps its last state when the scene is left, so it slides out
