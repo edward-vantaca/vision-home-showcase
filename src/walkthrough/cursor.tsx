@@ -158,6 +158,7 @@ export function useCursor() {
     page: scene?.page,
     hudVisible: state.hudVisible,
     direction: state.lastDirection ?? "forward",
+    replayOnAdvance: state.replayOnAdvance ?? false,
     advance: ctx.advance,
     back: ctx.back,
     jumpTo: ctx.jumpTo,
