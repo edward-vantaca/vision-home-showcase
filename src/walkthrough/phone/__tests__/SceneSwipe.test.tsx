@@ -103,16 +103,16 @@ describe("AppSlide / PhoneLayer", () => {
     expect(layer.style.pointerEvents).toBe("none");
   });
 
-  it("the swipe is a 1200ms decelerating slide", () => {
-    expect(SWIPE_MS).toBe(1200);
+  it("the swipe is a 600ms decelerating slide", () => {
+    expect(SWIPE_MS).toBe(600);
     const { wrapper, layer } = renderSwipe();
     jump(1, 1);
     act(() => nav.advance());
     expect(nav.sceneId).toBe(SMS_SCENE_ID);
     expect(wrapper.style.transform).toBe("translateX(-100%)");
-    expect(wrapper.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
+    expect(wrapper.style.transition).toBe("transform 600ms cubic-bezier(0.4,0,0.2,1)");
     expect(layer.style.transform).toBe("translateX(0)");
-    expect(layer.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
+    expect(layer.style.transition).toBe("transform 600ms cubic-bezier(0.4,0,0.2,1)");
     expect(layer.style.visibility).not.toBe("hidden");
   });
 
@@ -129,12 +129,12 @@ describe("AppSlide / PhoneLayer", () => {
     expect(isWalkthroughBusy()).toBe(false);
   });
 
-  it("releases the hold after 1500ms if no transitionend arrives", () => {
+  it("releases the hold after 900ms if no transitionend arrives", () => {
     renderSwipe({ withPhone: false });
     jump(1, 1);
     act(() => nav.advance());
     act(() => {
-      vi.advanceTimersByTime(1499);
+      vi.advanceTimersByTime(899);
     });
     expect(isWalkthroughBusy()).toBe(true);
     act(() => {
@@ -197,7 +197,7 @@ describe("AppSlide / PhoneLayer", () => {
     expect(nav.sceneId).toBe("far");
     jump(2, 0);
     expect(wrapper.style.transform).toBe("translateX(-100%)");
-    expect(wrapper.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
+    expect(wrapper.style.transition).toBe("transform 600ms cubic-bezier(0.4,0,0.2,1)");
     expect(isWalkthroughBusy()).toBe(true);
     endTransform(wrapper);
     expect(isWalkthroughBusy()).toBe(false);
@@ -211,7 +211,7 @@ describe("AppSlide / PhoneLayer", () => {
     expect(nav.sceneId).toBe(SMS_SCENE_ID);
     expect(nav.cursor.beatIndex).toBe(1);
     expect(wrapper.style.transform).toBe("translateX(-100%)");
-    expect(wrapper.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
+    expect(wrapper.style.transition).toBe("transform 600ms cubic-bezier(0.4,0,0.2,1)");
     expect(isWalkthroughBusy()).toBe(true);
     endTransform(wrapper);
     expect(isWalkthroughBusy()).toBe(false);
@@ -225,7 +225,7 @@ describe("AppSlide / PhoneLayer", () => {
     act(() => nav.back());
     expect(nav.sceneId).toBe("before");
     expect(wrapper.style.transform).toBe("translateX(0)");
-    expect(wrapper.style.transition).toBe("transform 1200ms cubic-bezier(0.4,0,0.2,1)");
+    expect(wrapper.style.transition).toBe("transform 600ms cubic-bezier(0.4,0,0.2,1)");
     expect(isWalkthroughBusy()).toBe(true);
     endTransform(wrapper);
     expect(isWalkthroughBusy()).toBe(false);

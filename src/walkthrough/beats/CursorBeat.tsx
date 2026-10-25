@@ -83,6 +83,7 @@ export function CursorBeat({
   onReleaseStage,
   hideStage,
   onHideStage,
+  pointer = "arrow",
 }: {
   to: VTName;
   action?: "click" | "hover" | "drop";
@@ -97,6 +98,8 @@ export function CursorBeat({
   onReleaseStage?: () => void;
   hideStage?: boolean;
   onHideStage?: () => void;
+  /** "touch" draws a fingertip circle centred on the point (phone scenes). */
+  pointer?: "arrow" | "touch";
 }) {
   const cursorRef = useRef<HTMLDivElement>(null);
   const fileCardRef = useRef<HTMLDivElement>(null);
@@ -314,15 +317,19 @@ export function CursorBeat({
       className="wt-cursor"
       style={{ transform: `translate(${start.x}px, ${start.y}px)` }}
     >
-      <svg width="26" height="30" viewBox="0 0 26 30" fill="none" aria-hidden>
-        <path
-          d="M3 2 L3 23 L8.5 18.5 L12 26 L15.5 24.5 L12 17 L19 17 Z"
-          fill="#111"
-          stroke="#fff"
-          strokeWidth={1.6}
-          strokeLinejoin="round"
-        />
-      </svg>
+      {pointer === "touch" ? (
+        <span className="wt-cursor-touch" aria-hidden />
+      ) : (
+        <svg width="26" height="30" viewBox="0 0 26 30" fill="none" aria-hidden>
+          <path
+            d="M3 2 L3 23 L8.5 18.5 L12 26 L15.5 24.5 L12 17 L19 17 Z"
+            fill="#111"
+            stroke="#fff"
+            strokeWidth={1.6}
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
       {carriedFile && (
         <div ref={fileCardRef} className="wt-cursor-file" style={{ opacity: 0 }}>
           <span className="wt-cursor-file-badge">PDF</span>

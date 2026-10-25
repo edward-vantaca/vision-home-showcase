@@ -83,6 +83,19 @@
 }
 
 /* File card a "drop" cursor stop carries in, hanging off the cursor tip. */
+/* Fingertip for phone scenes: a soft circle centred on the cursor's point
+   (the arrow's tip sits at the point instead). The click press scales it. */
+.wt-cursor-touch {
+  position: absolute;
+  top: -19px;
+  left: -19px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.28);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
 .wt-cursor-file {
   position: absolute;
   top: 22px;

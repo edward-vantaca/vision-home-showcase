@@ -177,7 +177,9 @@ Both last only for that beat visit; any cursor/direction change re-holds.
 
 ### Scripted cursor (`beats/CursorBeat.tsx`)
 
-GSAP timeline, portaled to `<body>` at z 400.
+GSAP timeline, portaled to `<body>` at z 400. In a `stage: "phone"` scene the
+pointer is a fingertip circle centred on the point (`pointer="touch"`, chosen by
+the overlay from the scene flag) instead of the arrow.
 
 - **Settle first**: before measuring, waits for every running *finite* CSS/WAAPI
   animation (max 1.5 s); infinite ones (spinners, typing dots) are ignored. This
@@ -240,11 +242,11 @@ GSAP timeline, portaled to `<body>` at z 400.
   however it's reached: →, ←, or a launcher jump from any scene. Only the very
   first render and moves between scenes of the same kind (non-phone ⇄
   non-phone, or within a phone scene) don't animate. App and phone move in
-  lockstep: `transform 1200ms cubic-bezier(0.4,0,0.2,1)` (`SWIPE_MS`), a
+  lockstep: `transform 600ms cubic-bezier(0.4,0,0.2,1)` (`SWIPE_MS`), a
   decelerating curve that starts moving at once so it reads as a slide rather
   than a pop.
 - The swipe holds busy from the scene change until the app wrapper's own
-  `transitionend` for `transform` (1500 ms fallback).
+  `transitionend` for `transform` (900 ms fallback).
 - `PhoneLayer` passes `swipeInMs` (`SWIPE_MS` while swiping in, else 0) to the
   phone, which reads it on landing to time the notification.
 - Outside phone scenes, with no swipe in flight, the wrapper's transform is
@@ -264,7 +266,7 @@ GSAP timeline, portaled to `<body>` at z 400.
   state *before* it so its clicks do the work; otherwise the state after it.
 - Beat 0 arriving forward drops the notification in by itself
   (`sms-notification-in`, 500 ms overshoot): `NOTIFICATION_DELAY_MS` (500 ms)
-  after the swipe lands, i.e. `SWIPE_MS + 500` = 1700 ms after any arrival
+  after the swipe lands, i.e. `SWIPE_MS + 500` = 1100 ms after any arrival
   from another scene (all of which swipe), or 500 ms after a jump within the
   scene. Busy is held from landing
   until its `animationend` (700 ms fallback after the drop), so keys stay

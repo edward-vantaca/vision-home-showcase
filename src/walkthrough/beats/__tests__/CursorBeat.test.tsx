@@ -45,6 +45,20 @@ describe("CursorBeat", () => {
     vi.restoreAllMocks();
   });
 
+  it("draws an arrow pointer by default", () => {
+    render(<CursorBeat to={TARGET} />);
+    const cursor = document.querySelector('[data-testid="cursor-beat"]');
+    expect(cursor?.querySelector("svg")).not.toBeNull();
+    expect(cursor?.querySelector(".wt-cursor-touch")).toBeNull();
+  });
+
+  it("draws a touch circle instead of the arrow with pointer='touch'", () => {
+    render(<CursorBeat to={TARGET} pointer="touch" />);
+    const cursor = document.querySelector('[data-testid="cursor-beat"]');
+    expect(cursor?.querySelector(".wt-cursor-touch")).not.toBeNull();
+    expect(cursor?.querySelector("svg")).toBeNull();
+  });
+
   it("runs on the next frame when document.getAnimations is unavailable (jsdom)", async () => {
     const timeline = vi.spyOn(gsap, "timeline");
     render(<CursorBeat to={TARGET} />);

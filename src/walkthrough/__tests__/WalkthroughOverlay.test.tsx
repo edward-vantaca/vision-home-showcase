@@ -10,7 +10,30 @@ const seqHighlight: Sequence = [
   { id: "s", page: "dashboard", beats: [{ kind: "highlight", target: VT.BoardTaskCurrent, caption: "hello" }] },
 ];
 
+const cursorScene = (stage?: "phone"): Sequence => [
+  { id: "s", page: "dashboard", stage, beats: [{ kind: "cursor", to: VT.SmsSendBtn, action: "click" }] },
+];
+
 describe("WalkthroughOverlay", () => {
+  it("uses the touch pointer for cursor beats in a phone scene", () => {
+    render(
+      <WalkthroughProvider sequence={cursorScene("phone")}>
+        <WalkthroughOverlay />
+      </WalkthroughProvider>,
+    );
+    expect(document.querySelector(".wt-cursor-touch")).not.toBeNull();
+  });
+
+  it("uses the arrow pointer for cursor beats elsewhere", () => {
+    render(
+      <WalkthroughProvider sequence={cursorScene()}>
+        <WalkthroughOverlay />
+      </WalkthroughProvider>,
+    );
+    expect(document.querySelector('[data-testid="cursor-beat"] svg')).not.toBeNull();
+    expect(document.querySelector(".wt-cursor-touch")).toBeNull();
+  });
+
   it("renders the backdrop with data-beat-kind='idle' for idle beat", () => {
     render(
       <WalkthroughProvider sequence={seqIdle}>

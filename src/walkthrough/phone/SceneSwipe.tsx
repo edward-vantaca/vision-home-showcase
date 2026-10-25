@@ -3,9 +3,9 @@ import { holdBusy, useCursor } from "../cursor";
 import PhoneStage from "./PhoneStage";
 
 /** How long the app ⇄ phone swipe takes, both ways. */
-export const SWIPE_MS = 1200;
+export const SWIPE_MS = 600;
 const SWIPE_TRANSITION = `transform ${SWIPE_MS}ms cubic-bezier(0.4,0,0.2,1)`;
-const SWIPE_FALLBACK_MS = 1500;
+const SWIPE_FALLBACK_MS = 900;
 
 /**
  * Where the app sits and whether the move animates. Entering or leaving a
