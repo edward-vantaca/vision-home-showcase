@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { History, ChevronRight, Paperclip, ArrowUp, Info, ChevronsRight, X } from "lucide-react";
 import { VT } from "../walkthrough/viewTransitionNames";
 import { DROP_FILE_EVENT } from "../walkthrough/dropFile";
+import { holdBusy } from "../walkthrough/cursor";
 
 // Bind useGSAP to this module's gsap instance. Under Vitest, @gsap/react's CJS
 // build can load a second copy of gsap, so without this its context would not
@@ -122,6 +123,9 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
   const scriptTimeoutsRef = useRef(new Set<ReturnType<typeof setTimeout>>());
   const scriptIntervalsRef = useRef(new Set<ReturnType<typeof setInterval>>());
   const stopTypingRef = useRef<(() => void) | null>(null);
+  // Holds the walkthrough busy (presenter keys ignored) from Send until the
+  // scripted chat has finished streaming its last message.
+  const releaseScriptBusyRef = useRef<(() => void) | null>(null);
   // Pending deferred reset after leaving the scene (see the !focused effect).
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // The thread's fade-out once that deferred reset fires; non-null while in flight.
@@ -168,6 +172,12 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     scriptIntervalsRef.current.forEach((id) => clearInterval(id));
     scriptIntervalsRef.current.clear();
     stopTypingRef.current = null;
+    releaseScriptBusy();
+  }
+
+  function releaseScriptBusy() {
+    releaseScriptBusyRef.current?.();
+    releaseScriptBusyRef.current = null;
   }
 
   function cancelPendingReset(): boolean {
@@ -382,7 +392,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
           later(() => setAgentTyping(true), 500);
           later(() => {
             setAgentTyping(false);
-            typeAgentMessage("Ok, I'll get started. Just a moment.");
+            typeAgentMessage("Ok, I'll get started. Just a moment.", releaseScriptBusy);
           }, 1500);
         }, 500);
       }
@@ -396,6 +406,8 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false }: Prop
     if (morphRef.current) return;
     const text = input.trim();
     if (!text) return;
+    releaseScriptBusy();
+    releaseScriptBusyRef.current = holdBusy();
     // Morph welcome/questions out, slide the input down to the chat footer,
     // and fade the first user bubble in — all in one browser-driven transition
     // so the layout change feels like one motion instead of a jump.
