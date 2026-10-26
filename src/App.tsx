@@ -1888,6 +1888,7 @@ function ParticipationBar({ voted, total, uxId = "participation-bar" }: { voted:
 }
 
 function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+  const loading = usePageLoad();
   const [ballotSent, setBallotSent] = useState(false);
   const [consentNotices, setConsentNotices] = useState(false);
   const [consentVoting, setConsentVoting] = useState(false);
@@ -1923,379 +1924,385 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0 rounded-[6px]">
+      {loading ? (
+        <PageLoader uxId="elections-loader" />
+      ) : (
+        <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0 rounded-[6px] animate-[page-content-in_300ms_ease-out]">
 
-        {/* Header — desktop only */}
-        <div className="hidden md:flex items-center justify-between w-full shrink-0">
-          <div className="flex flex-col flex-1 min-w-0">
-            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Elections
-            </p>
-            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Cast your vote and make your voice heard in the community
-            </p>
-          </div>
-          <AddressCard />
-        </div>
-
-
-        {/* Electronic Consent modal */}
-        {showConsentModal && (
-          <div
-            data-ux-id="elections-consent-modal-backdrop"
-            className="fixed inset-0 z-[195] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
-          >
-            <div data-ux-id="elections-consent-modal" className="w-full max-w-[560px] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] flex flex-col gap-[0px] overflow-hidden">
-              {/* Modal header */}
-              <div className="px-[28px] pt-[26px] pb-[20px] flex flex-col gap-[2px]">
-                <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Upcoming – 2026 Board of Directors Election
-                </p>
-                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Voting open Aug 28 – Sep 15, 2026
-                </p>
-              </div>
-              <div className="w-full h-px bg-[#e2eaf0]" />
-              {/* Modal body */}
-              <div className="px-[28px] py-[22px] flex flex-col gap-[18px]">
-                <div className="flex flex-col gap-[4px]">
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Electronic Consent
-                  </p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Your association requires consent to send election notices and accept votes electronically.
-                  </p>
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[12px] uppercase tracking-wide mt-[6px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Review &amp; Agree
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-[14px]">
-                  <label className="flex items-start gap-[14px] cursor-pointer group">
-                    <div
-                      onClick={() => setConsentNotices(v => !v)}
-                      data-ux-id="elections-consent-notices-checkbox"
-                      className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentNotices ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
-                    >
-                      {consentNotices && (
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-[2px] min-w-0" onClick={() => setConsentNotices(v => !v)}>
-                      <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        I agree to receive legal notices and documents electronically.
-                      </p>
-                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        Receive meeting notices, agendas, and ballots via email instead of postal mail.
-                      </p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-[14px] cursor-pointer group">
-                    <div
-                      onClick={() => setConsentVoting(v => !v)}
-                      data-ux-id="elections-consent-voting-checkbox"
-                      className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentVoting ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
-                    >
-                      {consentVoting && (
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-[2px] min-w-0" onClick={() => setConsentVoting(v => !v)}>
-                      <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        I agree to vote and submit proxies electronically for future elections.
-                      </p>
-                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        Cast your official ballot online. Your vote is encrypted and verified by a neutral third-party.
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
-                <div className="pt-[2px]">
-                  <button
-                    onClick={() => { setConsentSaved(true); setShowConsentModal(false); setActiveTab("proxy"); }}
-                    data-ux-id="elections-consent-submit-button"
-                    className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
-                    style={{ fontVariationSettings: '"opsz" 14' }}
-                  >
-                    Yes, I Consent
-                  </button>
-                </div>
-              </div>
+          {/* Header — desktop only */}
+          <div className="hidden md:flex items-center justify-between w-full shrink-0">
+            <div className="flex flex-col flex-1 min-w-0">
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Elections
+              </p>
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Cast your vote and make your voice heard in the community
+              </p>
             </div>
+            <AddressCard />
           </div>
-        )}
 
-        {/* Nominations tab */}
-        {activeTab === "nominations" && (
-          <div data-ux-id="elections-nominations-card" className="bg-white border border-[#d9e7f0] rounded-[18px] w-full flex items-center justify-between px-[24px] py-[18px] shrink-0">
-            <div className="flex flex-col gap-[10px] min-w-0">
-              <div className="flex flex-col w-full">
-                <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Want to run in the upcoming elections?
-                </p>
-                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[14px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Unit 120A – Waterfront
-                </p>
-              </div>
-              <div className="flex flex-col w-full">
-                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Lakestone HOA - Consent Campaign 2026
-                </p>
-                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>End Date:</span>
-                  {" December 18, 2026 7:00PM ET"}
-                </p>
-              </div>
-            </div>
-            <div className="shrink-0 pl-[24px]">
-              <button data-ux-id="elections-nominations-submit-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Submit Nomination
-              </button>
-            </div>
-          </div>
-        )}
 
-        {/* Proxy/Ballot/Meeting tab: open + upcoming elections */}
-        {activeTab === "proxy" && <><div data-ux-id="elections-ballot-card" className="border border-[#e2eaf0] rounded-[14px] md:rounded-[18px] w-full flex flex-col md:flex-row md:items-center justify-between gap-[14px] md:gap-[26px] px-[16px] md:px-[26px] py-[16px] md:py-[18px] bg-white shrink-0">
-          <div className="flex flex-col gap-[3px] shrink-0 min-w-0">
-            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-              2026 Board of Directors Election – Submit your ballot
-            </p>
-            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Voting closes on September 15, 2026 at 5:00PM
-            </p>
-          </div>
-          {!ballotSent && (
-            <button
-              onClick={() => setBallotSent(true)}
-              data-ux-id="elections-vote-now-button"
-              className="shrink-0 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
-              style={{ fontVariationSettings: '"opsz" 14' }}
+          {/* Electronic Consent modal */}
+          {showConsentModal && (
+            <div
+              data-ux-id="elections-consent-modal-backdrop"
+              className="fixed inset-0 z-[195] flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-[16px]"
             >
-              Vote Now
-            </button>
-          )}
-          {ballotSent && (
-            <div data-ux-id="elections-ballot-sent-confirmation" className="flex items-start justify-between gap-[12px] bg-white border border-[#e2eaf0] rounded-[12px] px-[14px] py-[12px] flex-1 min-w-0">
-              <div className="flex items-start gap-[12px] min-w-0">
-                <div className="w-[34px] h-[34px] rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#16a34a"/>
-                  </svg>
-                </div>
-                <div className="flex flex-col gap-[2px] min-w-0">
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Check Your Email
+              <div data-ux-id="elections-consent-modal" className="w-full max-w-[560px] bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] flex flex-col gap-[0px] overflow-hidden">
+                {/* Modal header */}
+                <div className="px-[28px] pt-[26px] pb-[20px] flex flex-col gap-[2px]">
+                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[17px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Upcoming – 2026 Board of Directors Election
                   </p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[12px] leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    A secure voting link has been sent to <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold opacity-100">username@email.com</span>. Open the email to cast your ballot before September 15, 2026 at 5:00PM.
+                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Voting open Aug 28 – Sep 15, 2026
                   </p>
-                  <button
-                    data-ux-id="elections-ballot-resend-button"
-                    className="self-start mt-[6px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[12px] hover:underline transition-opacity"
-                    style={{ fontVariationSettings: '"opsz" 14' }}
-                  >
-                    Resend
-                  </button>
                 </div>
-              </div>
-              <button
-                onClick={() => setBallotSent(false)}
-                data-ux-id="elections-ballot-dismiss-button"
-                className="shrink-0 text-[#262630] opacity-30 hover:opacity-60 transition-opacity mt-[1px]"
-                aria-label="Dismiss"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
-            </div>
-          )}
-        </div></>}
+                <div className="w-full h-px bg-[#e2eaf0]" />
+                {/* Modal body */}
+                <div className="px-[28px] py-[22px] flex flex-col gap-[18px]">
+                  <div className="flex flex-col gap-[4px]">
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      Electronic Consent
+                    </p>
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      Your association requires consent to send election notices and accept votes electronically.
+                    </p>
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[12px] uppercase tracking-wide mt-[6px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      Review &amp; Agree
+                    </p>
+                  </div>
 
-        {/* Campaign cards — open/upcoming: Proxy tab only */}
-        {activeTab === "proxy" && campaigns.filter(c => c.status !== "closed").map((campaign, campaignIdx) => {
-          const isCollapsed = collapsedCards.has(campaign.id);
-          return (
-          <Fragment key={campaign.id}>
-          <div data-ux-id={`election-campaign-${campaign.id}`} className="w-full bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] shrink-0">
-            <div className={`px-[16px] md:px-[26px] pt-[20px] md:pt-[24px] flex flex-col gap-[16px] md:gap-[20px] ${isCollapsed ? "pb-[20px] md:pb-[24px]" : "pb-[24px] md:pb-[28px]"}`}>
-              {/* Header */}
-              <div className="flex flex-col gap-[6px]">
-                <div className="flex items-center gap-[10px]">
-                  <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    Voting {campaign.status === "upcoming" ? "opens" : "open"} {campaign.votingPeriod}
-                  </span>
-                  {campaign.status === "open" ? (
-                    <div className="bg-[#dcfce7] rounded-[50px] px-[12px] py-[5px] flex items-center shrink-0">
-                      <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#166534] text-[13px] leading-[19.5px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Open</span>
-                    </div>
-                  ) : campaign.status === "upcoming" ? (
-                    <div className="bg-[#fef3c7] rounded-[50px] px-[12px] py-[5px] flex items-center shrink-0">
-                      <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#92400e] text-[13px] leading-[19.5px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Upcoming</span>
-                    </div>
-                  ) : (
-                    <div className="bg-[#dfeaf0] rounded-[50px] px-[12px] py-[5px] flex items-center shrink-0">
-                      <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px] leading-[19.5px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Closed</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-start justify-between gap-[12px]">
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal flex-1 min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    {campaign.title}
-                  </p>
-                  <CollapseButton collapsed={isCollapsed} onToggle={() => toggleCard(campaign.id)} uxId={`election-campaign-${campaign.id}-collapse-button`} />
-                </div>
-                {!isCollapsed && (
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-65 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                    {campaign.description}
-                  </p>
-                )}
-              </div>
-
-              {!isCollapsed && campaign.participation && (
-                <ParticipationBar voted={campaign.participation.voted} total={campaign.participation.total} uxId={`election-campaign-${campaign.id}-participation`} />
-              )}
-
-              {/* Board election: candidate grid */}
-              {!isCollapsed && campaign.candidates && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px]">
-                  {campaign.candidates.map((c) => (
-                    <div key={c.name} data-ux-id={`election-candidate-${c.name.toLowerCase().replace(/\s+/g, "-")}`} className="border border-[#e8eff5] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
-                      <div className="flex items-center gap-[14px]">
-                        <div
-                          className="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 text-white font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
-                          style={{ backgroundColor: c.color, fontVariationSettings: '"opsz" 14' }}
-                        >
-                          {c.initials}
-                        </div>
-                        <div className="flex flex-col gap-[2px] min-w-0">
-                          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-                            {c.name}
-                          </p>
-                          <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                            {c.role}
-                          </p>
-                        </div>
+                  <div className="flex flex-col gap-[14px]">
+                    <label className="flex items-start gap-[14px] cursor-pointer group">
+                      <div
+                        onClick={() => setConsentNotices(v => !v)}
+                        data-ux-id="elections-consent-notices-checkbox"
+                        className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentNotices ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
+                      >
+                        {consentNotices && (
+                          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        )}
                       </div>
-                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-75 text-[13px] leading-[1.6]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        {c.bio}
-                      </p>
-                      <button data-ux-id={`election-candidate-${c.name.toLowerCase().replace(/\s+/g, "-")}-bio-button`} className="self-start font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[13px] hover:underline" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        Read full bio
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Election progress tracker — board campaign only */}
-              {!isCollapsed && campaign.type === "board" && (
-                <div data-ux-id={`election-campaign-${campaign.id}-progress-tracker`} className="border-t border-[#e8eff5] pt-[20px] flex flex-col gap-[16px]">
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Election Progress</p>
-                  <div className="flex items-start">
-                    {[
-                      { label: "Nominations", date: "Jul 1–15", state: "done" },
-                      { label: "Notices", date: "Jul 16–28", state: "done" },
-                      { label: "Voting", date: "Aug 28–Sep 15", state: "current" },
-                      { label: "Results", date: "Sep 20", state: "upcoming" },
-                    ].map((step, i, arr) => (
-                      <div key={step.label} className="flex items-start flex-1 min-w-0">
-                        <div className="flex flex-col items-center flex-1 min-w-0">
-                          <div className="flex items-center w-full">
-                            <div className={`flex-1 h-[2px] ${i === 0 ? "opacity-0" : arr[i - 1].state === "done" ? "bg-[#247ae4]" : "bg-[#e2eaf0]"}`} />
-                            {step.state === "done" ? (
-                              <div className="w-[26px] h-[26px] rounded-full bg-[#247ae4] flex items-center justify-center shrink-0">
-                                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                              </div>
-                            ) : step.state === "current" ? (
-                              <div className="w-[26px] h-[26px] rounded-full bg-[#247ae4] flex items-center justify-center shrink-0 ring-[3px] ring-[#bfdbfe]">
-                                <div className="w-[9px] h-[9px] rounded-full bg-white" />
-                              </div>
-                            ) : (
-                              <div className="w-[26px] h-[26px] rounded-full bg-white border-2 border-[#e2eaf0] shrink-0" />
-                            )}
-                            <div className={`flex-1 h-[2px] ${i === arr.length - 1 ? "opacity-0" : step.state === "done" ? "bg-[#247ae4]" : "bg-[#e2eaf0]"}`} />
-                          </div>
-                          <div className="flex flex-col items-center gap-[4px] mt-[8px] px-[4px] text-center">
-                            <span className={`font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[10px] md:text-[12px] leading-tight text-center ${step.state === "upcoming" ? "text-[#262630] opacity-35" : "text-[#262630]"}`} style={{ fontVariationSettings: '"opsz" 14' }}>
-                              {step.label}
-                            </span>
-                            {step.state !== "current" && (
-                              <span className={`font-['DM_Sans:Regular',sans-serif] font-normal text-[10px] md:text-[11px] text-center ${step.state === "upcoming" ? "text-[#262630] opacity-30" : "text-[#262630] opacity-55"}`} style={{ fontVariationSettings: '"opsz" 14' }}>
-                                {step.date}
-                              </span>
-                            )}
-                            {step.state === "current" && (
-                              <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[11px] text-[#247ae4] bg-[#eff6ff] rounded-[50px] px-[7px] py-[2px]" style={{ fontVariationSettings: '"opsz" 14' }}>In progress</span>
-                            )}
-                          </div>
-                        </div>
+                      <div className="flex flex-col gap-[2px] min-w-0" onClick={() => setConsentNotices(v => !v)}>
+                        <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          I agree to receive legal notices and documents electronically.
+                        </p>
+                        <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          Receive meeting notices, agendas, and ballots via email instead of postal mail.
+                        </p>
                       </div>
-                    ))}
+                    </label>
+
+                    <label className="flex items-start gap-[14px] cursor-pointer group">
+                      <div
+                        onClick={() => setConsentVoting(v => !v)}
+                        data-ux-id="elections-consent-voting-checkbox"
+                        className={`mt-[1px] w-[20px] h-[20px] rounded-[5px] border-2 shrink-0 flex items-center justify-center transition-colors ${consentVoting ? "bg-[#247ae4] border-[#247ae4]" : "bg-white border-[#c8d9e6] group-hover:border-[#247ae4]"}`}
+                      >
+                        {consentVoting && (
+                          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-[2px] min-w-0" onClick={() => setConsentVoting(v => !v)}>
+                        <p className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          I agree to vote and submit proxies electronically for future elections.
+                        </p>
+                        <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-55 text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          Cast your official ballot online. Your vote is encrypted and verified by a neutral third-party.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="pt-[2px]">
+                    <button
+                      onClick={() => { setConsentSaved(true); setShowConsentModal(false); setActiveTab("proxy"); }}
+                      data-ux-id="elections-consent-submit-button"
+                      className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
+                      style={{ fontVariationSettings: '"opsz" 14' }}
+                    >
+                      Yes, I Consent
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              {/* Bylaw / budget: options list */}
-              {!isCollapsed && campaign.options && (
-                <div className="flex flex-col gap-[10px]">
-                  {campaign.options.map((opt, idx) => (
-                    <div key={opt.label} data-ux-id={`election-campaign-${campaign.id}-option-${opt.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border border-[#e8eff5] rounded-[12px] px-[18px] py-[14px] flex items-start gap-[14px]">
-                      <div className="mt-[1px] w-[20px] h-[20px] rounded-full bg-[#f0f5fa] flex items-center justify-center shrink-0">
-                        <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] opacity-60 text-[11px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                          {idx + 1}
-                        </span>
+          {/* Nominations tab */}
+          {activeTab === "nominations" && (
+            <div data-ux-id="elections-nominations-card" className="bg-white border border-[#d9e7f0] rounded-[18px] w-full flex items-center justify-between px-[24px] py-[18px] shrink-0">
+              <div className="flex flex-col gap-[10px] min-w-0">
+                <div className="flex flex-col w-full">
+                  <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[16px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Want to run in the upcoming elections?
+                  </p>
+                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[14px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Unit 120A – Waterfront
+                  </p>
+                </div>
+                <div className="flex flex-col w-full">
+                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Lakestone HOA - Consent Campaign 2026
+                  </p>
+                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[22.5px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>End Date:</span>
+                    {" December 18, 2026 7:00PM ET"}
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 pl-[24px]">
+                <button data-ux-id="elections-nominations-submit-button" className="bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[8px] px-[24px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Submit Nomination
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Proxy/Ballot/Meeting tab: open + upcoming elections */}
+          {activeTab === "proxy" && <><div data-ux-id="elections-ballot-card" className="border border-[#e2eaf0] rounded-[14px] md:rounded-[18px] w-full flex flex-col md:flex-row md:items-center justify-between gap-[14px] md:gap-[26px] px-[16px] md:px-[26px] py-[16px] md:py-[18px] bg-white shrink-0">
+            <div className="flex flex-col gap-[3px] shrink-0 min-w-0">
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                2026 Board of Directors Election – Submit your ballot
+              </p>
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Voting closes on September 15, 2026 at 5:00PM
+              </p>
+            </div>
+            {!ballotSent && (
+              <button
+                onClick={() => setBallotSent(true)}
+                data-ux-id="elections-vote-now-button"
+                className="shrink-0 bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              >
+                Vote Now
+              </button>
+            )}
+            {ballotSent && (
+              <div data-ux-id="elections-ballot-sent-confirmation" className="flex items-start justify-between gap-[12px] bg-white border border-[#e2eaf0] rounded-[12px] px-[14px] py-[12px] flex-1 min-w-0">
+                <div className="flex items-start gap-[12px] min-w-0">
+                  <div className="w-[34px] h-[34px] rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                      <path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#16a34a"/>
+                    </svg>
+                  </div>
+                  <div className="flex flex-col gap-[2px] min-w-0">
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      Check Your Email
+                    </p>
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[12px] leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      A secure voting link has been sent to <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold opacity-100">username@email.com</span>. Open the email to cast your ballot before September 15, 2026 at 5:00PM.
+                    </p>
+                    <button
+                      data-ux-id="elections-ballot-resend-button"
+                      className="self-start mt-[6px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[12px] hover:underline transition-opacity"
+                      style={{ fontVariationSettings: '"opsz" 14' }}
+                    >
+                      Resend
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBallotSent(false)}
+                  data-ux-id="elections-ballot-dismiss-button"
+                  className="shrink-0 text-[#262630] opacity-30 hover:opacity-60 transition-opacity mt-[1px]"
+                  aria-label="Dismiss"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div></>}
+
+          {/* Campaign cards — open/upcoming: Proxy tab only */}
+          {activeTab === "proxy" && campaigns.filter(c => c.status !== "closed").map((campaign, campaignIdx) => {
+            const isCollapsed = collapsedCards.has(campaign.id);
+            return (
+            <Fragment key={campaign.id}>
+            <div data-ux-id={`election-campaign-${campaign.id}`} className="w-full bg-white rounded-[18px] border border-[#d9e7f0] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] shrink-0">
+              <div className={`px-[16px] md:px-[26px] pt-[20px] md:pt-[24px] flex flex-col gap-[16px] md:gap-[20px] ${isCollapsed ? "pb-[20px] md:pb-[24px]" : "pb-[24px] md:pb-[28px]"}`}>
+                {/* Header */}
+                <div className="flex flex-col gap-[6px]">
+                  <div className="flex items-center gap-[10px]">
+                    <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      Voting {campaign.status === "upcoming" ? "opens" : "open"} {campaign.votingPeriod}
+                    </span>
+                    {campaign.status === "open" ? (
+                      <div className="bg-[#dcfce7] rounded-[50px] px-[12px] py-[5px] flex items-center shrink-0">
+                        <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#166534] text-[13px] leading-[19.5px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Open</span>
                       </div>
-                      <div className="flex flex-col gap-[2px] min-w-0">
-                        <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                          {opt.label}
-                        </p>
-                        <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                          {opt.description}
-                        </p>
+                    ) : campaign.status === "upcoming" ? (
+                      <div className="bg-[#fef3c7] rounded-[50px] px-[12px] py-[5px] flex items-center shrink-0">
+                        <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#92400e] text-[13px] leading-[19.5px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Upcoming</span>
                       </div>
-                    </div>
-                  ))}
-                  {campaign.status === "upcoming" && (
-                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-40 text-[12px] mt-[2px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                      Voting opens {campaign.votingPeriod.split("–")[0].trim()}
+                    ) : (
+                      <div className="bg-[#dfeaf0] rounded-[50px] px-[12px] py-[5px] flex items-center shrink-0">
+                        <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px] leading-[19.5px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Closed</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-start justify-between gap-[12px]">
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal flex-1 min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      {campaign.title}
+                    </p>
+                    <CollapseButton collapsed={isCollapsed} onToggle={() => toggleCard(campaign.id)} uxId={`election-campaign-${campaign.id}-collapse-button`} />
+                  </div>
+                  {!isCollapsed && (
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-65 text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                      {campaign.description}
                     </p>
                   )}
                 </div>
-              )}
+
+                {!isCollapsed && campaign.participation && (
+                  <ParticipationBar voted={campaign.participation.voted} total={campaign.participation.total} uxId={`election-campaign-${campaign.id}-participation`} />
+                )}
+
+                {/* Board election: candidate grid */}
+                {!isCollapsed && campaign.candidates && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px]">
+                    {campaign.candidates.map((c) => (
+                      <div key={c.name} data-ux-id={`election-candidate-${c.name.toLowerCase().replace(/\s+/g, "-")}`} className="border border-[#e8eff5] rounded-[14px] p-[20px] flex flex-col gap-[14px]">
+                        <div className="flex items-center gap-[14px]">
+                          <div
+                            className="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 text-white font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]"
+                            style={{ backgroundColor: c.color, fontVariationSettings: '"opsz" 14' }}
+                          >
+                            {c.initials}
+                          </div>
+                          <div className="flex flex-col gap-[2px] min-w-0">
+                            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+                              {c.name}
+                            </p>
+                            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                              {c.role}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-75 text-[13px] leading-[1.6]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          {c.bio}
+                        </p>
+                        <button data-ux-id={`election-candidate-${c.name.toLowerCase().replace(/\s+/g, "-")}-bio-button`} className="self-start font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] text-[13px] hover:underline" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          Read full bio
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Election progress tracker — board campaign only */}
+                {!isCollapsed && campaign.type === "board" && (
+                  <div data-ux-id={`election-campaign-${campaign.id}-progress-tracker`} className="border-t border-[#e8eff5] pt-[20px] flex flex-col gap-[16px]">
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Election Progress</p>
+                    <div className="flex items-start">
+                      {[
+                        { label: "Nominations", date: "Jul 1–15", state: "done" },
+                        { label: "Notices", date: "Jul 16–28", state: "done" },
+                        { label: "Voting", date: "Aug 28–Sep 15", state: "current" },
+                        { label: "Results", date: "Sep 20", state: "upcoming" },
+                      ].map((step, i, arr) => (
+                        <div key={step.label} className="flex items-start flex-1 min-w-0">
+                          <div className="flex flex-col items-center flex-1 min-w-0">
+                            <div className="flex items-center w-full">
+                              <div className={`flex-1 h-[2px] ${i === 0 ? "opacity-0" : arr[i - 1].state === "done" ? "bg-[#247ae4]" : "bg-[#e2eaf0]"}`} />
+                              {step.state === "done" ? (
+                                <div className="w-[26px] h-[26px] rounded-full bg-[#247ae4] flex items-center justify-center shrink-0">
+                                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                </div>
+                              ) : step.state === "current" ? (
+                                <div className="w-[26px] h-[26px] rounded-full bg-[#247ae4] flex items-center justify-center shrink-0 ring-[3px] ring-[#bfdbfe]">
+                                  <div className="w-[9px] h-[9px] rounded-full bg-white" />
+                                </div>
+                              ) : (
+                                <div className="w-[26px] h-[26px] rounded-full bg-white border-2 border-[#e2eaf0] shrink-0" />
+                              )}
+                              <div className={`flex-1 h-[2px] ${i === arr.length - 1 ? "opacity-0" : step.state === "done" ? "bg-[#247ae4]" : "bg-[#e2eaf0]"}`} />
+                            </div>
+                            <div className="flex flex-col items-center gap-[4px] mt-[8px] px-[4px] text-center">
+                              <span className={`font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[10px] md:text-[12px] leading-tight text-center ${step.state === "upcoming" ? "text-[#262630] opacity-35" : "text-[#262630]"}`} style={{ fontVariationSettings: '"opsz" 14' }}>
+                                {step.label}
+                              </span>
+                              {step.state !== "current" && (
+                                <span className={`font-['DM_Sans:Regular',sans-serif] font-normal text-[10px] md:text-[11px] text-center ${step.state === "upcoming" ? "text-[#262630] opacity-30" : "text-[#262630] opacity-55"}`} style={{ fontVariationSettings: '"opsz" 14' }}>
+                                  {step.date}
+                                </span>
+                              )}
+                              {step.state === "current" && (
+                                <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[11px] text-[#247ae4] bg-[#eff6ff] rounded-[50px] px-[7px] py-[2px]" style={{ fontVariationSettings: '"opsz" 14' }}>In progress</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bylaw / budget: options list */}
+                {!isCollapsed && campaign.options && (
+                  <div className="flex flex-col gap-[10px]">
+                    {campaign.options.map((opt, idx) => (
+                      <div key={opt.label} data-ux-id={`election-campaign-${campaign.id}-option-${opt.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border border-[#e8eff5] rounded-[12px] px-[18px] py-[14px] flex items-start gap-[14px]">
+                        <div className="mt-[1px] w-[20px] h-[20px] rounded-full bg-[#f0f5fa] flex items-center justify-center shrink-0">
+                          <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] opacity-60 text-[11px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                            {idx + 1}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-[2px] min-w-0">
+                          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                            {opt.label}
+                          </p>
+                          <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-60 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                            {opt.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {campaign.status === "upcoming" && (
+                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-40 text-[12px] mt-[2px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        Voting opens {campaign.votingPeriod.split("–")[0].trim()}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          </Fragment>
-          );
-        })}
+            </Fragment>
+            );
+          })}
 
-        {/* Results tab: closed election card */}
-        {activeTab === "results" && <CompletedElectionCard collapsed={collapsedCards.has("completed-2025")} onToggle={() => toggleCard("completed-2025")} />}
+          {/* Results tab: closed election card */}
+          {activeTab === "results" && <CompletedElectionCard collapsed={collapsedCards.has("completed-2025")} onToggle={() => toggleCard("completed-2025")} />}
 
-      </div>
+        </div>
+      )}
 
       {/* Floating elections tab pill — bottom-left */}
-      <div
-        data-ux-id="elections-tab-toggle"
-        className="fixed bottom-6 left-6 z-50 flex items-center bg-[#1a1f2e] rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-[5px] gap-[2px]"
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            data-ux-id={`elections-tab-${tab.id}`}
-            className={`px-[14px] py-[8px] rounded-full text-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === tab.id ? "bg-[#2d3550] text-white" : "text-[#8a95ab] hover:text-white"
-            }`}
-            style={{ fontVariationSettings: '"opsz" 14' }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!loading && (
+        <div
+          data-ux-id="elections-tab-toggle"
+          className="fixed bottom-6 left-6 z-50 flex items-center bg-[#1a1f2e] rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-[5px] gap-[2px]"
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              data-ux-id={`elections-tab-${tab.id}`}
+              className={`px-[14px] py-[8px] rounded-full text-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                activeTab === tab.id ? "bg-[#2d3550] text-white" : "text-[#8a95ab] hover:text-white"
+              }`}
+              style={{ fontVariationSettings: '"opsz" 14' }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2682,6 +2689,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 /* ─── ARC Form Page ─── */
 /* ─── Offers Page ─── */
 function OffersPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+  const loading = usePageLoad();
   const [activeTab, setActiveTab] = useState<"home" | "recommended" | "tickets" | "travel">("home");
   const [query, setQuery] = useState("");
 
@@ -2718,148 +2726,152 @@ function OffersPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex flex-col gap-[24px] md:gap-[28px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0">
-        {/* Header */}
-        <div className="flex flex-col gap-[4px]">
-          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-            Offers
-          </p>
-          <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-            Member discounts powered by PerkSpot
-          </p>
-        </div>
-
-        {/* PerkSpot card */}
-        <div data-ux-id="offers-perkspot-card" className="rounded-[18px] overflow-hidden shadow-[0_2px_18px_rgba(18,17,48,0.07)] bg-white">
-          {/* Hero */}
-          <div className="relative overflow-hidden">
-            <div className="bg-[#1a1b4b] text-center px-[16px] py-[10px]">
-              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-white text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                Your HOA has partnered with PerkSpot to bring you exclusive deals.
-              </p>
-            </div>
-            <div className="relative">
-              <div
-                className="absolute inset-0"
-                aria-hidden="true"
-                style={{
-                  backgroundImage: `linear-gradient(90deg, rgba(26,27,75,0.92) 0%, rgba(26,27,75,0.72) 45%, rgba(26,27,75,0.15) 100%), url(${imgPerkspotHero})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "right bottom",
-                }}
-              />
-              <div className="relative flex flex-col gap-[20px] px-[22px] py-[36px] md:px-[48px] md:py-[52px] max-w-[640px]">
-                <img
-                  src={perkspotLogoUrl}
-                  alt="PerkSpot"
-                  className="self-start h-[32px] md:h-[36px] w-auto"
-                  style={{ filter: "brightness(0) invert(1)" }}
-                />
-                <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-white text-[32px] md:text-[40px] leading-[1.1]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  Unlock up to<br />60% off top brands.
-                </p>
-                <div className="flex flex-wrap items-center gap-x-[14px] gap-y-[6px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                  <span>15,000+ deals</span>
-                  <span className="opacity-60">·</span>
-                  <span>3,000+ brands</span>
-                  <span className="opacity-60">·</span>
-                  <span className="flex items-center gap-[6px]">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9b22c" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    4.9 Chrome Rating
-                  </span>
-                </div>
-                <form
-                  onSubmit={(event) => event.preventDefault()}
-                  className="flex items-center gap-[10px] rounded-full bg-white p-[6px] max-w-[520px]"
-                  role="search"
-                >
-                  <div className="flex items-center gap-[10px] flex-1 min-w-0 pl-[14px]">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
-                      <circle cx="11" cy="11" r="7"/>
-                      <path d="M21 21l-4.3-4.3"/>
-                    </svg>
-                    <input
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Search Brands, Categories…"
-                      data-ux-id="offers-search-input"
-                      className="flex-1 min-w-0 h-[36px] bg-transparent font-['DM_Sans:Regular',sans-serif] font-normal text-[14px] text-[#262630] placeholder:text-[#8a94a6] outline-none italic"
-                      style={{ fontVariationSettings: '"opsz" 14' }}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    data-ux-id="offers-search-submit"
-                    className="shrink-0 rounded-full bg-[#1d5bff] hover:bg-[#1646c8] transition-colors px-[22px] py-[9px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px]"
-                    style={{ fontVariationSettings: '"opsz" 14' }}
-                  >
-                    Search
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex items-center gap-[22px] md:gap-[32px] border-b border-[#e2eaf0] px-[22px] md:px-[32px] overflow-x-auto">
-            {tabs.map((tab) => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  data-ux-id={`offers-tab-${tab.id}`}
-                  className={`shrink-0 relative py-[14px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[15px] transition-colors ${active ? "text-[#1d5bff]" : "text-[#262630] hover:text-[#1d5bff]"}`}
-                  style={{ fontVariationSettings: '"opsz" 14' }}
-                >
-                  {tab.label}
-                  {active && <span aria-hidden="true" className="absolute left-0 right-0 -bottom-px h-[3px] rounded-t-full bg-[#1d5bff]" />}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Features + brand grid */}
-          <div className="flex flex-col gap-[26px] px-[22px] py-[26px] md:px-[32px] md:py-[32px]">
-            <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-[26px] items-start">
-              <ul className="flex flex-col gap-[16px]">
-                {bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-[12px]">
-                    <span className="shrink-0 w-[22px] h-[22px] rounded-full bg-[#1a1b4b] flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12l5 5L20 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </span>
-                    <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px] leading-[1.3]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                      {bullet}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="relative">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-[14px]">
-                  {brands.map((brand) => (
-                    <div key={brand.name} data-ux-id={`offers-brand-${brand.name.toLowerCase().replace(/\s+/g, "-")}`} className="flex flex-col gap-[12px]">
-                      <div className="flex items-center justify-center h-[72px] rounded-[8px] border border-[#e2eaf0] bg-white px-[14px]">
-                        {brand.logo}
-                      </div>
-                      <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[1.35]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        {brand.offer}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px] leading-[1.5] text-center" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Clicking on any link within widget is acceptance and acknowledgement of PerkSpot's updated{" "}
-              <a href="#" className="text-[#1d5bff] underline">Terms of Use</a>{" "}and{" "}
-              <a href="#" className="text-[#1d5bff] underline">Privacy Policy</a>
+      {loading ? (
+        <PageLoader uxId="offers-loader" />
+      ) : (
+        <div className="flex flex-col gap-[24px] md:gap-[28px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0 animate-[page-content-in_300ms_ease-out]">
+          {/* Header */}
+          <div className="flex flex-col gap-[4px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Offers
+            </p>
+            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+              Member discounts powered by PerkSpot
             </p>
           </div>
+
+          {/* PerkSpot card */}
+          <div data-ux-id="offers-perkspot-card" className="rounded-[18px] overflow-hidden shadow-[0_2px_18px_rgba(18,17,48,0.07)] bg-white">
+            {/* Hero */}
+            <div className="relative overflow-hidden">
+              <div className="bg-[#1a1b4b] text-center px-[16px] py-[10px]">
+                <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-white text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  Your HOA has partnered with PerkSpot to bring you exclusive deals.
+                </p>
+              </div>
+              <div className="relative">
+                <div
+                  className="absolute inset-0"
+                  aria-hidden="true"
+                  style={{
+                    backgroundImage: `linear-gradient(90deg, rgba(26,27,75,0.92) 0%, rgba(26,27,75,0.72) 45%, rgba(26,27,75,0.15) 100%), url(${imgPerkspotHero})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "right bottom",
+                  }}
+                />
+                <div className="relative flex flex-col gap-[20px] px-[22px] py-[36px] md:px-[48px] md:py-[52px] max-w-[640px]">
+                  <img
+                    src={perkspotLogoUrl}
+                    alt="PerkSpot"
+                    className="self-start h-[32px] md:h-[36px] w-auto"
+                    style={{ filter: "brightness(0) invert(1)" }}
+                  />
+                  <p className="font-['DM_Sans:Bold',sans-serif] font-bold text-white text-[32px] md:text-[40px] leading-[1.1]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    Unlock up to<br />60% off top brands.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-x-[14px] gap-y-[6px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                    <span>15,000+ deals</span>
+                    <span className="opacity-60">·</span>
+                    <span>3,000+ brands</span>
+                    <span className="opacity-60">·</span>
+                    <span className="flex items-center gap-[6px]">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9b22c" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      4.9 Chrome Rating
+                    </span>
+                  </div>
+                  <form
+                    onSubmit={(event) => event.preventDefault()}
+                    className="flex items-center gap-[10px] rounded-full bg-white p-[6px] max-w-[520px]"
+                    role="search"
+                  >
+                    <div className="flex items-center gap-[10px] flex-1 min-w-0 pl-[14px]">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="M21 21l-4.3-4.3"/>
+                      </svg>
+                      <input
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Search Brands, Categories…"
+                        data-ux-id="offers-search-input"
+                        className="flex-1 min-w-0 h-[36px] bg-transparent font-['DM_Sans:Regular',sans-serif] font-normal text-[14px] text-[#262630] placeholder:text-[#8a94a6] outline-none italic"
+                        style={{ fontVariationSettings: '"opsz" 14' }}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      data-ux-id="offers-search-submit"
+                      className="shrink-0 rounded-full bg-[#1d5bff] hover:bg-[#1646c8] transition-colors px-[22px] py-[9px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px]"
+                      style={{ fontVariationSettings: '"opsz" 14' }}
+                    >
+                      Search
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex items-center gap-[22px] md:gap-[32px] border-b border-[#e2eaf0] px-[22px] md:px-[32px] overflow-x-auto">
+              {tabs.map((tab) => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    data-ux-id={`offers-tab-${tab.id}`}
+                    className={`shrink-0 relative py-[14px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[15px] transition-colors ${active ? "text-[#1d5bff]" : "text-[#262630] hover:text-[#1d5bff]"}`}
+                    style={{ fontVariationSettings: '"opsz" 14' }}
+                  >
+                    {tab.label}
+                    {active && <span aria-hidden="true" className="absolute left-0 right-0 -bottom-px h-[3px] rounded-t-full bg-[#1d5bff]" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Features + brand grid */}
+            <div className="flex flex-col gap-[26px] px-[22px] py-[26px] md:px-[32px] md:py-[32px]">
+              <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-[26px] items-start">
+                <ul className="flex flex-col gap-[16px]">
+                  {bullets.map((bullet) => (
+                    <li key={bullet} className="flex items-start gap-[12px]">
+                      <span className="shrink-0 w-[22px] h-[22px] rounded-full bg-[#1a1b4b] flex items-center justify-center">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12l5 5L20 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </span>
+                      <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px] leading-[1.3]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                        {bullet}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="relative">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-[14px]">
+                    {brands.map((brand) => (
+                      <div key={brand.name} data-ux-id={`offers-brand-${brand.name.toLowerCase().replace(/\s+/g, "-")}`} className="flex flex-col gap-[12px]">
+                        <div className="flex items-center justify-center h-[72px] rounded-[8px] border border-[#e2eaf0] bg-white px-[14px]">
+                          {brand.logo}
+                        </div>
+                        <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[13px] leading-[1.35]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          {brand.offer}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px] leading-[1.5] text-center" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Clicking on any link within widget is acceptance and acknowledgement of PerkSpot's updated{" "}
+                <a href="#" className="text-[#1d5bff] underline">Terms of Use</a>{" "}and{" "}
+                <a href="#" className="text-[#1d5bff] underline">Privacy Policy</a>
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -3286,18 +3298,20 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 /* ─── Main Portal (post-onboarding) ─── */
 type MainAppProps = {
   onRestart: () => void;
+  /** Entered by the Go to portal click, so the dashboard "loads" first. */
+  entering: boolean;
 };
 
-function MainApp({ onRestart }: MainAppProps) {
+function MainApp({ onRestart, entering }: MainAppProps) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
   const [askHoaiOpen, setAskHoaiOpen] = useState(true);
   const [quickActionsView, setQuickActionsView] = useState<QuickActionsView | null>(null);
   const [arcForm, setArcForm] = useState<{ id: string; label: string } | null>(null);
-  // The dashboard loads only when clicked back to. Entering the portal and
-  // walkthrough scene jumps land on it ready, so scene targets exist at once.
-  const [dashboardLoads, setDashboardLoads] = useState(false);
+  // The dashboard loads when clicked to: Go to portal, Home, ARC Cancel.
+  // Walkthrough scene jumps land on it ready, so scene targets exist at once.
+  const [dashboardLoads, setDashboardLoads] = useState(entering);
 
   // Synced to the app scene, not the cursor's: on a phone scene the app
   // underneath keeps (beat 0) or jumps ahead to (beat 1+) a neighbouring
@@ -3427,6 +3441,8 @@ export default function App() {
   // a second. Its fade-out is a finite CSS animation, so a walkthrough cursor
   // beat started meanwhile waits it out before moving.
   const [registerLoading, setRegisterLoading] = useState(false);
+  // Set by the Go to portal click; a scene jump into the portal leaves it unset.
+  const [portalEntering, setPortalEntering] = useState(false);
 
   // Scene-jump sync: when the launcher jumps to a scene whose appState
   // declares a different phase (and optional onboarding sub-screen), snap
@@ -3441,6 +3457,7 @@ export default function App() {
     const target = appScene?.appState;
     if (!target) return;
     if (target.phase !== phase) setPhase(target.phase);
+    setPortalEntering(false);
     if (target.phase === "onboarding") {
       setOnboardingReturnScreen(target.onboardingScreen);
     } else {
@@ -3468,6 +3485,7 @@ export default function App() {
           key={onboardingReturnScreen ?? "fresh"}
           onComplete={() => {
             setOnboardingReturnScreen(undefined);
+            setPortalEntering(true);
             setPhase("portal");
           }}
           initialScreen={onboardingReturnScreen}
@@ -3502,7 +3520,7 @@ export default function App() {
   }
   return (
     <>
-      <MainApp onRestart={() => setPhase("inbox")} />
+      <MainApp onRestart={() => setPhase("inbox")} entering={portalEntering} />
       {/* Walkthrough-only reverse hook: ArrowLeft from the Go-to-portal beat lands back on the done screen */}
       <button
         type="button"

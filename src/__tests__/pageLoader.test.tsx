@@ -82,7 +82,7 @@ describe("Page loaders", () => {
     expect(q(container, "reservations-table")).not.toBeNull();
   });
 
-  it("the dashboard is ready on arrival in the portal, and loads when clicked back to", () => {
+  it("a scene jump lands on the dashboard ready, and it loads when clicked back to", () => {
     const { container } = renderApp();
     expect(q(container, "dashboard-loader")).toBeNull();
     expect(q(container, "election-banner")).not.toBeNull();
@@ -95,6 +95,50 @@ describe("Page loaders", () => {
     advance(PAGE_LOAD_MS - 1);
     expect(q(container, "election-banner")).toBeNull();
     advance(1);
+    expect(q(container, "dashboard-loader")).toBeNull();
+    expect(q(container, "election-banner")).not.toBeNull();
+  });
+
+  it("Elections lands on a loader, then the page and its tab pill", () => {
+    const { container } = renderApp();
+    fireEvent.click(q(container, "sidebar-nav-elections")!);
+    expect(q(container, "elections-loader")).not.toBeNull();
+    expect(q(container, "elections-tab-toggle")).toBeNull();
+    advance(PAGE_LOAD_MS);
+    expect(q(container, "elections-loader")).toBeNull();
+    expect(q(container, "elections-tab-toggle")).not.toBeNull();
+  });
+
+  it("Offers lands on a loader, then the page", () => {
+    const { container } = renderApp();
+    fireEvent.click(q(container, "sidebar-nav-offers")!);
+    const page = q(container, "offers-page")!;
+    expect(q(container, "offers-loader")).not.toBeNull();
+    expect(page.textContent).not.toContain("Home Essentials");
+    advance(PAGE_LOAD_MS);
+    expect(q(container, "offers-loader")).toBeNull();
+    expect(page.textContent).toContain("Home Essentials");
+  });
+
+  it("Go to portal lands on the dashboard loader, a scene jump into the portal does not", () => {
+    const { container } = render(
+      <WalkthroughProvider
+        sequence={[
+          {
+            id: "go-to-portal",
+            page: "onboarding",
+            appState: { phase: "onboarding", onboardingScreen: "done" },
+            beats: [{ kind: "idle" }],
+          },
+        ]}
+      >
+        <App />
+      </WalkthroughProvider>,
+    );
+    fireEvent.click(q(container, "onboarding-done-go-to-portal-button")!);
+    expect(q(container, "dashboard-loader")).not.toBeNull();
+    expect(q(container, "election-banner")).toBeNull();
+    advance(PAGE_LOAD_MS);
     expect(q(container, "dashboard-loader")).toBeNull();
     expect(q(container, "election-banner")).not.toBeNull();
   });

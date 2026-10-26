@@ -300,16 +300,20 @@ the overlay from the scene flag) instead of the arrow.
   (`onboarding-loader-out`, 1250 ms, in `src/index.css`). Finite, so the next
   cursor beat waits for it.
 - **Ask HOAi attachment chip**: `askhoai-file-in` keyframes, 320 ms overshoot.
-- **Page loaders** (`CommunityFeedPage`, `ArcFormPage`, `ReservationsPage`):
-  every visit shows a centred spinner (`PageLoader`) for `PAGE_LOAD_MS`
-  (1500 ms, `usePageLoad` in `src/pageLoad.ts`), then the content fades up (`page-content-in`, 300 ms).
+- **Page loaders** (`CommunityFeedPage`, `ArcFormPage`, `ReservationsPage`,
+  `ElectionsPage` (its floating tab pill waits too), `OffersPage`): every
+  visit shows a centred spinner (`PageLoader`) for `PAGE_LOAD_MS` (1500 ms,
+  `usePageLoad` in `src/pageLoad.ts`), then the content fades up
+  (`page-content-in`, 300 ms).
   The content doesn't exist until then, so the click that opens the page holds
   `PAGE_LOAD_MS` + a beat (community-feed +1000, arc-request +1300) before the
   scroll stop measures it.
-  `DashboardPage` loads too, but only when a click brings it back (Home nav,
-  ARC Cancel): entering the portal and scene jumps land on it ready
-  (`dashboardLoads` in `MainApp`, reset on every scene sync), so dashboard
-  scenes never wait for it and their targets exist at beat 0.
+  `DashboardPage` loads too, but only when a click brings it there (Go to
+  portal, Home nav, ARC Cancel): scene jumps land on it ready (`dashboardLoads`
+  in `MainApp`, reset on every scene sync; `portalEntering` in `App` marks the
+  Go to portal click), so dashboard scenes never wait for it and their targets
+  exist at beat 0. The go-to-portal click holds `PAGE_LOAD_MS` + 300 so → stays
+  blocked until the dashboard is in.
 
 ## Navigation rules (`cursor.tsx`)
 
