@@ -113,7 +113,20 @@ function liftTransform(rect: DOMRect, scale: number, position: "center" | Point)
     position === "center" ? window.innerWidth / 2 - (rect.left + rect.width / 2) : position.x - rect.left;
   const dy =
     position === "center" ? window.innerHeight / 2 - (rect.top + rect.height / 2) : position.y - rect.top;
-  return `translate(${dx}px, ${dy}px) scale(${scale})`;
+  // Nudge so the scaled box's top-left lands on a whole pixel: text on a
+  // fractional offset renders soft.
+  const snap = (start: number, size: number, d: number) => {
+    const visible = start + d + (size * (1 - scale)) / 2;
+    return d + Math.round(visible) - visible;
+  };
+  return `translate(${snap(rect.left, rect.width, dx)}px, ${snap(rect.top, rect.height, dy)}px) scale(${scale})`;
+}
+
+// will-change keeps the element on a layer rendered at its unscaled size, so
+// a scaled lift would stay a stretched bitmap. Drop it once the move ends and
+// the browser re-renders the text sharp at the lifted size.
+function dropWillChange(e: TransitionEvent) {
+  if (e.propertyName === "transform") (e.currentTarget as HTMLElement).style.willChange = "auto";
 }
 
 function applyTarget(el: HTMLElement, entry: Entry, dissolve: boolean) {
@@ -190,6 +203,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
         // Above .wt-root (z-index 250) so the lifted element sits over the blurred backdrop.
         el.style.zIndex = "260";
         el.style.willChange = "transform";
+        el.addEventListener("transitionend", dropWillChange);
 
         // Force a reflow so the transition always starts from the pinned state.
         void el.offsetWidth;
@@ -229,6 +243,7 @@ export function useLiftTarget(target: string, { scale = 1.4, position = "center"
       entry.pendingRestore = true;
       queueMicrotask(() => {
         if (!entry.pendingRestore || entries.get(el) !== entry) return;
+        el.removeEventListener("transitionend", dropWillChange);
         Object.assign(el.style, entry.saved);
         entry.spacer.remove();
         entries.delete(el);

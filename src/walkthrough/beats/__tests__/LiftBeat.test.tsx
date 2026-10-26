@@ -44,6 +44,35 @@ describe("LiftBeat", () => {
     expect(target.style.transition).toContain("transform");
   });
 
+  it("drops will-change once the lift's transform transition ends, so it re-renders sharp", async () => {
+    const target = makeTarget();
+    render(<LiftBeat target="wt-test" scale={1.15} />);
+    expect(target.style.willChange).toBe("transform");
+    const opacityEnd = new Event("transitionend");
+    Object.defineProperty(opacityEnd, "propertyName", { value: "opacity" });
+    target.dispatchEvent(opacityEnd);
+    expect(target.style.willChange).toBe("transform");
+    const transformEnd = new Event("transitionend");
+    Object.defineProperty(transformEnd, "propertyName", { value: "transform" });
+    target.dispatchEvent(transformEnd);
+    expect(target.style.willChange).toBe("auto");
+  });
+
+  it("lands a centred lift on whole pixels", async () => {
+    const target = makeTarget();
+    target.getBoundingClientRect = () => new DOMRect(531.1, 231.2, 377.7, 437.5);
+    render(<LiftBeat target="wt-test" scale={1.15} position="center" />);
+    await act(async () => {
+      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
+    });
+    const m = /translate\(([-\d.]+)px, ([-\d.]+)px\) scale\(([\d.]+)\)/.exec(target.style.transform)!;
+    const [dx, dy, s] = m.slice(1).map(Number);
+    const left = 531.1 + dx + (377.7 * (1 - s)) / 2;
+    const top = 231.2 + dy + (437.5 * (1 - s)) / 2;
+    expect(left).toBeCloseTo(Math.round(left), 6);
+    expect(top).toBeCloseTo(Math.round(top), 6);
+  });
+
   it("restores all mutated inline styles on unmount", async () => {
     const target = makeTarget({ position: "relative" });
     const { unmount } = render(<LiftBeat target="wt-test" />);

@@ -21,7 +21,7 @@ export const communityFeedScene: Scene = {
       durationMs: 1500,
       then: [{ to: VT.CommunityFeedPage, action: "scroll", scrollTo: VT.FeedPostForgottenIsland, scrollMs: 4000 }],
     },
-    { kind: "lift", target: VT.FeedPostForgottenIsland, scale: 1, position: "center" },
+    { kind: "lift", target: VT.FeedPostForgottenIsland, scale: 1.15, position: "center" },
     { kind: "idle" },
   ],
 };

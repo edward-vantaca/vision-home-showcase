@@ -147,7 +147,10 @@ The real element is moved — no clones:
 3. pin it `position: fixed` at its current rect, z 260;
 4. set the target `transform` (translate to centre + `scale`); a CSS transition
    does the motion: `transform 1000ms cubic-bezier(0.65,0,0.35,1)`,
-   `opacity 500ms ease-out`;
+   `opacity 500ms ease-out`. The translate is nudged so the scaled box's
+   top-left lands on a whole pixel, and `will-change: transform` is dropped on
+   the transform's `transitionend` so the browser re-renders the text at the
+   lifted size (otherwise a scaled lift stays a soft, stretched bitmap);
 5. on release, restore the snapshot and remove the spacer. The restore waits a
    microtask so a same-element handoff (lift → expand, StrictMode remount)
    doesn't snap.
@@ -362,7 +365,7 @@ account) → autopay → go-to-portal → dashboard (still) → payments (lift, 
 Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (View All Posts → feed scrolls until the Forgotten Island post is
-centred; lift it; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
+centred; lift it at 1.15×; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
