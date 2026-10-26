@@ -88,6 +88,8 @@ export function CursorBeat({
   to,
   action,
   scrollMs,
+  scrollTo,
+  onDone,
   file,
   durationMs,
   direction,
@@ -104,6 +106,9 @@ export function CursorBeat({
   to: VTName;
   action?: "click" | "hover" | "drop" | "scroll";
   scrollMs?: number;
+  scrollTo?: VTName;
+  /** Called when the beat's timeline finishes going forward (not on ←). */
+  onDone?: () => void;
   file?: string;
   durationMs?: number;
   direction?: "forward" | "back";
@@ -125,6 +130,8 @@ export function CursorBeat({
   onReleaseStageRef.current = onReleaseStage;
   const onHideStageRef = useRef(onHideStage);
   onHideStageRef.current = onHideStage;
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
   // A beat that opens by dragging a file in starts off-screen, so the cursor
   // isn't parked on screen while it waits for the scene's animations to settle.
   const dropsFirst = action === "drop" && direction !== "back";
@@ -139,7 +146,7 @@ export function CursorBeat({
       // Block arrow-key advance/back while this beat's animation is running.
       beatBusyRef.current = true;
 
-      const primary: CursorStop = { to, action, scrollMs, file, typeText, typeCps, holdMs, releaseStage, hideStage };
+      const primary: CursorStop = { to, action, scrollMs, scrollTo, file, typeText, typeCps, holdMs, releaseStage, hideStage };
       const stops: CursorStop[] = direction === "back" ? [{ to }] : [primary, ...(then ?? [])];
 
       const duration = (durationMs ?? 1000) / 1000;
@@ -159,6 +166,7 @@ export function CursorBeat({
         tl = gsap.timeline({
           onComplete: () => {
             beatBusyRef.current = false;
+            if (direction !== "back") onDoneRef.current?.();
           },
         });
 
@@ -324,7 +332,7 @@ export function CursorBeat({
         beatBusyRef.current = false;
       };
     },
-    { dependencies: [to, action, scrollMs, file, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
+    { dependencies: [to, action, scrollMs, scrollTo, file, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
   );
 
   // Rendered into <body> rather than .wt-root so the cursor paints above the

@@ -344,7 +344,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
           <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
           <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
-          <NavItem icon={<IconBellConcierge />} label="Reservations" active={activePage === "reservations"} onClick={() => onNavigate("reservations")} uxId="reservations" />
+          <NavItem icon={<IconBellConcierge />} label="Reservations" active={activePage === "reservations"} onClick={() => onNavigate("reservations")} uxId="reservations" vtName={VT.SidebarNavReservations} />
           {isDemoMode() ? (
             <NavItem
               icon={<IconHome />}
@@ -3193,7 +3193,7 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const dmSans = { fontVariationSettings: '"opsz" 14' };
   const loading = usePageLoad();
   return (
-    <div data-ux-id="reservations-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="reservations-page" data-vt-name={VT.ReservationsPage} className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="reservations-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
@@ -3281,6 +3281,7 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                 <div
                   key={amenity.slug}
                   data-ux-id={`amenity-card-${amenity.slug}`}
+                  data-vt-name={amenity.slug === "conference" ? VT.AmenityCardConference : undefined}
                   className="flex flex-col gap-[14px] bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] p-[18px]"
                 >
                   <AmenityCardImage src={amenity.image} alt={amenity.name} icon={amenity.icon} />
@@ -3295,6 +3296,7 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                   <button
                     type="button"
                     data-ux-id={`amenity-view-availability-${amenity.slug}`}
+                    data-vt-name={amenity.slug === "conference" ? VT.AmenityConferenceViewAvailability : undefined}
                     className="w-full rounded-[8px] bg-[#247ae4] py-[11px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[15px] transition-colors hover:bg-[#1a6ed0]"
                     style={dmSans}
                   >

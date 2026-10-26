@@ -8,7 +8,7 @@ export type LiftOptions = {
    * top-left corner (pre-scale) to (x, y); since scale is applied around the
    * element's center, the visible top-left of a scaled element will differ.
    */
-  position?: "center" | Point;
+  position?: "center" | "top-left" | Point;
   /**
    * Fade the element out (opacity 0, pointer-events none) so content rendered
    * in .wt-root below it shows through. When the element is handed off from a
@@ -54,7 +54,7 @@ type Entry = {
 
 const entries = new Map<HTMLElement, Entry>();
 
-function findTarget(name: string): HTMLElement | null {
+export function findTarget(name: string): HTMLElement | null {
   // Defensive: skip any stale stage slot left over from the old clone-based lift.
   const all = Array.from(document.querySelectorAll<HTMLElement>(`[data-vt-name="${name}"]`));
   return all.find((el) => !el.classList.contains("wt-stage-slot")) ?? null;
@@ -108,11 +108,25 @@ function createSpacer(el: HTMLElement, rect: DOMRect): HTMLElement {
   return spacer;
 }
 
-function liftTransform(rect: DOMRect, scale: number, position: "center" | Point): string {
+/** How far a "top-left" lift sits from the viewport's top and left edges. */
+export const LIFT_INSET_PX = 40;
+
+function liftTransform(rect: DOMRect, scale: number, position: "center" | "top-left" | Point): string {
+  // Scale is applied around the centre, so a scaled box's top-left sits
+  // (scale - 1) / 2 of its size up and left of the unscaled one.
+  const corner = (size: number) => LIFT_INSET_PX + (size * (scale - 1)) / 2;
   const dx =
-    position === "center" ? window.innerWidth / 2 - (rect.left + rect.width / 2) : position.x - rect.left;
+    position === "center"
+      ? window.innerWidth / 2 - (rect.left + rect.width / 2)
+      : position === "top-left"
+        ? corner(rect.width) - rect.left
+        : position.x - rect.left;
   const dy =
-    position === "center" ? window.innerHeight / 2 - (rect.top + rect.height / 2) : position.y - rect.top;
+    position === "center"
+      ? window.innerHeight / 2 - (rect.top + rect.height / 2)
+      : position === "top-left"
+        ? corner(rect.height) - rect.top
+        : position.y - rect.top;
   // Nudge so the scaled box's top-left lands on a whole pixel: text on a
   // fractional offset renders soft.
   const snap = (start: number, size: number, d: number) => {
@@ -156,7 +170,7 @@ function applyTarget(el: HTMLElement, entry: Entry, dissolve: boolean) {
  */
 export function useLiftTarget(target: string, { scale = 1.4, position = "center", dissolve = false }: LiftOptions) {
   // Primitive key so a parent re-render with a fresh object doesn't restart the lift.
-  const positionKey = position === "center" ? "center" : `${position.x},${position.y}`;
+  const positionKey = typeof position === "string" ? position : `${position.x},${position.y}`;
 
   useLayoutEffect(() => {
     let raf = 0;

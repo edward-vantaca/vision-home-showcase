@@ -204,6 +204,27 @@ describe("CursorBeat", () => {
     page.remove();
   });
 
+  it("onDone fires when a forward beat finishes, never on ←", async () => {
+    const timeline = vi.spyOn(gsap, "timeline");
+    const done = vi.fn();
+    const { unmount } = render(<CursorBeat to={TARGET} action="click" onDone={done} />);
+    await nextFrames();
+    expect(done).not.toHaveBeenCalled();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    expect(done).toHaveBeenCalledTimes(1);
+    unmount();
+
+    const back = vi.fn();
+    render(<CursorBeat to={TARGET} action="click" direction="back" onDone={back} />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[1].value.progress(1);
+    });
+    expect(back).not.toHaveBeenCalled();
+  });
+
   it("a scroll stop with scrollTo eases until that element is centred in the target", async () => {
     const PAGE = "wt-cursor-test-page" as VTName;
     const POST = "wt-cursor-test-post" as VTName;

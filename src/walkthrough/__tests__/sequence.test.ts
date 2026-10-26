@@ -53,7 +53,7 @@ describe("homeVisionSequence", () => {
 
   it("ends on a still dashboard after the broadcast SMS so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-5)).toEqual(["ask-hoai", "community-feed", "offers", "broadcast-sms", "closing-dashboard"]);
+    expect(ids.slice(-6)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
@@ -90,6 +90,26 @@ describe("homeVisionSequence", () => {
     for (const beat of offers.beats) {
       if (beat.kind === "cursor") expect(beat.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
     }
+  });
+
+  it("Amenity reservation: Reservations, then View Availability lifts the card top-left with its calendar, then a slot click", () => {
+    const scene = homeVisionSequence.find((s) => s.id === "amenity-reservation");
+    if (!scene) throw new Error("no amenity-reservation scene");
+    expect(scene.keepPage).toBe(true);
+    expect(scene.reenterAtStart).toBe(true);
+    expect(scene.beats.map((b) => b.kind)).toEqual(["cursor", "cursor", "lift", "cursor", "idle"]);
+    const [nav, open, lift, slot] = scene.beats;
+    if (nav.kind !== "cursor" || open.kind !== "cursor" || lift.kind !== "lift" || slot.kind !== "cursor") {
+      throw new Error("unexpected beats");
+    }
+    expect(nav.to).toBe(VT.SidebarNavReservations);
+    expect(nav.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
+    // Scroll to the card and click it; the lift follows without another →.
+    expect(open).toMatchObject({ action: "scroll", scrollTo: VT.AmenityCardConference, advanceAfter: true });
+    expect(open.then).toEqual([expect.objectContaining({ to: VT.AmenityConferenceViewAvailability, action: "click" })]);
+    expect(lift).toMatchObject({ target: VT.AmenityCardConference, position: "top-left" });
+    expect(lift.aside).toBeTruthy();
+    expect(slot).toMatchObject({ to: VT.AmenityCalendarOpenSlot, reverseTo: VT.BookingModalClose, replayOnBack: true });
   });
 
   it("Broadcast SMS: the notification arrives by itself, then one beat taps it, types the reply and sends", () => {

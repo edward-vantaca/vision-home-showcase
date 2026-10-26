@@ -198,6 +198,25 @@ describe("LiftBeat", () => {
     expect(target.style.transform).toBe("translate(300px, 250px) scale(1.4)");
   });
 
+  it("a top-left lift sits the scaled box 40px in, with its aside beside it", () => {
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
+    const target = makeTarget();
+    target.getBoundingClientRect = () =>
+      ({ top: 500, left: 600, width: 200, height: 300, right: 800, bottom: 800, x: 600, y: 500 }) as DOMRect;
+
+    const { getByTestId } = render(
+      <LiftBeat target="wt-test" scale={1.2} position="top-left" aside={<p>calendar</p>} />,
+    );
+    vi.advanceTimersByTime(50);
+    // Scaled 240 x 360, its top-left at (40, 40): unscaled top-left at (60, 70).
+    expect(target.style.transform).toBe("translate(-540px, -430px) scale(1.2)");
+    const aside = getByTestId("lift-aside");
+    expect(aside.textContent).toBe("calendar");
+    // 40 inset + 240 scaled width + 32 gap.
+    expect(aside.style.left).toBe("312px");
+    expect(aside.style.top).toBe("40px");
+  });
+
   it("dev-warns when an ancestor would trap position:fixed (filter)", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const wrapper = document.createElement("div");

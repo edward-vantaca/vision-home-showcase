@@ -40,7 +40,16 @@ export type AnnotateTrack =
 export type Beat =
   | { kind: "idle" }
   | { kind: "highlight"; target: VTName; caption?: string }
-  | { kind: "lift"; target: VTName; scale?: number; position?: "center" | Point; caption?: string }
+  | {
+      kind: "lift";
+      target: VTName;
+      scale?: number;
+      /** "top-left" sits the scaled element 40px in from the viewport's top-left corner. */
+      position?: "center" | "top-left" | Point;
+      /** A panel shown beside a top-left lift, filling the rest of the screen. */
+      aside?: ReactNode;
+      caption?: string;
+    }
   | { kind: "expand"; target: VTName; content: ReactNode; caption?: string }
   | { kind: "annotate"; tracks: AnnotateTrack[]; durationMs?: number }
   | { kind: "narrate"; title?: string; body: string }
@@ -50,6 +59,7 @@ export type Beat =
       /** "scroll" opens the beat on a scroll stop: the pointer stays where it is. */
       action?: "click" | "hover" | "drop" | "scroll";
       scrollMs?: number;
+      scrollTo?: VTName;
       file?: string;
       durationMs?: number;
       caption?: string;
@@ -65,6 +75,11 @@ export type Beat =
        * landing on it with `back` means the next `advance` replays it.
        */
       replayOnBack?: boolean;
+      /**
+       * Moving forward, go straight on to the next beat once this one ends
+       * (a click whose effect is that beat: click a card, it lifts).
+       */
+      advanceAfter?: boolean;
     }
   | { kind: "intro"; title: string; logoSrc?: string; wordmark?: string };
 

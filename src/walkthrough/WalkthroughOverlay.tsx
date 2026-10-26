@@ -25,7 +25,7 @@ function captionOf(beat: Beat | undefined): string | null {
 }
 
 export function WalkthroughOverlay() {
-  const { beat, cursor, scene, direction } = useCursor();
+  const { beat, cursor, scene, direction, advance } = useCursor();
 
   // Sticky stage: when annotate or cursor is active, keep the preceding
   // lift/expand mounted so the staged element stays on screen while GSAP paints
@@ -72,6 +72,7 @@ export function WalkthroughOverlay() {
           scale={stageBeat.scale}
           position={stageBeat.position}
           dissolve={holdsStage && visit.hidden}
+          aside={stageBeat.aside}
         />
       )}
       {stageBeat?.kind === "expand" && (
@@ -83,6 +84,8 @@ export function WalkthroughOverlay() {
           to={beat.to}
           action={beat.action}
           scrollMs={beat.scrollMs}
+          scrollTo={beat.scrollTo}
+          onDone={beat.advanceAfter ? advance : undefined}
           file={beat.file}
           durationMs={beat.durationMs}
           direction={direction}

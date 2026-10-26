@@ -80,7 +80,7 @@ every beat targets a known name and that names are unique).
 | `idle` | Nothing extra — the app as-is | none |
 | `intro` | Full-screen white title card with logo / wordmark | white |
 | `highlight` | Scrolls target into view; everything but the target is dimmed and blurred | own cutout layer (`.wt-cutout`: dim .55, blur 16px) |
-| `lift` | The real element floats to centre (or a point), scaled, above a blurred dim | blur + dim |
+| `lift` | The real element floats to centre (or `"top-left"`, 40px in, or a point), scaled, above a blurred dim. With `aside`, a top-left lift gets a panel filling the rest of the screen beside it (fades in; measured from the element's width × scale + 32px gap) | blur + dim |
 | `expand` | Target lifts and dissolves while a detail panel (`content`) fades in at centre | blur + dim |
 | `annotate` | GSAP arrows / pulses / typed caption drawn over the stage | blur + dim |
 | `narrate` | Title + body text | blur + dim |
@@ -135,7 +135,10 @@ Per-stop extras: `typeText` + `typeCps` (types into an input via the native
 setter so React sees it), `holdMs` (pause after the stop), `hideStage` /
 `releaseStage` (see sticky stage). Beat-only extras: `durationMs` (travel time),
 `reverseTo` (element clicked when the presenter goes ← from this beat, to undo
-its effect), `replayOnBack` (beat undoes itself, so ← then → replays it).
+its effect), `replayOnBack` (beat undoes itself, so ← then → replays it),
+`advanceAfter` (going forward, move straight on to the next beat once this one
+ends: a click whose effect is that beat, e.g. View Availability → the card
+lifts), `scrollTo` (with a beat-level `"scroll"` action).
 
 Later stops are measured **when the cursor sets off for them**, so a stop can
 target something an earlier click rendered (Make a Payment → modal's Continue).
@@ -393,7 +396,12 @@ form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (still on the dashboard; → View All Posts → feed scrolls down to
 the last post, then back up until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → offers (click Offers in the
-sidebar, page loads; → click Home, dashboard loads) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
+sidebar, page loads; → click Home, dashboard loads) → amenity-reservation
+(click Reservations, page loads; → scroll to the Conference Room card, click
+View Availability, it lifts top-left at 1.25× beside a 9 AM–5 PM week calendar
+(`AmenityBookingStage`, walkthrough-only); → click the open Tue 27 1 PM slot,
+the Book Reservation modal opens (portaled, z 300); → it all goes away and the
+card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
