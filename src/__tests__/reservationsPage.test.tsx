@@ -44,7 +44,7 @@ describe("Reservations", () => {
     expect(nav.className).toContain("bg-[#e8f1fd]");
 
     const rows = page.querySelectorAll('[data-ux-id="reservations-table"] tbody tr');
-    expect(rows.length).toBeGreaterThan(0);
+    expect(Array.from(rows, (r) => r.querySelector("td")?.textContent)).toEqual(["Tennis Court", "Main Clubhouse"]);
 
     const cards = Array.from(page.querySelectorAll('[data-ux-id^="amenity-card-"]'));
     expect(cards.map((c) => c.querySelector("h3")?.textContent)).toEqual([

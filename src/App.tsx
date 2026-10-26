@@ -3146,8 +3146,6 @@ function ArcFormPage({
 /* ─── Reservations ─── */
 const MY_RESERVATIONS: ReadonlyArray<{ amenity: string; date: string; time: string; status: "Confirmed" | "Pending" }> = [
   { amenity: "Tennis Court", date: "Nov 5, 2026", time: "7:00 AM - 8:00 AM", status: "Confirmed" },
-  { amenity: "Basketball Court", date: "Nov 7, 2026", time: "6:00 PM - 7:00 PM", status: "Confirmed" },
-  { amenity: "Pickleball Court", date: "Nov 12, 2026", time: "5:00 PM - 6:00 PM", status: "Pending" },
   { amenity: "Main Clubhouse", date: "Nov 21, 2026", time: "2:00 PM - 6:00 PM", status: "Pending" },
 ];
 
