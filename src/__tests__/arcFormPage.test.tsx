@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { fireEvent, render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render } from "@testing-library/react";
 import App from "../App";
+import { PAGE_LOAD_MS } from "../pageLoad";
 import { WalkthroughProvider } from "../walkthrough/cursor";
 import type { Sequence } from "../walkthrough/types";
 
@@ -26,6 +27,9 @@ function openArcForm(formId: string) {
   fireEvent.click(q(utils.container, "sidebar-quick-actions")!);
   fireEvent.click(q(utils.container, "sidebar-quick-actions-arc-request")!);
   fireEvent.click(q(utils.container, `quick-actions-arc-form-${formId}`)!);
+  act(() => {
+    vi.advanceTimersByTime(PAGE_LOAD_MS);
+  });
   return utils;
 }
 
@@ -40,6 +44,13 @@ const FENCE_FIELDS = [
 ];
 
 describe("ArcFormPage", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("the fence form asks for fence details (material, style, height, color, length, gates, contractor)", () => {
     const { container } = openArcForm("fence");
     expect(q(container, "arc-form-fence-details")).not.toBeNull();

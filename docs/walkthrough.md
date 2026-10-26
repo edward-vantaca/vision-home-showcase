@@ -300,11 +300,12 @@ the overlay from the scene flag) instead of the arrow.
   (`onboarding-loader-out`, 1250 ms, in `src/index.css`). Finite, so the next
   cursor beat waits for it.
 - **Ask HOAi attachment chip**: `askhoai-file-in` keyframes, 320 ms overshoot.
-- **Community feed loader** (`CommunityFeedPage`): every visit shows a spinner
-  in the page for `COMMUNITY_FEED_LOAD_MS` (1500 ms, `src/communityFeedLoad.ts`),
-  then the feed fades up (`community-feed-in`, 300 ms). The posts don't exist
-  until then, so the community-feed scene's View All click holds
-  `COMMUNITY_FEED_LOAD_MS + 1000` before its scroll stop measures the post.
+- **Page loaders** (`CommunityFeedPage`, `ArcFormPage`): every visit shows a
+  centred spinner (`PageLoader`) for `PAGE_LOAD_MS` (1500 ms, `usePageLoad` in
+  `src/pageLoad.ts`), then the content fades up (`page-content-in`, 300 ms).
+  The content doesn't exist until then, so the click that opens the page holds
+  `PAGE_LOAD_MS` + a beat (community-feed +1000, arc-request +1300) before the
+  scroll stop measures it.
 
 ## Navigation rules (`cursor.tsx`)
 

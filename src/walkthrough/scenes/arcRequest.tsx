@@ -1,5 +1,6 @@
 import type { Scene } from "../types";
 import { VT } from "../viewTransitionNames";
+import { PAGE_LOAD_MS } from "../../pageLoad";
 
 export const arcRequestScene: Scene = {
   id: "arc-request",
@@ -18,7 +19,8 @@ export const arcRequestScene: Scene = {
       durationMs: 1500,
       then: [
         { to: VT.QuickActionsArcRequestBtn, action: "click", holdMs: 1200 },
-        { to: VT.ArcFenceFormLink, action: "click", holdMs: 1300 },
+        // The form loads first; the scroll starts once it has been up a moment.
+        { to: VT.ArcFenceFormLink, action: "click", holdMs: PAGE_LOAD_MS + 1300 },
         { to: VT.ArcFormPage, action: "scroll", scrollMs: 6000 },
       ],
     },

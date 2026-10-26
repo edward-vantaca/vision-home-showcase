@@ -1,6 +1,6 @@
 import type { Scene } from "../types";
 import { VT } from "../viewTransitionNames";
-import { COMMUNITY_FEED_LOAD_MS } from "../../communityFeedLoad";
+import { PAGE_LOAD_MS } from "../../pageLoad";
 
 // View All Posts on the dashboard opens the community feed, which scrolls
 // slowly until the Forgotten Island post sits mid-screen. The post lifts off
@@ -19,7 +19,7 @@ export const communityFeedScene: Scene = {
       to: VT.DashboardFeedViewAll,
       action: "click",
       // The feed loads first; the scroll starts once it has been up a moment.
-      holdMs: COMMUNITY_FEED_LOAD_MS + 1000,
+      holdMs: PAGE_LOAD_MS + 1000,
       durationMs: 1500,
       then: [{ to: VT.CommunityFeedPage, action: "scroll", scrollTo: VT.FeedPostForgottenIsland, scrollMs: 4000 }],
     },

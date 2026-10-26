@@ -9,7 +9,8 @@ import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
 import { VT, type VTName } from "./walkthrough/viewTransitionNames";
-import { COMMUNITY_FEED_LOAD_MS } from "./communityFeedLoad";
+import { usePageLoad } from "./pageLoad";
+import PageLoader from "./PageLoader";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -2543,11 +2544,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
   const [createPostOpen, setCreatePostOpen] = useState(false);
   // A short load on arrival, like fetching the feed, so landing here feels real.
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), COMMUNITY_FEED_LOAD_MS);
-    return () => clearTimeout(timer);
-  }, []);
+  const loading = usePageLoad();
 
   const toggleLike = (postId: number) => {
     setLikedPosts((current) => {
@@ -2584,11 +2581,9 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
       </div>
 
       {loading ? (
-        <div data-ux-id="community-feed-loader" className="flex h-full items-center justify-center">
-          <div role="status" aria-label="Loading" className="size-[44px] rounded-full border-[3px] border-[#d9e7f0] border-t-[#247ae4] animate-spin" />
-        </div>
+        <PageLoader uxId="community-feed-loader" />
       ) : (
-        <div className="flex w-full max-w-[1280px] mx-auto flex-col gap-[24px] px-[16px] pb-[44px] pt-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px] animate-[community-feed-in_300ms_ease-out]">
+        <div className="flex w-full max-w-[1280px] mx-auto flex-col gap-[24px] px-[16px] pb-[44px] pt-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px] animate-[page-content-in_300ms_ease-out]">
           <div className="hidden w-full items-center justify-between gap-[28px] md:flex">
             <div className="min-w-0 flex-1">
               <p className="font-['DM_Sans:SemiBold',sans-serif] text-[28px] font-semibold leading-normal text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
@@ -2884,6 +2879,8 @@ function ArcFormPage({
   const [endDate, setEndDate] = useState("");
   const [attachment, setAttachment] = useState("");
   const [fence, setFence] = useState({ material: "", style: "", height: "", color: "", length: "", gates: "", contractor: "" });
+  // A short load on arrival, like fetching the form, so landing here feels real.
+  const loading = usePageLoad();
   const setFenceField = (field: keyof typeof fence) => (event: { target: { value: string } }) =>
     setFence((prev) => ({ ...prev, [field]: event.target.value }));
 
@@ -2910,217 +2907,221 @@ function ArcFormPage({
         <div className="w-[36px]" />
       </div>
 
-      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[24px] px-[16px] py-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px] md:pb-[44px]">
-        {/* Header — desktop only */}
-        <div className="hidden md:flex items-center justify-between w-full shrink-0">
-          <div className="flex flex-col flex-1 min-w-0">
-            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Submit a Request
-            </p>
-            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Share the details below so your community team can get started.
-            </p>
+      {loading ? (
+        <PageLoader uxId="arc-form-loader" />
+      ) : (
+        <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[24px] px-[16px] py-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px] md:pb-[44px] animate-[page-content-in_300ms_ease-out]">
+          {/* Header — desktop only */}
+          <div className="hidden md:flex items-center justify-between w-full shrink-0">
+            <div className="flex flex-col flex-1 min-w-0">
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Submit a Request
+              </p>
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Share the details below so your community team can get started.
+              </p>
+            </div>
+            <AddressCard />
           </div>
-          <AddressCard />
-        </div>
 
-        <form
-          data-ux-id="arc-form"
-          className="mx-auto flex w-full max-w-[820px] flex-col gap-[22px] rounded-[18px] bg-white px-[22px] py-[26px] shadow-[0_2px_18px_rgba(18,17,48,0.07)] md:px-[32px] md:py-[32px]"
-          onSubmit={(event) => event.preventDefault()}
-        >
-          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] md:text-[22px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-            {formLabel}
-          </p>
+          <form
+            data-ux-id="arc-form"
+            className="mx-auto flex w-full max-w-[820px] flex-col gap-[22px] rounded-[18px] bg-white px-[22px] py-[26px] shadow-[0_2px_18px_rgba(18,17,48,0.07)] md:px-[32px] md:py-[32px]"
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] md:text-[22px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+              {formLabel}
+            </p>
 
-          <label className="flex flex-col gap-[8px]">
-            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Subject</span>
-            <input
-              value={subject}
-              onChange={(event) => setSubject(event.target.value)}
-              data-ux-id="arc-form-subject"
-              className={inputBase}
-            />
-          </label>
+            <label className="flex flex-col gap-[8px]">
+              <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Subject</span>
+              <input
+                value={subject}
+                onChange={(event) => setSubject(event.target.value)}
+                data-ux-id="arc-form-subject"
+                className={inputBase}
+              />
+            </label>
 
-          <label className="flex flex-col gap-[8px]">
-            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Details</span>
-            <textarea
-              value={details}
-              onChange={(event) => setDetails(event.target.value)}
-              data-ux-id="arc-form-details"
-              className="min-h-[128px] w-full rounded-[8px] border border-[#cfd3da] bg-white px-[14px] py-[12px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal leading-[1.4] text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/40 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
-            />
-          </label>
+            <label className="flex flex-col gap-[8px]">
+              <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Details</span>
+              <textarea
+                value={details}
+                onChange={(event) => setDetails(event.target.value)}
+                data-ux-id="arc-form-details"
+                className="min-h-[128px] w-full rounded-[8px] border border-[#cfd3da] bg-white px-[14px] py-[12px] font-['DM_Sans:Regular',sans-serif] text-[14px] font-normal leading-[1.4] text-[#1a1a1a] outline-none transition-shadow placeholder:text-[#1a1a1a]/40 focus:border-[#247ae4] focus:ring-2 focus:ring-[#247ae4]/15"
+              />
+            </label>
 
-          <label className="flex flex-col gap-[8px]">
-            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Property</span>
-            <select
-              value={property}
-              onChange={(event) => setProperty(event.target.value)}
-              data-ux-id="arc-form-property"
-              className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
-              style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
-            >
-              <option value=""></option>
-              <option value="123-madison-green">123 Madison Green</option>
-              <option value="24-waterfront-dr">24 Waterfront Dr</option>
-            </select>
-          </label>
+            <label className="flex flex-col gap-[8px]">
+              <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Property</span>
+              <select
+                value={property}
+                onChange={(event) => setProperty(event.target.value)}
+                data-ux-id="arc-form-property"
+                className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
+                style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
+              >
+                <option value=""></option>
+                <option value="123-madison-green">123 Madison Green</option>
+                <option value="24-waterfront-dr">24 Waterfront Dr</option>
+              </select>
+            </label>
 
-          <label className="flex flex-col gap-[8px]">
-            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Area of Work</span>
-            <select
-              value={areaOfWork}
-              onChange={(event) => setAreaOfWork(event.target.value)}
-              data-ux-id="arc-form-area-of-work"
-              className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
-              style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
-            >
-              <option value=""></option>
-              <option value="front-yard">Front yard</option>
-              <option value="back-yard">Back yard</option>
-              <option value="exterior">Exterior</option>
-            </select>
-          </label>
+            <label className="flex flex-col gap-[8px]">
+              <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Area of Work</span>
+              <select
+                value={areaOfWork}
+                onChange={(event) => setAreaOfWork(event.target.value)}
+                data-ux-id="arc-form-area-of-work"
+                className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
+                style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
+              >
+                <option value=""></option>
+                <option value="front-yard">Front yard</option>
+                <option value="back-yard">Back yard</option>
+                <option value="exterior">Exterior</option>
+              </select>
+            </label>
 
-          {formId === "fence" && (
-            <div data-ux-id="arc-form-fence-details" className="flex flex-col gap-[22px]">
-              <div className="grid grid-cols-1 gap-[22px] sm:grid-cols-2">
-                {fenceSelects.map((select) => (
-                  <label key={select.field} className="flex flex-col gap-[8px]">
-                    <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>{select.label}</span>
-                    <select
-                      value={fence[select.field]}
-                      onChange={setFenceField(select.field)}
-                      data-ux-id={`arc-form-fence-${select.field}`}
-                      className={selectBase}
-                      style={selectChevron}
-                    >
-                      <option value="">{select.placeholder}</option>
-                      {select.options.map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
+            {formId === "fence" && (
+              <div data-ux-id="arc-form-fence-details" className="flex flex-col gap-[22px]">
+                <div className="grid grid-cols-1 gap-[22px] sm:grid-cols-2">
+                  {fenceSelects.map((select) => (
+                    <label key={select.field} className="flex flex-col gap-[8px]">
+                      <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>{select.label}</span>
+                      <select
+                        value={fence[select.field]}
+                        onChange={setFenceField(select.field)}
+                        data-ux-id={`arc-form-fence-${select.field}`}
+                        className={selectBase}
+                        style={selectChevron}
+                      >
+                        <option value="">{select.placeholder}</option>
+                        {select.options.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                  <label className="flex flex-col gap-[8px]">
+                    <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Total Length (linear ft)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={fence.length}
+                      onChange={setFenceField("length")}
+                      placeholder="e.g. 120"
+                      data-ux-id="arc-form-fence-length"
+                      className={inputBase}
+                    />
                   </label>
-                ))}
+                </div>
                 <label className="flex flex-col gap-[8px]">
-                  <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Total Length (linear ft)</span>
+                  <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Contractor</span>
                   <input
-                    type="number"
-                    min={0}
-                    value={fence.length}
-                    onChange={setFenceField("length")}
-                    placeholder="e.g. 120"
-                    data-ux-id="arc-form-fence-length"
+                    value={fence.contractor}
+                    onChange={setFenceField("contractor")}
+                    placeholder="Company name, or self-installed"
+                    data-ux-id="arc-form-fence-contractor"
                     className={inputBase}
                   />
                 </label>
               </div>
-              <label className="flex flex-col gap-[8px]">
-                <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Contractor</span>
-                <input
-                  value={fence.contractor}
-                  onChange={setFenceField("contractor")}
-                  placeholder="Company name, or self-installed"
-                  data-ux-id="arc-form-fence-contractor"
-                  className={inputBase}
-                />
-              </label>
-            </div>
-          )}
+            )}
 
-          <fieldset className="flex flex-col gap-[12px] rounded-[10px] border border-[#e2eaf0] bg-[#f6f9fc] px-[18px] py-[18px]">
-            <legend className="sr-only">Architectural Forms</legend>
-            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Architectural Forms
-            </p>
-            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-              Download supporting documents to reference while completing this form.
-            </p>
-            <label className="flex flex-col gap-[6px]">
-              <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Select form</span>
-              <select
-                value={supportingForm}
-                onChange={(event) => setSupportingForm(event.target.value)}
-                data-ux-id="arc-form-supporting-form"
-                className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
-                style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
-              >
-                <option value="">Choose a form to download</option>
-                <option value="guidelines">Architectural Guidelines (PDF)</option>
-                <option value="plot-plan">Plot Plan Template (PDF)</option>
-                <option value="checklist">Submission Checklist (PDF)</option>
-              </select>
-            </label>
-          </fieldset>
-
-          <div className="flex flex-col gap-[10px]">
-            <p className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Date Range</p>
-            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+            <fieldset className="flex flex-col gap-[12px] rounded-[10px] border border-[#e2eaf0] bg-[#f6f9fc] px-[18px] py-[18px]">
+              <legend className="sr-only">Architectural Forms</legend>
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Architectural Forms
+              </p>
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                Download supporting documents to reference while completing this form.
+              </p>
               <label className="flex flex-col gap-[6px]">
-                <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Start Date</span>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(event) => setStartDate(event.target.value)}
-                  data-ux-id="arc-form-start-date"
-                  className={inputBase}
-                />
+                <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Select form</span>
+                <select
+                  value={supportingForm}
+                  onChange={(event) => setSupportingForm(event.target.value)}
+                  data-ux-id="arc-form-supporting-form"
+                  className={`${inputBase} appearance-none bg-no-repeat bg-[right_14px_center] pr-[36px]`}
+                  style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23262630' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>\")" }}
+                >
+                  <option value="">Choose a form to download</option>
+                  <option value="guidelines">Architectural Guidelines (PDF)</option>
+                  <option value="plot-plan">Plot Plan Template (PDF)</option>
+                  <option value="checklist">Submission Checklist (PDF)</option>
+                </select>
               </label>
-              <label className="flex flex-col gap-[6px]">
-                <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>End Date</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(event) => setEndDate(event.target.value)}
-                  data-ux-id="arc-form-end-date"
-                  className={inputBase}
-                />
-              </label>
-            </div>
-          </div>
+            </fieldset>
 
-          <label className="flex flex-col gap-[8px]">
-            <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Attachments</span>
-            <span className="relative flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-[6px] rounded-[8px] border border-dashed border-[#cfd3da] bg-[#f9fafb] px-[18px] py-[18px] text-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" stroke="#65666e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-black text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                {attachment ? attachment : <>Drag &amp; Drop or <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline">Choose file</span> to upload</>}
+            <div className="flex flex-col gap-[10px]">
+              <p className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Date Range</p>
+              <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+                <label className="flex flex-col gap-[6px]">
+                  <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Start Date</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(event) => setStartDate(event.target.value)}
+                    data-ux-id="arc-form-start-date"
+                    className={inputBase}
+                  />
+                </label>
+                <label className="flex flex-col gap-[6px]">
+                  <span className="font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>End Date</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(event) => setEndDate(event.target.value)}
+                    data-ux-id="arc-form-end-date"
+                    className={inputBase}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <label className="flex flex-col gap-[8px]">
+              <span className={labelBase} style={{ fontVariationSettings: '"opsz" 14' }}>Attachments</span>
+              <span className="relative flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-[6px] rounded-[8px] border border-dashed border-[#cfd3da] bg-[#f9fafb] px-[18px] py-[18px] text-center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V3m0 0L7.5 7.5M12 3l4.5 4.5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" stroke="#65666e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-black text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                  {attachment ? attachment : <>Drag &amp; Drop or <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline">Choose file</span> to upload</>}
+                </span>
+                <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>PDF, ZIP, PNG, JPEG, HEIC</span>
+                <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>Max 25 MB total</span>
+                <input
+                  type="file"
+                  data-ux-id="arc-form-attachment"
+                  onChange={(event) => setAttachment(event.target.files?.[0]?.name ?? "")}
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                  aria-label="Upload attachment"
+                />
               </span>
-              <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>PDF, ZIP, PNG, JPEG, HEIC</span>
-              <span className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#4b5563] text-[12px]" style={{ fontVariationSettings: '"opsz" 14' }}>Max 25 MB total</span>
-              <input
-                type="file"
-                data-ux-id="arc-form-attachment"
-                onChange={(event) => setAttachment(event.target.files?.[0]?.name ?? "")}
-                className="absolute inset-0 cursor-pointer opacity-0"
-                aria-label="Upload attachment"
-              />
-            </span>
-          </label>
+            </label>
 
-          <div className="flex items-center justify-end gap-[10px] pt-[6px]">
-            <button
-              type="button"
-              onClick={onCancel}
-              data-ux-id="arc-form-cancel"
-              className="rounded-[8px] border border-[#d9e0e7] bg-white px-[18px] py-[10px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px] transition-colors hover:bg-[#f2f5f7]"
-              style={{ fontVariationSettings: '"opsz" 14' }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              data-ux-id="arc-form-submit"
-              className="rounded-[8px] bg-[#247ae4] px-[18px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px] shadow-sm transition-colors hover:bg-[#176dcb]"
-              style={{ fontVariationSettings: '"opsz" 14' }}
-            >
-              Submit Request
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="flex items-center justify-end gap-[10px] pt-[6px]">
+              <button
+                type="button"
+                onClick={onCancel}
+                data-ux-id="arc-form-cancel"
+                className="rounded-[8px] border border-[#d9e0e7] bg-white px-[18px] py-[10px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] text-[14px] transition-colors hover:bg-[#f2f5f7]"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                data-ux-id="arc-form-submit"
+                className="rounded-[8px] bg-[#247ae4] px-[18px] py-[10px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[14px] shadow-sm transition-colors hover:bg-[#176dcb]"
+                style={{ fontVariationSettings: '"opsz" 14' }}
+              >
+                Submit Request
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

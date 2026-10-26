@@ -87,7 +87,7 @@ body,
 }
 
 /* Register CTA -> onboarding: hold the loading screen ~1s, then fade it out. */
-@keyframes community-feed-in {
+@keyframes page-content-in {
   from {
     opacity: 0;
     transform: translateY(8px);
