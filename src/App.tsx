@@ -1427,6 +1427,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
                         src={post.image}
                         alt={post.imageAlt ?? ""}
                         className="w-[120px] h-[90px] md:w-[160px] md:h-[110px] rounded-[12px] object-cover shrink-0"
+                        style={{ objectPosition: post.imagePosition }}
                       />
                       <div className="flex flex-col gap-[6px] min-w-0 flex-1">
                         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[15px] leading-[1.25]" style={{ fontVariationSettings: '"opsz" 14' }}>
@@ -2302,6 +2303,8 @@ type CommunityPost = {
   initials: string;
   image?: string;
   imageAlt?: string;
+  /** CSS object-position for the cropped image, e.g. "top" to keep a poster's title in view. */
+  imagePosition?: string;
   likes: number;
   official?: boolean;
   postedByBoard?: boolean;
@@ -2318,6 +2321,7 @@ const initialCommunityPosts: CommunityPost[] = [
     initials: "WC",
     image: "/assets/forgotten-island.webp",
     imageAlt: "DreamWorks Forgotten Island movie poster",
+    imagePosition: "top",
     likes: 28,
     official: true,
     links: [
@@ -2626,7 +2630,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                 <div className="flex flex-col gap-[14px] md:gap-[18px]">
                   <p className="font-['DM_Sans:SemiBold',sans-serif] text-[18px] font-semibold leading-[1.2] text-black" style={{ fontVariationSettings: '"opsz" 14' }}>{post.title}</p>
                   <p className="font-['DM_Sans:Regular',sans-serif] text-[15px] font-normal leading-[1.35] text-[#4b5563] md:text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>{post.body}</p>
-                  {post.image && <img src={post.image} alt={post.imageAlt ?? ""} className="aspect-[621/316] w-full rounded-[16px] object-cover" />}
+                  {post.image && <img src={post.image} alt={post.imageAlt ?? ""} className="aspect-[621/316] w-full rounded-[16px] object-cover" style={{ objectPosition: post.imagePosition }} />}
                   {post.links && post.links.length > 0 && (
                     <div className="flex flex-wrap gap-[9px]">
                       {post.links.map((link, linkIdx) => (
