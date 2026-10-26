@@ -5,7 +5,7 @@ export const askHoaiScene: Scene = {
   id: "ask-hoai",
   label: "Ask HOAi",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
   beats: [
     {
       // Once the panel has morphed into view, the cursor drags the fence

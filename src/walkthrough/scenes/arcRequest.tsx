@@ -6,7 +6,7 @@ export const arcRequestScene: Scene = {
   id: "arc-request",
   label: "ARC request",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
   beats: [
     {
       // Quick Actions -> ARC Request -> Fence Installation lands on the form,

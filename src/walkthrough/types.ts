@@ -81,6 +81,8 @@ export type SceneAppState = {
   onboardingScreen?: OnboardingScreen;
   dashboardView?: DashboardView;
   askHoaiOpen?: boolean;
+  /** The Payments scene has paid the balance: the payments widget shows $0.00. */
+  balancePaid?: boolean;
 };
 
 export type Scene = {

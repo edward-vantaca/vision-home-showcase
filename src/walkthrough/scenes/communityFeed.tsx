@@ -12,7 +12,7 @@ export const communityFeedScene: Scene = {
   id: "community-feed",
   label: "Community feed",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
   reenterAtStart: true,
   beats: [
     { kind: "idle" },

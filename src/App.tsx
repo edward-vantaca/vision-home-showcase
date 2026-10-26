@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { imgScreenshot20260109At35226Pm1 } from "../imports/svg-9a9bp";
 import NewResidentFlow, { type Screen as OnboardingScreen } from "./onboarding/NewResidentFlow";
 import InboxPage from "./inbox/InboxPage";
@@ -670,7 +670,7 @@ function formatCardNumber(v: string) { return v.replace(/\D/g, "").slice(0, 16).
 function formatCardExpiry(v: string) { const d = v.replace(/\D/g, "").slice(0, 4); return d.length >= 3 ? d.slice(0, 2) + " / " + d.slice(2) : d; }
 
 /* ─── Make a Payment Modal ─── */
-function PaymentModal({ onClose, currentBalance }: { onClose: () => void; currentBalance: string }) {
+function PaymentModal({ onClose, onPaid, currentBalance }: { onClose: () => void; onPaid: (amount: string) => void; currentBalance: string }) {
   const [step, setStep] = useState<"form" | "review" | "confirmation" | "autopay-confirmation" | "new-card-form" | "new-bank-form">("form");
   const [method, setMethod] = useState<"visa" | "bank" | "new-card" | "new-bank">("visa");
   const [methodExpanded, setMethodExpanded] = useState(false);
@@ -687,21 +687,29 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") closeRef.current();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, []);
 
   const methodLabel = method === "visa" ? "Visa •••• 4242" : method === "bank" ? "Bank •••• 2363" : method === "new-card" ? "New Card" : "New Bank Account";
   const paymentAmount = amountOption === "balance" ? currentBalance : `$${otherAmount || "0.00"}`;
+  // The balance drops once the modal closes on a processed payment, not while
+  // the confirmation still shows the amount paid.
+  const close = () => {
+    if (step === "confirmation" || step === "autopay-confirmation") onPaid(paymentAmount);
+    onClose();
+  };
+  const closeRef = useRef(close);
+  closeRef.current = close;
   const processingFee = "$0.00";
 
   return (
     <div
       data-ux-id="payment-modal-backdrop"
       className="fixed inset-0 z-[300] flex items-center justify-center px-[16px]"
-      onMouseDown={onClose}
+      onMouseDown={close}
     >
       <div
         data-ux-id="payment-modal"
@@ -714,7 +722,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
             Make a Payment
           </p>
           <button
-            onClick={onClose}
+            onClick={close}
             data-ux-id="payment-modal-close-button"
             data-vt-name={VT.PaymentModalCloseBtn}
             className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-[#f2f5f7] transition-colors shrink-0"
@@ -907,7 +915,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
           </div>
 
           <button
-            onClick={onClose}
+            onClick={close}
             data-ux-id="payment-modal-done-button"
             className="w-full bg-[#247ae4] hover:bg-[#1a6ed0] transition-colors text-white rounded-[10px] px-[22px] py-[13px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[16px]"
             style={{ fontVariationSettings: '"opsz" 14' }}
@@ -1279,10 +1287,17 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
 }
 
 /* ─── Dashboard Page ─── */
-function DashboardPage({ onNavigate, onOpenSidebar, view, loads }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView; loads: boolean }) {
+/** The homeowner's balance until they pay it (the Payments scene does). */
+const BALANCE_DUE = 425;
+
+function formatUsd(amount: number): string {
+  return amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onPay }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView; loads: boolean; balanceDue: number; onPay: (amount: string) => void }) {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const loading = usePageLoad(loads);
-  const currentBalance = "$425.00";
+  const currentBalance = formatUsd(balanceDue);
   return (
     <div data-ux-id="dashboard-page" data-vt-name={VT.DashboardPage} className="flex-1 min-w-0 h-full overflow-y-auto" style={{ overflowAnchor: "none" }}>
       {/* Mobile top bar */}
@@ -1559,7 +1574,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads }: { onNavigate:
         </div>
       )}
       {paymentModalOpen && (
-        <PaymentModal onClose={() => setPaymentModalOpen(false)} currentBalance={currentBalance} />
+        <PaymentModal onClose={() => setPaymentModalOpen(false)} onPaid={onPay} currentBalance={currentBalance} />
       )}
     </div>
   );
@@ -3310,6 +3325,8 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   // The dashboard loads when clicked to: Go to portal, Home, ARC Cancel.
   // Walkthrough scene jumps land on it ready, so scene targets exist at once.
   const [dashboardLoads, setDashboardLoads] = useState(entering);
+  const [balanceDue, setBalanceDue] = useState(BALANCE_DUE);
+  const pay = (amount: string) => setBalanceDue((due) => Math.max(0, due - (Number(amount.replace(/[^0-9.]/g, "")) || 0)));
 
   // Synced to the app scene, not the cursor's: on a phone scene the app
   // underneath keeps (beat 0) or jumps ahead to (beat 1+) a neighbouring
@@ -3339,6 +3356,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
     if (!target || target.phase !== "portal") return;
     if (target.dashboardView) setDashboardView(target.dashboardView);
     if (typeof target.askHoaiOpen === "boolean") setAskHoaiOpen(target.askHoaiOpen);
+    setBalanceDue(target.balancePaid ? 0 : BALANCE_DUE);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appSyncKey]);
 
@@ -3380,7 +3398,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
         }`}
       >
         {activePage === "dashboard" ? (
-          <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} loads={dashboardLoads} />
+          <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} loads={dashboardLoads} balanceDue={balanceDue} onPay={pay} />
         ) : activePage === "elections" ? (
           <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} />
         ) : activePage === "amenities" ? (

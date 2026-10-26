@@ -41,6 +41,15 @@ describe("homeVisionSequence", () => {
     expect(dashboard.appState).toEqual(payments.appState);
   });
 
+  it("every portal scene after Payments shows the balance paid, and none before it", () => {
+    const ids = homeVisionSequence.map((s) => s.id);
+    const payments = ids.indexOf("payments");
+    homeVisionSequence.forEach((scene, i) => {
+      if (scene.appState?.phase !== "portal") return;
+      expect([scene.id, scene.appState.balancePaid ?? false]).toEqual([scene.id, i > payments]);
+    });
+  });
+
   it("ends on a still dashboard after the broadcast SMS so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
     expect(ids.slice(-4)).toEqual(["ask-hoai", "community-feed", "broadcast-sms", "closing-dashboard"]);

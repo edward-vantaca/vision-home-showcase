@@ -65,6 +65,12 @@ export const paymentsScene: Scene = {
 };
 ```
 
+`appState.balancePaid` sets the payments widget to $0.00 (otherwise $425.00).
+Every portal scene after Payments declares it, since the Payments scene pays
+the balance in the modal (the widget drops to $0.00 when the modal closes on a
+processed payment). ← from the next scene back onto Payments' last beat shows
+$425.00 again (the scene's own appState).
+
 Each **beat** is one press of → . Targets are elements tagged
 `data-vt-name={VT.Something}`; add new names to `VT` (the sequence test checks
 every beat targets a known name and that names are unique).
@@ -377,7 +383,7 @@ layer; the rest of the time its transform is `none`, so the app's own layers
 intro → inbox (open email, click register CTA) → onboarding (password, Create
 account) → autopay → go-to-portal → dashboard (pointer stays put; scrolls to the bottom, rests 3 s,
 scrolls back up) → payments (lift, Make a
-Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
+Payment modal walk-through; balance $425.00 → $0.00) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (still on the dashboard; → View All Posts → feed scrolls until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
