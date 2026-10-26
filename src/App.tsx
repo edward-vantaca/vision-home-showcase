@@ -9,6 +9,7 @@ import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
 import { VT, type VTName } from "./walkthrough/viewTransitionNames";
+import { COMMUNITY_FEED_LOAD_MS } from "./communityFeedLoad";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -2541,6 +2542,12 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const [posts, setPosts] = useState(initialCommunityPosts);
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  // A short load on arrival, like fetching the feed, so landing here feels real.
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), COMMUNITY_FEED_LOAD_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleLike = (postId: number) => {
     setLikedPosts((current) => {
@@ -2576,91 +2583,97 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex w-full max-w-[1280px] mx-auto flex-col gap-[24px] px-[16px] pb-[44px] pt-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px]">
-        <div className="hidden w-full items-center justify-between gap-[28px] md:flex">
-          <div className="min-w-0 flex-1">
-            <p className="font-['DM_Sans:SemiBold',sans-serif] text-[28px] font-semibold leading-normal text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
-            <p className="font-['DM_Sans:Regular',sans-serif] text-[16px] font-normal leading-normal text-[#262630]/70" style={{ fontVariationSettings: '"opsz" 14' }}>Connect with your neighbors and stay updated on community happenings</p>
-          </div>
-          <AddressCard />
+      {loading ? (
+        <div data-ux-id="community-feed-loader" className="flex h-full items-center justify-center">
+          <div role="status" aria-label="Loading" className="size-[44px] rounded-full border-[3px] border-[#d9e7f0] border-t-[#247ae4] animate-spin" />
         </div>
-
-        <div className="mx-auto flex w-full max-w-[673px] flex-col gap-[16px]">
-          <div data-ux-id="community-feed-create-post-card" className="flex items-center gap-[14px] rounded-[18px] bg-white px-[18px] py-[18px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:px-[26px] md:py-[24px]">
-            <p className="min-w-0 flex-1 font-['DM_Sans:SemiBold',sans-serif] text-[17px] font-semibold text-[#262630] md:text-[20px]" style={{ fontVariationSettings: '"opsz" 14' }}>What’s happening in the community?</p>
-            <button onClick={() => setCreatePostOpen(true)} data-ux-id="community-feed-create-post-button" className="flex shrink-0 items-center gap-[8px] rounded-[8px] bg-[#247ae4] px-[14px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-white shadow-sm transition-colors hover:bg-[#176dcb]">
-              <span className="text-[18px] font-normal leading-none">+</span>
-              <span className="hidden sm:inline">Create Post</span>
-              <span className="sm:hidden">Post</span>
-            </button>
+      ) : (
+        <div className="flex w-full max-w-[1280px] mx-auto flex-col gap-[24px] px-[16px] pb-[44px] pt-[20px] md:gap-[32px] md:px-[44px] md:pt-[31px] animate-[community-feed-in_300ms_ease-out]">
+          <div className="hidden w-full items-center justify-between gap-[28px] md:flex">
+            <div className="min-w-0 flex-1">
+              <p className="font-['DM_Sans:SemiBold',sans-serif] text-[28px] font-semibold leading-normal text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
+              <p className="font-['DM_Sans:Regular',sans-serif] text-[16px] font-normal leading-normal text-[#262630]/70" style={{ fontVariationSettings: '"opsz" 14' }}>Connect with your neighbors and stay updated on community happenings</p>
+            </div>
+            <AddressCard />
           </div>
 
-          {posts.map((post) => {
-            const liked = likedPosts.has(post.id);
-            return (
-              <article key={post.id} data-ux-id={`community-feed-post-${post.id}`} data-vt-name={post.vtName} className="flex w-full flex-col gap-[20px] rounded-[18px] border border-[#d9e7f0] bg-white px-[18px] pb-[16px] pt-[22px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:gap-[24px] md:px-[26px] md:pt-[24px]">
-                <div className="flex items-start gap-[14px]">
-                  <div className="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-[#247ae4] font-['Open_Sans:Regular',sans-serif] text-[13px] font-normal text-white" style={{ fontVariationSettings: '"wdth" 100' }}>{post.initials}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[1.2] text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>{post.author}</p>
-                    {post.postedByBoard ? (
-                      <p className="mt-[5px] font-['DM_Sans:Regular',sans-serif] text-[12px] font-normal leading-[1.2] text-[#4b5563]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        Posted by your Board · {post.date}
-                      </p>
-                    ) : (
-                      <div className="mt-[5px] flex items-center gap-[7px] font-['DM_Sans:Regular',sans-serif] text-[12px] font-normal leading-[1.2]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                        <span className="text-[#4b5563]">{post.date}</span>
-                        <span className="text-[#4b5563]">·</span>
-                        <span className="flex items-center gap-[4px] text-[#009c68]">
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                            <path d="M5.625 0C5.74219 0 5.83594 0.0234375 5.92969 0.0703125L10.3594 1.94531C10.875 2.15625 11.25 2.67188 11.25 3.28125C11.25 5.60156 10.2891 9.86719 6.25781 11.7891C5.85938 11.9766 5.39062 11.9766 5.01562 11.7891C0.960938 9.86719 0.0234375 5.60156 0 3.28125C0 2.67188 0.375 2.15625 0.890625 1.94531L5.32031 0.0703125C5.41406 0.0234375 5.50781 0 5.625 0ZM1.33594 2.97656C1.19531 3.04688 1.125 3.16406 1.125 3.28125C1.14844 5.41406 2.03906 9.11719 5.50781 10.7812C5.57812 10.8281 5.67188 10.8281 5.76562 10.7812C9.23438 9.11719 10.125 5.41406 10.125 3.28125C10.125 3.16406 10.0547 3.04688 9.91406 2.97656L5.625 1.14844L1.33594 2.97656ZM6.96094 3.79688C7.14844 3.53906 7.5 3.49219 7.75781 3.67969C8.01562 3.84375 8.0625 4.19531 7.875 4.45312L5.48438 7.75781C5.39062 7.89844 5.22656 7.96875 5.0625 7.99219C4.89844 7.99219 4.73438 7.94531 4.61719 7.80469L3.53906 6.67969C3.32812 6.46875 3.32812 6.11719 3.53906 5.90625C3.77344 5.67188 4.125 5.69531 4.33594 5.90625L4.96875 6.5625L6.96094 3.79688Z" fill="currentColor"/>
-                          </svg>
-                          Verified Safe
-                        </span>
-                      </div>
+          <div className="mx-auto flex w-full max-w-[673px] flex-col gap-[16px]">
+            <div data-ux-id="community-feed-create-post-card" className="flex items-center gap-[14px] rounded-[18px] bg-white px-[18px] py-[18px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:px-[26px] md:py-[24px]">
+              <p className="min-w-0 flex-1 font-['DM_Sans:SemiBold',sans-serif] text-[17px] font-semibold text-[#262630] md:text-[20px]" style={{ fontVariationSettings: '"opsz" 14' }}>What’s happening in the community?</p>
+              <button onClick={() => setCreatePostOpen(true)} data-ux-id="community-feed-create-post-button" className="flex shrink-0 items-center gap-[8px] rounded-[8px] bg-[#247ae4] px-[14px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[21px] text-white shadow-sm transition-colors hover:bg-[#176dcb]">
+                <span className="text-[18px] font-normal leading-none">+</span>
+                <span className="hidden sm:inline">Create Post</span>
+                <span className="sm:hidden">Post</span>
+              </button>
+            </div>
+
+            {posts.map((post) => {
+              const liked = likedPosts.has(post.id);
+              return (
+                <article key={post.id} data-ux-id={`community-feed-post-${post.id}`} data-vt-name={post.vtName} className="flex w-full flex-col gap-[20px] rounded-[18px] border border-[#d9e7f0] bg-white px-[18px] pb-[16px] pt-[22px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:gap-[24px] md:px-[26px] md:pt-[24px]">
+                  <div className="flex items-start gap-[14px]">
+                    <div className="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-[#247ae4] font-['Open_Sans:Regular',sans-serif] text-[13px] font-normal text-white" style={{ fontVariationSettings: '"wdth" 100' }}>{post.initials}</div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-['DM_Sans:SemiBold',sans-serif] text-[14px] font-semibold leading-[1.2] text-[#262630]" style={{ fontVariationSettings: '"opsz" 14' }}>{post.author}</p>
+                      {post.postedByBoard ? (
+                        <p className="mt-[5px] font-['DM_Sans:Regular',sans-serif] text-[12px] font-normal leading-[1.2] text-[#4b5563]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          Posted by your Board · {post.date}
+                        </p>
+                      ) : (
+                        <div className="mt-[5px] flex items-center gap-[7px] font-['DM_Sans:Regular',sans-serif] text-[12px] font-normal leading-[1.2]" style={{ fontVariationSettings: '"opsz" 14' }}>
+                          <span className="text-[#4b5563]">{post.date}</span>
+                          <span className="text-[#4b5563]">·</span>
+                          <span className="flex items-center gap-[4px] text-[#009c68]">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                              <path d="M5.625 0C5.74219 0 5.83594 0.0234375 5.92969 0.0703125L10.3594 1.94531C10.875 2.15625 11.25 2.67188 11.25 3.28125C11.25 5.60156 10.2891 9.86719 6.25781 11.7891C5.85938 11.9766 5.39062 11.9766 5.01562 11.7891C0.960938 9.86719 0.0234375 5.60156 0 3.28125C0 2.67188 0.375 2.15625 0.890625 1.94531L5.32031 0.0703125C5.41406 0.0234375 5.50781 0 5.625 0ZM1.33594 2.97656C1.19531 3.04688 1.125 3.16406 1.125 3.28125C1.14844 5.41406 2.03906 9.11719 5.50781 10.7812C5.57812 10.8281 5.67188 10.8281 5.76562 10.7812C9.23438 9.11719 10.125 5.41406 10.125 3.28125C10.125 3.16406 10.0547 3.04688 9.91406 2.97656L5.625 1.14844L1.33594 2.97656ZM6.96094 3.79688C7.14844 3.53906 7.5 3.49219 7.75781 3.67969C8.01562 3.84375 8.0625 4.19531 7.875 4.45312L5.48438 7.75781C5.39062 7.89844 5.22656 7.96875 5.0625 7.99219C4.89844 7.99219 4.73438 7.94531 4.61719 7.80469L3.53906 6.67969C3.32812 6.46875 3.32812 6.11719 3.53906 5.90625C3.77344 5.67188 4.125 5.69531 4.33594 5.90625L4.96875 6.5625L6.96094 3.79688Z" fill="currentColor"/>
+                            </svg>
+                            Verified Safe
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {post.official && (
+                      <span className="flex shrink-0 items-center gap-[5px] rounded-full bg-[#247ae4] px-[12px] py-[4px] font-['DM_Sans:SemiBold',sans-serif] text-[12px] font-semibold text-white md:px-[16px] md:text-[13px]">
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                          <path d="M6.44922 0.0761719L11.2227 2.10742C11.7812 2.36133 12.2129 2.89453 12.2129 3.55469C12.1875 6.09375 11.1465 10.6895 6.7793 12.7969C6.34766 13 5.86523 13 5.43359 12.7969C1.06641 10.6895 0.0253906 6.09375 0.0253906 3.55469C0 2.89453 0.431641 2.36133 0.990234 2.10742L5.76367 0.0761719C5.86523 0.0253906 5.99219 0 6.11914 0C6.2207 0 6.34766 0.0253906 6.44922 0.0761719ZM8.98828 5.30664H8.96289C9.2168 5.07812 9.2168 4.69727 8.96289 4.44336C8.73438 4.21484 8.35352 4.21484 8.125 4.44336L5.30664 7.28711L4.11328 6.09375C3.85938 5.83984 3.47852 5.83984 3.25 6.09375C2.99609 6.32227 2.99609 6.70312 3.25 6.93164L4.875 8.55664C5.10352 8.81055 5.48438 8.81055 5.73828 8.55664L8.98828 5.30664Z" fill="white"/>
+                        </svg>
+                        Official
+                      </span>
                     )}
                   </div>
-                  {post.official && (
-                    <span className="flex shrink-0 items-center gap-[5px] rounded-full bg-[#247ae4] px-[12px] py-[4px] font-['DM_Sans:SemiBold',sans-serif] text-[12px] font-semibold text-white md:px-[16px] md:text-[13px]">
-                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                        <path d="M6.44922 0.0761719L11.2227 2.10742C11.7812 2.36133 12.2129 2.89453 12.2129 3.55469C12.1875 6.09375 11.1465 10.6895 6.7793 12.7969C6.34766 13 5.86523 13 5.43359 12.7969C1.06641 10.6895 0.0253906 6.09375 0.0253906 3.55469C0 2.89453 0.431641 2.36133 0.990234 2.10742L5.76367 0.0761719C5.86523 0.0253906 5.99219 0 6.11914 0C6.2207 0 6.34766 0.0253906 6.44922 0.0761719ZM8.98828 5.30664H8.96289C9.2168 5.07812 9.2168 4.69727 8.96289 4.44336C8.73438 4.21484 8.35352 4.21484 8.125 4.44336L5.30664 7.28711L4.11328 6.09375C3.85938 5.83984 3.47852 5.83984 3.25 6.09375C2.99609 6.32227 2.99609 6.70312 3.25 6.93164L4.875 8.55664C5.10352 8.81055 5.48438 8.81055 5.73828 8.55664L8.98828 5.30664Z" fill="white"/>
-                      </svg>
-                      Official
-                    </span>
-                  )}
-                </div>
 
-                <div className="flex flex-col gap-[14px] md:gap-[18px]">
-                  <p className="font-['DM_Sans:SemiBold',sans-serif] text-[18px] font-semibold leading-[1.2] text-black" style={{ fontVariationSettings: '"opsz" 14' }}>{post.title}</p>
-                  <p className="font-['DM_Sans:Regular',sans-serif] text-[15px] font-normal leading-[1.35] text-[#4b5563] md:text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>{post.body}</p>
-                  {post.image && <img src={post.image} alt={post.imageAlt ?? ""} className="aspect-[621/316] w-full rounded-[16px] object-cover" style={{ objectPosition: post.imagePosition }} />}
-                  {post.links && post.links.length > 0 && (
-                    <div className="flex flex-wrap gap-[9px]">
-                      {post.links.map((link, linkIdx) => (
-                        <a
-                          key={link.href}
-                          href={link.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          data-ux-id={`community-feed-post-${post.id}-link-${linkIdx}`}
-                          className="max-w-full truncate rounded-full bg-[#e8f1f6] px-[15px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[13px] font-semibold leading-[1.2] text-[#262630] transition-colors hover:bg-[#d9eaf3] hover:text-[#247ae4] md:px-[18px] md:text-[14px]"
-                        >
-                          {link.label}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                  <div className="border-t border-[#d9e7f0]" />
-                  <button onClick={() => toggleLike(post.id)} aria-pressed={liked} data-ux-id={`community-feed-post-${post.id}-like-button`} className={`flex w-fit items-center gap-[7px] rounded-[6px] px-[2px] py-[2px] font-['DM_Sans:Regular',sans-serif] text-[13px] font-normal transition-colors ${liked ? "text-[#247ae4]" : "text-[#262630] hover:text-[#247ae4]"}`}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"}><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3m0 11V11l4-9a3 3 0 013 3v4h5.1a2.5 2.5 0 012.45 3l-1.5 7.5A3 3 0 0117.1 22H7z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    {liked ? "Liked" : "Like"} · {post.likes + (liked ? 1 : 0)}
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+                  <div className="flex flex-col gap-[14px] md:gap-[18px]">
+                    <p className="font-['DM_Sans:SemiBold',sans-serif] text-[18px] font-semibold leading-[1.2] text-black" style={{ fontVariationSettings: '"opsz" 14' }}>{post.title}</p>
+                    <p className="font-['DM_Sans:Regular',sans-serif] text-[15px] font-normal leading-[1.35] text-[#4b5563] md:text-[16px]" style={{ fontVariationSettings: '"opsz" 14' }}>{post.body}</p>
+                    {post.image && <img src={post.image} alt={post.imageAlt ?? ""} className="aspect-[621/316] w-full rounded-[16px] object-cover" style={{ objectPosition: post.imagePosition }} />}
+                    {post.links && post.links.length > 0 && (
+                      <div className="flex flex-wrap gap-[9px]">
+                        {post.links.map((link, linkIdx) => (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            data-ux-id={`community-feed-post-${post.id}-link-${linkIdx}`}
+                            className="max-w-full truncate rounded-full bg-[#e8f1f6] px-[15px] py-[8px] font-['DM_Sans:SemiBold',sans-serif] text-[13px] font-semibold leading-[1.2] text-[#262630] transition-colors hover:bg-[#d9eaf3] hover:text-[#247ae4] md:px-[18px] md:text-[14px]"
+                          >
+                            {link.label}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <div className="border-t border-[#d9e7f0]" />
+                    <button onClick={() => toggleLike(post.id)} aria-pressed={liked} data-ux-id={`community-feed-post-${post.id}-like-button`} className={`flex w-fit items-center gap-[7px] rounded-[6px] px-[2px] py-[2px] font-['DM_Sans:Regular',sans-serif] text-[13px] font-normal transition-colors ${liked ? "text-[#247ae4]" : "text-[#262630] hover:text-[#247ae4]"}`}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"}><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3m0 11V11l4-9a3 3 0 013 3v4h5.1a2.5 2.5 0 012.45 3l-1.5 7.5A3 3 0 0117.1 22H7z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      {liked ? "Liked" : "Like"} · {post.likes + (liked ? 1 : 0)}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
       {createPostOpen && <CreatePostModal onClose={() => setCreatePostOpen(false)} onPublish={publishPost} />}
     </div>
   );
