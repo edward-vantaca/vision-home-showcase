@@ -2313,23 +2313,6 @@ type CommunityPost = {
 
 const initialCommunityPosts: CommunityPost[] = [
   {
-    id: 6,
-    title: "Discounted tickets: Forgotten Island (opening weekend)",
-    body: "Resident perk from PerkSpot — grab discounted tickets to DreamWorks' Forgotten Island opening weekend. Save up to 35% at participating AMC, Regal, and Cinemark locations. Promo code and showtimes are available in the Offers section of the portal.",
-    date: "10/18/2026",
-    author: "Waterfront Community Association",
-    initials: "WC",
-    image: "/assets/forgotten-island.webp",
-    imageAlt: "DreamWorks Forgotten Island movie poster",
-    imagePosition: "top",
-    likes: 28,
-    official: true,
-    links: [
-      { label: "portal.waterfrontcommunity.org/offers", href: "https://portal.waterfrontcommunity.org/offers" },
-      { label: "perkspot.com/forgotten-island", href: "https://perkspot.com/forgotten-island" },
-    ],
-  },
-  {
     id: 1,
     title: "Food Truck Friday is back",
     body: "Join your neighbors by the clubhouse this Friday from 5–8 PM. Local favorites will be serving dinner, with lawn games and live acoustic music for the whole family.",
@@ -2344,6 +2327,23 @@ const initialCommunityPosts: CommunityPost[] = [
     links: [
       { label: "waterfrontcommunity.org/events", href: "https://waterfrontcommunity.org/events" },
       { label: "foodtruckfriday.com", href: "https://foodtruckfriday.com" },
+    ],
+  },
+  {
+    id: 6,
+    title: "Discounted tickets: Forgotten Island (opening weekend)",
+    body: "Resident perk from PerkSpot — grab discounted tickets to DreamWorks' Forgotten Island opening weekend. Save up to 35% at participating AMC, Regal, and Cinemark locations. Promo code and showtimes are available in the Offers section of the portal.",
+    date: "10/18/2026",
+    author: "Waterfront Community Association",
+    initials: "WC",
+    image: "/assets/forgotten-island.webp",
+    imageAlt: "DreamWorks Forgotten Island movie poster",
+    imagePosition: "top",
+    likes: 28,
+    official: true,
+    links: [
+      { label: "portal.waterfrontcommunity.org/offers", href: "https://portal.waterfrontcommunity.org/offers" },
+      { label: "perkspot.com/forgotten-island", href: "https://perkspot.com/forgotten-island" },
     ],
   },
   {
