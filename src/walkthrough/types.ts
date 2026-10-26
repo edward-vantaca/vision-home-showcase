@@ -14,6 +14,8 @@ export type CursorStop = {
   scrollMs?: number;
   /** "scroll" stops: scroll until this element is centred in the target instead. */
   scrollTo?: VTName;
+  /** "scroll" stops: scroll back up to the top instead. */
+  scrollToTop?: boolean;
   /** "drop" stops: the file the cursor carries in from off-screen and drops. */
   file?: string;
   /** Pause after this stop's action before moving on. */

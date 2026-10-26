@@ -122,7 +122,7 @@ A cursor beat is a list of stops: the beat's own fields are the first stop,
 | `"click"` | Travel to target centre, pause, press, real `click()` + `focus()` |
 | `"hover"` or omitted | Travel only |
 | `"tab"` | No travel; focus the target (as if Tab was pressed), then type |
-| `"scroll"` | No travel; ease the target's own scroll to its bottom over `scrollMs` (default 4000), or with `scrollTo` until that element is centred in the target (clamped to the scroll range) |
+| `"scroll"` | No travel; ease the target's own scroll to its bottom over `scrollMs` (default 4000), or with `scrollTo` until that element is centred in the target (clamped to the scroll range), or with `scrollToTop` back up to the top |
 | `"drop"` | Cursor enters from off the right edge carrying a file card labelled `file`, travels to the target, lets go: fires `DROP_FILE_EVENT` (`{ name }`, bubbling) on it |
 
 Per-stop extras: `typeText` + `typeCps` (types into an input via the native
@@ -375,7 +375,7 @@ layer; the rest of the time its transform is `none`, so the app's own layers
 ## Current scene order (`scenes/index.ts`)
 
 intro → inbox (open email, click register CTA) → onboarding (password, Create
-account) → autopay → go-to-portal → dashboard (still) → payments (lift, Make a
+account) → autopay → go-to-portal → dashboard (scrolls to the bottom, rests 3 s, scrolls back up) → payments (lift, Make a
 Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (still on the dashboard; → View All Posts → feed scrolls until the Forgotten Island post is

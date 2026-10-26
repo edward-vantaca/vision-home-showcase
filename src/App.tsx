@@ -1284,7 +1284,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads }: { onNavigate:
   const loading = usePageLoad(loads);
   const currentBalance = "$425.00";
   return (
-    <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto" style={{ overflowAnchor: "none" }}>
+    <div data-ux-id="dashboard-page" data-vt-name={VT.DashboardPage} className="flex-1 min-w-0 h-full overflow-y-auto" style={{ overflowAnchor: "none" }}>
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="dashboard-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">

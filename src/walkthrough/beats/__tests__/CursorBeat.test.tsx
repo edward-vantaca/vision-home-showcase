@@ -206,6 +206,38 @@ describe("CursorBeat", () => {
     page.remove();
   });
 
+  it("a scroll stop with scrollToTop eases back up to the top", async () => {
+    const PAGE = "wt-cursor-test-page" as VTName;
+    const page = document.createElement("div");
+    page.setAttribute("data-vt-name", PAGE);
+    Object.defineProperty(page, "scrollHeight", { configurable: true, value: 2400 });
+    Object.defineProperty(page, "clientHeight", { configurable: true, value: 800 });
+    document.body.appendChild(page);
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(
+      <CursorBeat
+        to={TARGET}
+        action="click"
+        then={[
+          { to: PAGE, action: "scroll", scrollMs: 4000 },
+          { to: PAGE, action: "scroll", scrollToTop: true, scrollMs: 3000 },
+        ]}
+      />,
+    );
+    await nextFrames();
+    const tl = timeline.mock.results[0].value;
+    act(() => {
+      tl.progress(0.6);
+    });
+    expect(page.scrollTop).toBeGreaterThan(0);
+    act(() => {
+      tl.progress(1);
+    });
+    expect(page.scrollTop).toBe(0);
+    page.remove();
+  });
+
   it("a drop stop carries a file card in and drops that file on its target", async () => {
     const dropped = vi.fn();
     target.addEventListener(DROP_FILE_EVENT, (e) => dropped((e as CustomEvent<{ name: string }>).detail.name));

@@ -28,6 +28,7 @@ export const VT = {
   QuickActionsArcRequestBtn: "wt-quick-actions-arc-request-btn",
   ArcFenceFormLink: "wt-arc-fence-form-link",
   ArcFormPage: "wt-arc-form-page",
+  DashboardPage: "wt-dashboard-page",
   DashboardFeedViewAll: "wt-dashboard-feed-view-all",
   CommunityFeedPage: "wt-community-feed-page",
   FeedPostForgottenIsland: "wt-feed-post-forgotten-island",
