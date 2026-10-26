@@ -52,6 +52,13 @@ describe("CursorBeat", () => {
     expect(cursor?.querySelector(".wt-cursor-touch")).toBeNull();
   });
 
+  it("draws no pointer with pointer='none'", () => {
+    render(<CursorBeat to={TARGET} pointer="none" />);
+    const cursor = document.querySelector('[data-testid="cursor-beat"]');
+    expect(cursor?.querySelector("svg")).toBeNull();
+    expect(cursor?.querySelector(".wt-cursor-touch")).toBeNull();
+  });
+
   it("draws a touch circle instead of the arrow with pointer='touch'", () => {
     render(<CursorBeat to={TARGET} pointer="touch" />);
     const cursor = document.querySelector('[data-testid="cursor-beat"]');

@@ -113,8 +113,11 @@ export function CursorBeat({
   onReleaseStage?: () => void;
   hideStage?: boolean;
   onHideStage?: () => void;
-  /** "touch" draws a fingertip circle centred on the point (phone scenes). */
-  pointer?: "arrow" | "touch";
+  /**
+   * "touch" draws a fingertip circle centred on the point (phone scenes);
+   * "none" draws nothing, for beats that only scroll.
+   */
+  pointer?: "arrow" | "touch" | "none";
 }) {
   const cursorRef = useRef<HTMLDivElement>(null);
   const fileCardRef = useRef<HTMLDivElement>(null);
@@ -334,7 +337,7 @@ export function CursorBeat({
       className="wt-cursor"
       style={{ transform: `translate(${start.x}px, ${start.y}px)` }}
     >
-      {pointer === "touch" ? (
+      {pointer === "none" ? null : pointer === "touch" ? (
         <span className="wt-cursor-touch" aria-hidden />
       ) : (
         <svg width="26" height="30" viewBox="0 0 26 30" fill="none" aria-hidden>

@@ -93,7 +93,7 @@ export function WalkthroughOverlay() {
           onReleaseStage={() => setStage((s) => ({ ...s, key: beatKey, released: true }))}
           hideStage={beat.hideStage}
           onHideStage={() => setStage((s) => ({ ...s, key: beatKey, hidden: true }))}
-          pointer={scene?.stage === "phone" ? "touch" : "arrow"}
+          pointer={beat.hidePointer ? "none" : scene?.stage === "phone" ? "touch" : "arrow"}
         />
       )}
       {beat?.kind === "intro" && (
