@@ -3159,6 +3159,7 @@ function AmenityCardImage({ src, alt, icon }: { src: string; alt: string; icon: 
 
 function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const dmSans = { fontVariationSettings: '"opsz" 14' };
+  const loading = usePageLoad();
   return (
     <div data-ux-id="reservations-page" className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
@@ -3170,105 +3171,109 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <div className="w-[36px]" />
       </div>
 
-      <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0">
-        {/* Header — desktop only */}
-        <div className="hidden md:flex items-center justify-between w-full shrink-0">
-          <div className="flex flex-col flex-1 min-w-0">
-            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={dmSans}>
-              Reservations
-            </p>
-            <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={dmSans}>
-              See what's coming up and book community amenities.
-            </p>
+      {loading ? (
+        <PageLoader uxId="reservations-loader" />
+      ) : (
+        <div className="flex flex-col gap-[24px] md:gap-[32px] w-full max-w-[1280px] mx-auto pb-[44px] pt-[20px] md:pt-[31px] px-[16px] md:px-[44px] min-w-0 animate-[page-content-in_300ms_ease-out]">
+          {/* Header — desktop only */}
+          <div className="hidden md:flex items-center justify-between w-full shrink-0">
+            <div className="flex flex-col flex-1 min-w-0">
+              <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[28px] leading-normal" style={dmSans}>
+                Reservations
+              </p>
+              <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[16px] leading-normal" style={dmSans}>
+                See what's coming up and book community amenities.
+              </p>
+            </div>
+            <AddressCard />
           </div>
-          <AddressCard />
-        </div>
 
-        {/* My Reservations */}
-        <div data-ux-id="my-reservations" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
-          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal mb-[18px]" style={dmSans}>
-            My Reservations
-          </p>
-          <div className="overflow-x-auto">
-            <table data-ux-id="reservations-table" className="w-full min-w-[560px] border-t border-[#e2e8f0] text-left">
-              <thead>
-                <tr className="border-b border-[#e2e8f0]">
-                  {["Amenity Name", "Date", "Time", "Status"].map((heading) => (
-                    <th key={heading} className="py-[14px] pr-[16px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={dmSans}>
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {MY_RESERVATIONS.map((reservation) => (
-                  <tr key={`${reservation.amenity}-${reservation.date}`} className="border-b border-[#e2e8f0]">
-                    <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px]" style={dmSans}>{reservation.amenity}</td>
-                    <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px] whitespace-nowrap" style={dmSans}>{reservation.date}</td>
-                    <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px] whitespace-nowrap" style={dmSans}>{reservation.time}</td>
-                    <td className="py-[14px]">
-                      <span
-                        className={`inline-flex rounded-full px-[12px] py-[4px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px] ${
-                          reservation.status === "Pending" ? "bg-[#fdecdc] text-[#c4622d]" : "bg-[#dff3e6] text-[#1f7a43]"
-                        }`}
-                        style={dmSans}
-                      >
-                        {reservation.status}
-                      </span>
-                    </td>
+          {/* My Reservations */}
+          <div data-ux-id="my-reservations" className="bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] w-full px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal mb-[18px]" style={dmSans}>
+              My Reservations
+            </p>
+            <div className="overflow-x-auto">
+              <table data-ux-id="reservations-table" className="w-full min-w-[560px] border-t border-[#e2e8f0] text-left">
+                <thead>
+                  <tr className="border-b border-[#e2e8f0]">
+                    {["Amenity Name", "Date", "Time", "Status"].map((heading) => (
+                      <th key={heading} className="py-[14px] pr-[16px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[14px]" style={dmSans}>
+                        {heading}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {MY_RESERVATIONS.map((reservation) => (
+                    <tr key={`${reservation.amenity}-${reservation.date}`} className="border-b border-[#e2e8f0]">
+                      <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px]" style={dmSans}>{reservation.amenity}</td>
+                      <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px] whitespace-nowrap" style={dmSans}>{reservation.date}</td>
+                      <td className="py-[14px] pr-[16px] font-['DM_Sans:Regular',sans-serif] text-[#262630] text-[14px] whitespace-nowrap" style={dmSans}>{reservation.time}</td>
+                      <td className="py-[14px]">
+                        <span
+                          className={`inline-flex rounded-full px-[12px] py-[4px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[13px] ${
+                            reservation.status === "Pending" ? "bg-[#fdecdc] text-[#c4622d]" : "bg-[#dff3e6] text-[#1f7a43]"
+                          }`}
+                          style={dmSans}
+                        >
+                          {reservation.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination — everything fits on one page */}
+            <div className="flex items-center justify-end gap-[14px] pt-[16px] text-[#262630]">
+              <span className="opacity-30"><IconAnglesLeft /></span>
+              <span className="opacity-30"><IconChevronLeft /></span>
+              <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={dmSans}>Page</span>
+              <span className="flex h-[32px] min-w-[40px] items-center justify-center rounded-[6px] border border-[#cfd3da] text-[14px]">1</span>
+              <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={dmSans}>of 1</span>
+              <span className="opacity-30"><IconChevronRightFa /></span>
+              <span className="opacity-30"><IconAnglesRight /></span>
+            </div>
           </div>
-          {/* Pagination — everything fits on one page */}
-          <div className="flex items-center justify-end gap-[14px] pt-[16px] text-[#262630]">
-            <span className="opacity-30"><IconAnglesLeft /></span>
-            <span className="opacity-30"><IconChevronLeft /></span>
-            <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={dmSans}>Page</span>
-            <span className="flex h-[32px] min-w-[40px] items-center justify-center rounded-[6px] border border-[#cfd3da] text-[14px]">1</span>
-            <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[14px]" style={dmSans}>of 1</span>
-            <span className="opacity-30"><IconChevronRightFa /></span>
-            <span className="opacity-30"><IconAnglesRight /></span>
-          </div>
-        </div>
 
-        <div className="w-full border-t border-[#d9e7f0]" />
+          <div className="w-full border-t border-[#d9e7f0]" />
 
-        {/* Bookable amenities */}
-        <div className="flex flex-col gap-[16px]">
-          <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal" style={dmSans}>
-            Book an Amenity
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
-            {BOOKABLE_AMENITIES.map((amenity) => (
-              <div
-                key={amenity.slug}
-                data-ux-id={`amenity-card-${amenity.slug}`}
-                className="flex flex-col gap-[14px] bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] p-[18px]"
-              >
-                <AmenityCardImage src={amenity.image} alt={amenity.name} icon={amenity.icon} />
-                <div className="flex flex-col gap-[4px] flex-1">
-                  <h3 className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-tight" style={dmSans}>
-                    {amenity.name}
-                  </h3>
-                  <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={dmSans}>
-                    {amenity.details.join("  •  ")}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  data-ux-id={`amenity-view-availability-${amenity.slug}`}
-                  className="w-full rounded-[8px] bg-[#247ae4] py-[11px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[15px] transition-colors hover:bg-[#1a6ed0]"
-                  style={dmSans}
+          {/* Bookable amenities */}
+          <div className="flex flex-col gap-[16px]">
+            <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal" style={dmSans}>
+              Book an Amenity
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
+              {BOOKABLE_AMENITIES.map((amenity) => (
+                <div
+                  key={amenity.slug}
+                  data-ux-id={`amenity-card-${amenity.slug}`}
+                  className="flex flex-col gap-[14px] bg-white rounded-[18px] drop-shadow-[0px_2px_9px_rgba(18,17,48,0.07)] p-[18px]"
                 >
-                  View Availability
-                </button>
-              </div>
-            ))}
+                  <AmenityCardImage src={amenity.image} alt={amenity.name} icon={amenity.icon} />
+                  <div className="flex flex-col gap-[4px] flex-1">
+                    <h3 className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-tight" style={dmSans}>
+                      {amenity.name}
+                    </h3>
+                    <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] opacity-70 text-[13px]" style={dmSans}>
+                      {amenity.details.join("  •  ")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    data-ux-id={`amenity-view-availability-${amenity.slug}`}
+                    className="w-full rounded-[8px] bg-[#247ae4] py-[11px] font-['DM_Sans:SemiBold',sans-serif] font-semibold text-white text-[15px] transition-colors hover:bg-[#1a6ed0]"
+                    style={dmSans}
+                  >
+                    View Availability
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

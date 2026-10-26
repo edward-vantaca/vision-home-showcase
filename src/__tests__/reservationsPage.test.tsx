@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { fireEvent, render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render } from "@testing-library/react";
 import App from "../App";
+import { PAGE_LOAD_MS } from "../pageLoad";
 import { WalkthroughProvider } from "../walkthrough/cursor";
 import type { Sequence } from "../walkthrough/types";
 
@@ -18,6 +19,13 @@ function q(container: HTMLElement, selector: string) {
 }
 
 describe("Reservations", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("the Reservations nav item opens a page of upcoming reservations and bookable amenities", () => {
     const { container } = render(
       <WalkthroughProvider sequence={seq}>
@@ -27,6 +35,9 @@ describe("Reservations", () => {
     const nav = q(container, '[data-ux-id="sidebar-nav-reservations"]')!;
     expect(nav.textContent).toContain("Reservations");
     fireEvent.click(nav);
+    act(() => {
+      vi.advanceTimersByTime(PAGE_LOAD_MS);
+    });
 
     const page = q(container, '[data-ux-id="reservations-page"]')!;
     expect(page).not.toBeNull();

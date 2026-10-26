@@ -68,4 +68,17 @@ describe("Page loaders", () => {
     expect(q(container, "arc-form-loader")).toBeNull();
     expect(q(container, "arc-form-fence-details")).not.toBeNull();
   });
+
+  it("Reservations lands on a loader, then the page", () => {
+    const { container } = renderApp();
+    fireEvent.click(q(container, "sidebar-nav-reservations")!);
+    expect(q(container, "reservations-page")).not.toBeNull();
+    expect(q(container, "reservations-loader")).not.toBeNull();
+    expect(q(container, "reservations-table")).toBeNull();
+    advance(PAGE_LOAD_MS - 1);
+    expect(q(container, "reservations-table")).toBeNull();
+    advance(1);
+    expect(q(container, "reservations-loader")).toBeNull();
+    expect(q(container, "reservations-table")).not.toBeNull();
+  });
 });
