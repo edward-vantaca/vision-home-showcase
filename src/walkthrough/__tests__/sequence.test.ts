@@ -36,10 +36,25 @@ describe("homeVisionSequence", () => {
 
   it("ends on a still dashboard after the broadcast SMS so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-3)).toEqual(["ask-hoai", "broadcast-sms", "closing-dashboard"]);
+    expect(ids.slice(-4)).toEqual(["ask-hoai", "community-feed", "broadcast-sms", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
+  });
+
+  it("Community feed: View All from the dashboard, scroll to Forgotten Island, lift it, put it back", () => {
+    const feed = homeVisionSequence.find((s) => s.id === "community-feed");
+    if (!feed) throw new Error("no community-feed scene");
+    expect(feed.appState?.page).toBe("dashboard");
+    expect(feed.reenterAtStart).toBe(true);
+    expect(feed.beats.map((b) => b.kind)).toEqual(["cursor", "lift", "idle"]);
+    const [open, lift] = feed.beats;
+    if (open.kind !== "cursor" || lift.kind !== "lift") throw new Error("unexpected beats");
+    expect(open.to).toBe(VT.DashboardFeedViewAll);
+    expect(open.then).toEqual([
+      expect.objectContaining({ to: VT.CommunityFeedPage, action: "scroll", scrollTo: VT.FeedPostForgottenIsland }),
+    ]);
+    expect(lift.target).toBe(VT.FeedPostForgottenIsland);
   });
 
   it("Broadcast SMS: the notification arrives by itself, then one beat taps it, types the reply and sends", () => {

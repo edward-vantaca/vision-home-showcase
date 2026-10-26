@@ -181,6 +181,31 @@ describe("CursorBeat", () => {
     page.remove();
   });
 
+  it("a scroll stop with scrollTo eases until that element is centred in the target", async () => {
+    const PAGE = "wt-cursor-test-page" as VTName;
+    const POST = "wt-cursor-test-post" as VTName;
+    const page = document.createElement("div");
+    page.setAttribute("data-vt-name", PAGE);
+    Object.defineProperty(page, "scrollHeight", { configurable: true, value: 3000 });
+    Object.defineProperty(page, "clientHeight", { configurable: true, value: 800 });
+    page.getBoundingClientRect = () => new DOMRect(0, 0, 1000, 800);
+    const post = document.createElement("article");
+    post.setAttribute("data-vt-name", POST);
+    // 300px tall, its top 1100px down the unscrolled page: centred at scrollTop 850.
+    post.getBoundingClientRect = () => new DOMRect(0, 1100 - page.scrollTop, 600, 300);
+    page.appendChild(post);
+    document.body.appendChild(page);
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={TARGET} action="click" then={[{ to: PAGE, action: "scroll", scrollTo: POST, scrollMs: 5000 }]} />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    expect(page.scrollTop).toBe(850);
+    page.remove();
+  });
+
   it("a drop stop carries a file card in and drops that file on its target", async () => {
     const dropped = vi.fn();
     target.addEventListener(DROP_FILE_EVENT, (e) => dropped((e as CustomEvent<{ name: string }>).detail.name));

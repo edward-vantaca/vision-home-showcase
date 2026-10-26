@@ -91,12 +91,12 @@ function moveCursor(
       }
       if (sceneIndex > 0) {
         const prev = sequence[sceneIndex - 1];
-        const lastBeatIndex = prev.beats.length - 1;
+        const landing = prev.reenterAtStart ? 0 : prev.beats.length - 1;
         return {
           ...state,
-          cursor: { sceneIndex: sceneIndex - 1, beatIndex: lastBeatIndex },
+          cursor: { sceneIndex: sceneIndex - 1, beatIndex: landing },
           lastDirection: "back",
-          replayOnAdvance: prev.beats[lastBeatIndex]?.kind === "cursor",
+          replayOnAdvance: prev.beats[landing]?.kind === "cursor",
         };
       }
       return state;

@@ -12,6 +12,8 @@ export type CursorStop = {
   typeCps?: number;
   /** "scroll" stops: how long the target takes to scroll to its bottom. */
   scrollMs?: number;
+  /** "scroll" stops: scroll until this element is centred in the target instead. */
+  scrollTo?: VTName;
   /** "drop" stops: the file the cursor carries in from off-screen and drops. */
   file?: string;
   /** Pause after this stop's action before moving on. */
@@ -89,6 +91,12 @@ export type Scene = {
    * (see `WalkthroughState.appSceneIndex`).
    */
   stage?: "phone";
+  /**
+   * ← from the next scene lands on beat 0 (→ replays it) instead of the last
+   * beat, for scenes whose later beats sit on a page their start state
+   * doesn't show.
+   */
+  reenterAtStart?: boolean;
 };
 
 export type Sequence = Scene[];

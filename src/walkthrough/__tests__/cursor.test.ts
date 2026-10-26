@@ -118,6 +118,35 @@ describe("cursorReducer", () => {
     });
   });
 
+  describe("a scene that re-enters at its start on ←", () => {
+    // Its later beats sit on a page its start state doesn't show, so ← from
+    // the next scene lands on beat 0 and → replays the scene from the top.
+    const feedSeq: Sequence = [
+      {
+        id: "feed",
+        page: "dashboard",
+        reenterAtStart: true,
+        beats: [{ kind: "cursor", to: "wt-btn" as never, action: "click" }, { kind: "lift", target: "wt-post" as never }, { kind: "idle" }],
+      },
+      { id: "next", page: "dashboard", beats: [{ kind: "idle" }] },
+    ];
+
+    it("← from the next scene lands on beat 0 and → replays it", () => {
+      const atNext: WalkthroughState = { ...initial, cursor: { sceneIndex: 1, beatIndex: 0 } };
+      const backed = cursorReducer(atNext, { type: "back" }, feedSeq);
+      expect(backed.cursor).toEqual({ sceneIndex: 0, beatIndex: 0 });
+      expect(backed.replayOnAdvance).toBe(true);
+      const replayed = cursorReducer(backed, { type: "advance" }, feedSeq);
+      expect(replayed.cursor).toEqual({ sceneIndex: 0, beatIndex: 0 });
+      expect(replayed.lastDirection).toBe("forward");
+    });
+
+    it("← within the scene still steps one beat", () => {
+      const onIdle: WalkthroughState = { ...initial, cursor: { sceneIndex: 0, beatIndex: 2 } };
+      expect(cursorReducer(onIdle, { type: "back" }, feedSeq).cursor).toEqual({ sceneIndex: 0, beatIndex: 1 });
+    });
+  });
+
   it("no-ops at beat 0 of scene 0 on back", () => {
     const next = cursorReducer(initial, { type: "back" }, seq);
     expect(next.cursor).toEqual({ sceneIndex: 0, beatIndex: 0 });

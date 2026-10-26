@@ -122,7 +122,7 @@ A cursor beat is a list of stops: the beat's own fields are the first stop,
 | `"click"` | Travel to target centre, pause, press, real `click()` + `focus()` |
 | `"hover"` or omitted | Travel only |
 | `"tab"` | No travel; focus the target (as if Tab was pressed), then type |
-| `"scroll"` | No travel; ease the target's own scroll to its bottom over `scrollMs` (default 4000) |
+| `"scroll"` | No travel; ease the target's own scroll to its bottom over `scrollMs` (default 4000), or with `scrollTo` until that element is centred in the target (clamped to the scroll range) |
 | `"drop"` | Cursor enters from off the right edge carrying a file card labelled `file`, travels to the target, lets go: fires `DROP_FILE_EVENT` (`{ name }`, bubbling) on it |
 
 Per-stop extras: `typeText` + `typeCps` (types into an input via the native
@@ -322,6 +322,11 @@ the overlay from the scene flag) instead of the arrow.
 - **Back across a scene boundary** onto a cursor beat sets `replayOnAdvance`:
   the scene's `appState` has undone that click, so the next → replays it
   instead of skipping ahead.
+- A scene with **`reenterAtStart`** is entered by ← from the next scene on
+  beat 0 instead of its last beat (with `replayOnAdvance` if beat 0 is a cursor
+  beat), for scenes whose later beats sit on a page their `appState` doesn't
+  show (community-feed lifts a post on the feed page, but starts on the
+  dashboard).
 - **Back within a scene** onto a `replayOnBack` cursor beat does the same.
 - Scrubbing back across phase boundaries is a **hard cut** (accepted).
 - `reverseTo` on a cursor beat: ← clicks that element first (one frame before
@@ -356,7 +361,8 @@ intro → inbox (open email, click register CTA) → onboarding (password, Creat
 account) → autopay → go-to-portal → dashboard (still) → payments (lift, Make a
 Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
-broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
+community-feed (View All Posts → feed scrolls until the Forgotten Island post is
+centred; lift it; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line

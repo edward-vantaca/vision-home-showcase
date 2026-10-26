@@ -8,7 +8,7 @@ import AskHoaiPanel, { AskHoaiIcon } from "./chat/AskHoaiPanel";
 import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
-import { VT } from "./walkthrough/viewTransitionNames";
+import { VT, type VTName } from "./walkthrough/viewTransitionNames";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -1411,7 +1411,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view }: { onNavigate: (page:
           <div className="flex flex-col gap-[18px] md:gap-[22px] px-[16px] md:px-[26px] py-[20px] md:py-[24px]">
             <div className="flex gap-[14px] items-center w-full">
               <p className="flex-1 font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#262630] text-[20px] leading-normal min-w-0" style={{ fontVariationSettings: '"opsz" 14' }}>Community Feed</p>
-              <button onClick={() => onNavigate("community")} data-ux-id="dashboard-community-feed-view-all-link" className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
+              <button onClick={() => onNavigate("community")} data-ux-id="dashboard-community-feed-view-all-link" data-vt-name={VT.DashboardFeedViewAll} className="flex gap-[7px] items-center text-[#0d5bba] text-[14px] whitespace-nowrap cursor-pointer">
                 <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold" style={{ fontVariationSettings: '"opsz" 14' }}>View All Posts</span>
                 <IconChevronRight />
               </button>
@@ -2305,6 +2305,8 @@ type CommunityPost = {
   imageAlt?: string;
   /** CSS object-position for the cropped image, e.g. "top" to keep a poster's title in view. */
   imagePosition?: string;
+  /** Walkthrough handle for the post's card on the feed page. */
+  vtName?: VTName;
   likes: number;
   official?: boolean;
   postedByBoard?: boolean;
@@ -2339,6 +2341,7 @@ const initialCommunityPosts: CommunityPost[] = [
     image: "/assets/forgotten-island.webp",
     imageAlt: "DreamWorks Forgotten Island movie poster",
     imagePosition: "top",
+    vtName: VT.FeedPostForgottenIsland,
     likes: 28,
     official: true,
     links: [
@@ -2564,7 +2567,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   };
 
   return (
-    <div data-ux-id="community-feed-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="community-feed-page" data-vt-name={VT.CommunityFeedPage} className="flex-1 min-w-0 h-full overflow-y-auto">
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="community-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#262630" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -2595,7 +2598,7 @@ function CommunityFeedPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           {posts.map((post) => {
             const liked = likedPosts.has(post.id);
             return (
-              <article key={post.id} data-ux-id={`community-feed-post-${post.id}`} className="flex w-full flex-col gap-[20px] rounded-[18px] border border-[#d9e7f0] bg-white px-[18px] pb-[16px] pt-[22px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:gap-[24px] md:px-[26px] md:pt-[24px]">
+              <article key={post.id} data-ux-id={`community-feed-post-${post.id}`} data-vt-name={post.vtName} className="flex w-full flex-col gap-[20px] rounded-[18px] border border-[#d9e7f0] bg-white px-[18px] pb-[16px] pt-[22px] shadow-[0px_2px_9px_rgba(18,17,48,0.07)] md:gap-[24px] md:px-[26px] md:pt-[24px]">
                 <div className="flex items-start gap-[14px]">
                   <div className="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-[#247ae4] font-['Open_Sans:Regular',sans-serif] text-[13px] font-normal text-white" style={{ fontVariationSettings: '"wdth" 100' }}>{post.initials}</div>
                   <div className="min-w-0 flex-1">

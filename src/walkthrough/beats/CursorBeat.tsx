@@ -34,6 +34,17 @@ function defaultStart(): Point {
 
 // Drives a controlled React input: use the native setter + dispatch a bubbling
 // 'input' event so React's synthetic event system notices and runs the onChange.
+/** Where a scroll stop ends: the bottom, or with `centre` that element in the middle. */
+function scrollEnd(page: HTMLElement, centre?: string): number {
+  const max = page.scrollHeight - page.clientHeight;
+  const el = centre ? document.querySelector<HTMLElement>(`[data-vt-name="${centre}"]`) : null;
+  if (!el) return max;
+  const box = page.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const y = page.scrollTop + (r.top + r.height / 2) - (box.top + page.clientHeight / 2);
+  return Math.max(0, Math.min(max, Math.round(y)));
+}
+
 function reactSetInputValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
   const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
   const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
@@ -160,16 +171,18 @@ export function CursorBeat({
             tl.to({}, { duration: 0.15 });
           } else if (stop.action === "scroll") {
             // "scroll" stops don't move the cursor either — the target (a
-            // scrollable page) eases down to its bottom, measured when the
-            // scroll starts since an earlier click may have just rendered it.
-            const scroll = { y: 0 };
+            // scrollable page) eases down to its bottom, or until `scrollTo`
+            // sits in its middle, measured when the scroll starts since an
+            // earlier click may have just rendered it.
+            const scroll = { y: 0, end: 0 };
             let page: HTMLElement | null = null;
             tl.call(() => {
               page = document.querySelector<HTMLElement>(`[data-vt-name="${stop.to}"]`);
               scroll.y = page?.scrollTop ?? 0;
+              scroll.end = page ? scrollEnd(page, stop.scrollTo) : scroll.y;
             });
             tl.to(scroll, {
-              y: () => (page ? page.scrollHeight - page.clientHeight : scroll.y),
+              y: () => scroll.end,
               duration: (stop.scrollMs ?? 4000) / 1000,
               ease: "power1.inOut",
               onUpdate: () => {
