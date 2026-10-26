@@ -32,6 +32,8 @@ export const VT = {
   DashboardFeedViewAll: "wt-dashboard-feed-view-all",
   CommunityFeedPage: "wt-community-feed-page",
   FeedPostForgottenIsland: "wt-feed-post-forgotten-island",
+  SidebarNavHome: "wt-sidebar-nav-home",
+  SidebarNavOffers: "wt-sidebar-nav-offers",
   SmsNotification: "wt-sms-notification",
   SmsInput: "wt-sms-input",
   SmsSendBtn: "wt-sms-send-btn",

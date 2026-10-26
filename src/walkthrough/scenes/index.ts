@@ -9,6 +9,7 @@ import { paymentsScene } from "./payments";
 import { arcRequestScene } from "./arcRequest";
 import { askHoaiScene } from "./askHoai";
 import { communityFeedScene } from "./communityFeed";
+import { offersScene } from "./offers";
 import { broadcastSmsScene } from "./broadcastSms";
 import { closingDashboardScene } from "./closingDashboard";
 
@@ -23,6 +24,7 @@ export const homeVisionSequence: Sequence = [
   arcRequestScene,
   askHoaiScene,
   communityFeedScene,
+  offersScene,
   broadcastSmsScene,
   closingDashboardScene,
 ];

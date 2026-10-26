@@ -253,13 +253,15 @@ interface NavItemProps {
   active?: boolean;
   onClick?: () => void;
   uxId: string;
+  vtName?: VTName;
 }
 
-function NavItem({ icon, label, badge, active, onClick, uxId }: NavItemProps) {
+function NavItem({ icon, label, badge, active, onClick, uxId, vtName }: NavItemProps) {
   return (
     <button
       onClick={onClick}
       data-ux-id={`sidebar-nav-${uxId}`}
+      data-vt-name={vtName}
       className={`w-full rounded-[8px] flex items-center gap-[12px] pl-[10px] pr-[22px] py-[8px] cursor-pointer transition-colors ${
         active ? "bg-[#e8f1fd]" : "hover:bg-[#f2f6fa]"
       }`}
@@ -338,7 +340,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
         {/* Nav Items */}
         <div data-ux-id="sidebar-nav-list" className="flex flex-col gap-[13px] w-full shrink-0">
           <NavItem icon={<IconInbox />} label="Inbox" badge={INBOX_UNREAD_COUNT} active={false} uxId="inbox" />
-          <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" />
+          <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" vtName={VT.SidebarNavHome} />
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
           <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
           <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
@@ -353,7 +355,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
             />
           ) : null}
           <NavItem icon={<IconRequests />} label="Requests" uxId="requests" />
-          <NavItem icon={<IconOffers />} label="Offers" active={activePage === "offers"} onClick={() => onNavigate("offers")} uxId="offers" />
+          <NavItem icon={<IconOffers />} label="Offers" active={activePage === "offers"} onClick={() => onNavigate("offers")} uxId="offers" vtName={VT.SidebarNavOffers} />
           <NavItem icon={<IconDocuments />} label="Documents" uxId="documents" />
           <NavItem icon={<IconDirectory />} label="Directory" uxId="directory" />
           <NavItem icon={<IconCalendar />} label="Calendar" uxId="calendar" />

@@ -1,3 +1,4 @@
+import { PAGE_LOAD_MS } from "../../pageLoad";
 import { describe, it, expect } from "vitest";
 import { homeVisionSequence } from "../scenes";
 import { VT } from "../viewTransitionNames";
@@ -52,7 +53,7 @@ describe("homeVisionSequence", () => {
 
   it("ends on a still dashboard after the broadcast SMS so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-4)).toEqual(["ask-hoai", "community-feed", "broadcast-sms", "closing-dashboard"]);
+    expect(ids.slice(-5)).toEqual(["ask-hoai", "community-feed", "offers", "broadcast-sms", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
@@ -74,6 +75,20 @@ describe("homeVisionSequence", () => {
     ]);
     expect(open.then?.[0].scrollTo).toBeUndefined();
     expect(lift.target).toBe(VT.FeedPostForgottenIsland);
+  });
+
+  it("Offers: from the feed, click Offers in the sidebar, then Home, each held until its page loads", () => {
+    const offers = homeVisionSequence.find((s) => s.id === "offers");
+    if (!offers) throw new Error("no offers scene");
+    expect(offers.appState?.page).toBe("community");
+    expect(offers.reenterAtStart).toBe(true);
+    expect(offers.beats.map((b) => (b.kind === "cursor" ? [b.to, b.action] : b.kind))).toEqual([
+      [VT.SidebarNavOffers, "click"],
+      [VT.SidebarNavHome, "click"],
+    ]);
+    for (const beat of offers.beats) {
+      if (beat.kind === "cursor") expect(beat.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
+    }
   });
 
   it("Broadcast SMS: the notification arrives by itself, then one beat taps it, types the reply and sends", () => {

@@ -312,7 +312,8 @@ the overlay from the scene flag) instead of the arrow.
   `usePageLoad` in `src/pageLoad.ts`), then the content fades up
   (`page-content-in`, 300 ms).
   The content doesn't exist until then, so the click that opens the page holds
-  `PAGE_LOAD_MS` + a beat (community-feed +1000, arc-request +1300) before the
+  `PAGE_LOAD_MS` + a beat (community-feed +1000, arc-request +1300, offers +500
+  on both its Offers and Home clicks) before the
   scroll stop measures it.
   `DashboardPage` loads too, but only when a click brings it there (Go to
   portal, Home nav, ARC Cancel): scene jumps land on it ready (`dashboardLoads`
@@ -349,7 +350,7 @@ the overlay from the scene flag) instead of the arrow.
   beat 0 instead of its last beat (with `replayOnAdvance` if beat 0 is a cursor
   beat), for scenes whose later beats sit on a page their `appState` doesn't
   show (community-feed lifts a post on the feed page, but starts idle on the
-  dashboard).
+  dashboard; offers clicks Home from the offers page, but starts on the feed).
 - **Back within a scene** onto a `replayOnBack` cursor beat does the same.
 - Scrubbing back across phase boundaries is a **hard cut** (accepted).
 - `reverseTo` on a cursor beat: ← clicks that element first (one frame before
@@ -387,7 +388,8 @@ Payment modal walk-through; balance $425.00 → $0.00) → arc-request (Quick Ac
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (still on the dashboard; → View All Posts → feed scrolls down to
 the last post, then back up until the Forgotten Island post is
-centred; lift it at 1.15×; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
+centred; lift it at 1.15×; → sets it back down) → offers (click Offers in the
+sidebar, page loads; → click Home, dashboard loads) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
