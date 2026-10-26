@@ -1282,7 +1282,7 @@ function PaymentModal({ onClose, currentBalance }: { onClose: () => void; curren
 function DashboardPage({ onNavigate, onOpenSidebar, view, loads }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView; loads: boolean }) {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const loading = usePageLoad(loads);
-  const currentBalance = "$2,911.14";
+  const currentBalance = "$425.00";
   return (
     <div data-ux-id="dashboard-page" className="flex-1 min-w-0 h-full overflow-y-auto" style={{ overflowAnchor: "none" }}>
       {/* Mobile top bar */}
