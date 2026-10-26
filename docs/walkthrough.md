@@ -182,8 +182,7 @@ Both last only for that beat visit; any cursor/direction change re-holds.
 
 GSAP timeline, portaled to `<body>` at z 400. In a `stage: "phone"` scene the
 pointer is a fingertip circle centred on the point (`pointer="touch"`, chosen by
-the overlay from the scene flag) instead of the arrow. A beat with
-`hidePointer` draws none (`pointer="none"`): the dashboard scene only scrolls.
+the overlay from the scene flag) instead of the arrow.
 
 - **Settle first**: before measuring, waits for every running *finite* CSS/WAAPI
   animation (max 1.5 s); infinite ones (spinners, typing dots) are ignored. This
@@ -376,8 +375,8 @@ layer; the rest of the time its transform is `none`, so the app's own layers
 ## Current scene order (`scenes/index.ts`)
 
 intro → inbox (open email, click register CTA) → onboarding (password, Create
-account) → autopay → go-to-portal → dashboard (no pointer; scrolls to the bottom, rests 3 s,
-scrolls back up) → payments (lift, Make a Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
+account) → autopay → go-to-portal → dashboard (scrolls to the bottom, rests 3 s, scrolls back up) → payments (lift, Make a
+Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (still on the dashboard; → View All Posts → feed scrolls until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap

@@ -31,7 +31,6 @@ describe("homeVisionSequence", () => {
     expect(dashboard.beats).toHaveLength(1);
     const [tour] = dashboard.beats;
     if (tour.kind !== "cursor") throw new Error("expected a cursor beat");
-    expect(tour.hidePointer).toBe(true);
     expect(tour.then).toEqual([
       expect.objectContaining({ to: VT.DashboardPage, action: "scroll", holdMs: 3000 }),
       expect.objectContaining({ to: VT.DashboardPage, action: "scroll", scrollToTop: true }),

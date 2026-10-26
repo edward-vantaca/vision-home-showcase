@@ -63,8 +63,6 @@ export type Beat =
        * landing on it with `back` means the next `advance` replays it.
        */
       replayOnBack?: boolean;
-      /** No pointer on screen: the beat only scrolls (or types, tabs) by itself. */
-      hidePointer?: boolean;
     }
   | { kind: "intro"; title: string; logoSrc?: string; wordmark?: string };
 
