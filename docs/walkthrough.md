@@ -306,6 +306,10 @@ the overlay from the scene flag) instead of the arrow.
   The content doesn't exist until then, so the click that opens the page holds
   `PAGE_LOAD_MS` + a beat (community-feed +1000, arc-request +1300) before the
   scroll stop measures it.
+  `DashboardPage` loads too, but only when a click brings it back (Home nav,
+  ARC Cancel): entering the portal and scene jumps land on it ready
+  (`dashboardLoads` in `MainApp`, reset on every scene sync), so dashboard
+  scenes never wait for it and their targets exist at beat 0.
 
 ## Navigation rules (`cursor.tsx`)
 

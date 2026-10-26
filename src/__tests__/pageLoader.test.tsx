@@ -81,4 +81,21 @@ describe("Page loaders", () => {
     expect(q(container, "reservations-loader")).toBeNull();
     expect(q(container, "reservations-table")).not.toBeNull();
   });
+
+  it("the dashboard is ready on arrival in the portal, and loads when clicked back to", () => {
+    const { container } = renderApp();
+    expect(q(container, "dashboard-loader")).toBeNull();
+    expect(q(container, "election-banner")).not.toBeNull();
+
+    fireEvent.click(q(container, "sidebar-nav-reservations")!);
+    advance(PAGE_LOAD_MS);
+    fireEvent.click(q(container, "sidebar-nav-home")!);
+    expect(q(container, "dashboard-loader")).not.toBeNull();
+    expect(q(container, "election-banner")).toBeNull();
+    advance(PAGE_LOAD_MS - 1);
+    expect(q(container, "election-banner")).toBeNull();
+    advance(1);
+    expect(q(container, "dashboard-loader")).toBeNull();
+    expect(q(container, "election-banner")).not.toBeNull();
+  });
 });
