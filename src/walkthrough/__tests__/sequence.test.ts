@@ -58,7 +58,7 @@ describe("homeVisionSequence", () => {
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
-  it("Community feed: waits on the dashboard, then View All, scroll to Forgotten Island, lift it, put it back", () => {
+  it("Community feed: waits on the dashboard, then View All, scroll to the end and back to Forgotten Island, lift it, put it back", () => {
     const feed = homeVisionSequence.find((s) => s.id === "community-feed");
     if (!feed) throw new Error("no community-feed scene");
     expect(feed.appState?.page).toBe("dashboard");
@@ -67,9 +67,12 @@ describe("homeVisionSequence", () => {
     const [, open, lift] = feed.beats;
     if (open.kind !== "cursor" || lift.kind !== "lift") throw new Error("unexpected beats");
     expect(open.to).toBe(VT.DashboardFeedViewAll);
+    // Down to the last post, then back up to Forgotten Island.
     expect(open.then).toEqual([
+      expect.objectContaining({ to: VT.CommunityFeedPage, action: "scroll" }),
       expect.objectContaining({ to: VT.CommunityFeedPage, action: "scroll", scrollTo: VT.FeedPostForgottenIsland }),
     ]);
+    expect(open.then?.[0].scrollTo).toBeUndefined();
     expect(lift.target).toBe(VT.FeedPostForgottenIsland);
   });
 

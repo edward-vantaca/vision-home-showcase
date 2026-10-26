@@ -385,7 +385,8 @@ account) → autopay → go-to-portal → dashboard (pointer stays put; scrolls 
 scrolls back up) → payments (lift, Make a
 Payment modal walk-through; balance $425.00 → $0.00) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
-community-feed (still on the dashboard; → View All Posts → feed scrolls until the Forgotten Island post is
+community-feed (still on the dashboard; → View All Posts → feed scrolls down to
+the last post, then back up until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).
 
