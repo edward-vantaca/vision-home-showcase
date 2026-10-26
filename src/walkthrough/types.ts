@@ -103,6 +103,12 @@ export type Scene = {
    * doesn't show.
    */
   reenterAtStart?: boolean;
+  /**
+   * Entering the scene leaves the portal on whatever page it is showing
+   * (`page` is only where a fresh portal starts), for scenes that begin by
+   * navigating away themselves and so work from any page.
+   */
+  keepPage?: boolean;
 };
 
 export type Sequence = Scene[];

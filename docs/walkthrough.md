@@ -350,7 +350,11 @@ the overlay from the scene flag) instead of the arrow.
   beat 0 instead of its last beat (with `replayOnAdvance` if beat 0 is a cursor
   beat), for scenes whose later beats sit on a page their `appState` doesn't
   show (community-feed lifts a post on the feed page, but starts idle on the
-  dashboard; offers clicks Home from the offers page, but starts on the feed).
+  dashboard; offers clicks Home from the offers page).
+- A scene with **`keepPage`** leaves the portal on whatever page it is showing
+  when entered (its `page` only applies to a freshly mounted portal), so it
+  works from any page: offers starts by clicking Offers in the sidebar, from
+  the feed in sequence or the dashboard from a launcher jump.
 - **Back within a scene** onto a `replayOnBack` cursor beat does the same.
 - Scrubbing back across phase boundaries is a **hard cut** (accepted).
 - `reverseTo` on a cursor beat: ← clicks that element first (one frame before

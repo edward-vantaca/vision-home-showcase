@@ -218,4 +218,32 @@ describe("MainApp scene sync", () => {
       unmount();
     }
   });
+
+  it("a keepPage scene stays on whatever page the portal shows, from any scene", () => {
+    const keepSeq: Sequence = [
+      { id: "on-feed", page: "community", appState: { ...portal, page: "community" }, beats: [{ kind: "idle" }] },
+      { id: "on-dashboard", page: "dashboard", appState: portal, beats: [{ kind: "idle" }] },
+      { id: "keeper", page: "dashboard", appState: portal, keepPage: true, beats: [{ kind: "idle" }] },
+    ];
+    const { container, unmount } = render(
+      <WalkthroughProvider sequence={keepSeq}>
+        <App />
+        <Probe />
+      </WalkthroughProvider>,
+    );
+    try {
+      expect(q(container, "community-feed-page")).not.toBeNull();
+      act(() => nav.jumpTo({ sceneIndex: 2, beatIndex: 0 }));
+      expect(q(container, "community-feed-page")).not.toBeNull();
+
+      act(() => nav.jumpTo({ sceneIndex: 1, beatIndex: 0 }));
+      expect(q(container, "dashboard-page")).not.toBeNull();
+      act(() => nav.jumpTo({ sceneIndex: 2, beatIndex: 0 }));
+      // Never passes through the feed on the way in.
+      expect(q(container, "community-feed-page")).toBeNull();
+      expect(q(container, "dashboard-page")).not.toBeNull();
+    } finally {
+      unmount();
+    }
+  });
 });

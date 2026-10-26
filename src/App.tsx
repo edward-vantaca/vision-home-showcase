@@ -3342,7 +3342,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   // scene, not its page: a scene that clicked away (ARC request lands on the
   // fence form) must still hand the next same-page scene a clean dashboard.
   useEffect(() => {
-    if (scenePage && scenePage !== "inbox" && scenePage !== "onboarding") {
+    if (scenePage && scenePage !== "inbox" && scenePage !== "onboarding" && !appScene?.keepPage) {
       setActivePage(scenePage);
     }
     setDashboardLoads(false);

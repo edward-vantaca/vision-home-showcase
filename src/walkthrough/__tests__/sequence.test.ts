@@ -80,7 +80,8 @@ describe("homeVisionSequence", () => {
   it("Offers: from the feed, click Offers in the sidebar, then Home, each held until its page loads", () => {
     const offers = homeVisionSequence.find((s) => s.id === "offers");
     if (!offers) throw new Error("no offers scene");
-    expect(offers.appState?.page).toBe("community");
+    // Not tied to the feed: it starts from whatever page the portal is on.
+    expect(offers.keepPage).toBe(true);
     expect(offers.reenterAtStart).toBe(true);
     expect(offers.beats.map((b) => (b.kind === "cursor" ? [b.to, b.action] : b.kind))).toEqual([
       [VT.SidebarNavOffers, "click"],
