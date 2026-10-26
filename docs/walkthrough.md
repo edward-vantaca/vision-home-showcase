@@ -342,7 +342,7 @@ the overlay from the scene flag) instead of the arrow.
 - A scene with **`reenterAtStart`** is entered by ← from the next scene on
   beat 0 instead of its last beat (with `replayOnAdvance` if beat 0 is a cursor
   beat), for scenes whose later beats sit on a page their `appState` doesn't
-  show (community-feed lifts a post on the feed page, but starts on the
+  show (community-feed lifts a post on the feed page, but starts idle on the
   dashboard).
 - **Back within a scene** onto a `replayOnBack` cursor beat does the same.
 - Scrubbing back across phase boundaries is a **hard cut** (accepted).
@@ -378,7 +378,7 @@ intro → inbox (open email, click register CTA) → onboarding (password, Creat
 account) → autopay → go-to-portal → dashboard (still) → payments (lift, Make a
 Payment modal walk-through) → arc-request (Quick Actions → ARC Request → fence
 form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
-community-feed (View All Posts → feed scrolls until the Forgotten Island post is
+community-feed (still on the dashboard; → View All Posts → feed scrolls until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).
 
