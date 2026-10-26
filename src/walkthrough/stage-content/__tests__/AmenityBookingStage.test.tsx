@@ -13,7 +13,7 @@ describe("AmenityBookingStage", () => {
     for (const label of ["9 AM", "12 PM", "5 PM"]) expect(container.textContent).toContain(label);
     expect(container.textContent).not.toContain("8 AM");
     expect(container.textContent).not.toContain("6 PM");
-    expect(screen.getAllByText("Tentative Reservation")).toHaveLength(2);
+    expect(screen.getAllByText("Tentative Reservation")).toHaveLength(6);
   });
 
   it("only open hours can be booked: not past ones, not held ones", () => {
@@ -23,6 +23,23 @@ describe("AmenityBookingStage", () => {
     expect(q("amenity-calendar-slot-26-16")).not.toBeNull(); // today, later
     expect(q("amenity-calendar-slot-28-10")).toBeNull(); // Wed, reserved 9–12
     expect(q("amenity-calendar-slot-28-12")).not.toBeNull();
+    expect(q("amenity-calendar-slot-27-10")).toBeNull(); // Tue, booked 10–11
+    // The walkthrough's 1–3 PM booking stays clear.
+    expect(q("amenity-calendar-slot-27-13")).not.toBeNull();
+    expect(q("amenity-calendar-slot-27-14")).not.toBeNull();
+  });
+
+  it("hovering an open hour shows its one-hour block; leaving or clicking hides it", () => {
+    render(<AmenityBookingStage amenity="Conference Room" />);
+    const slot = q("amenity-calendar-slot-30-10")!;
+    expect(q("amenity-calendar-hover-slot")).toBeNull();
+    fireEvent.mouseOver(slot);
+    expect(q("amenity-calendar-hover-slot")!.textContent).toContain("10:00\u00a0AM – 11:00\u00a0AM");
+    fireEvent.mouseOut(slot);
+    expect(q("amenity-calendar-hover-slot")).toBeNull();
+    fireEvent.mouseOver(slot);
+    fireEvent.click(slot);
+    expect(q("amenity-calendar-hover-slot")).toBeNull();
   });
 
   it("clicking the walkthrough's open slot opens the Book Reservation modal for it, and × closes it", () => {

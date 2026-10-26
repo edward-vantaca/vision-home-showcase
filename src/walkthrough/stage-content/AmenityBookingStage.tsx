@@ -21,9 +21,14 @@ const HOURS = Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, i) => FIRST_HOU
 /** Mon 26 is greyed out up to "now". */
 const NOW_HOUR = 14.75;
 /** Fractional hours [start, end) already held on a day. */
+// Clear of Tue 27 1–3 PM, the slot the walkthrough books.
 const RESERVATIONS: ReadonlyArray<{ day: number; start: number; end: number }> = [
+  { day: 2, start: 10, end: 11 },
   { day: 3, start: 9, end: 12 },
+  { day: 3, start: 15, end: 16 },
   { day: 4, start: 11, end: 15 },
+  { day: 5, start: 13, end: 14 },
+  { day: 6, start: 10, end: 11 },
 ];
 /** The open hour the walkthrough clicks: Tue 27, 1 PM. */
 const DEMO_SLOT = { day: 2, hour: 13 };
@@ -75,6 +80,7 @@ function OutlinedField({ label, value, width }: { label: string; value: string; 
 
 export function AmenityBookingStage({ amenity }: { amenity: string }) {
   const [booking, setBooking] = useState<{ day: number; hour: number } | null>(null);
+  const [hovered, setHovered] = useState<{ day: number; hour: number } | null>(null);
 
   return (
     <div data-ux-id="amenity-calendar" className="flex h-full flex-col rounded-[16px] border border-[#d9dde3] bg-white px-[24px] pb-[20px] pt-[22px]">
@@ -133,6 +139,7 @@ export function AmenityBookingStage({ amenity }: { amenity: string }) {
             {HOURS.map((h, i) => {
               const open = isOpen(day, h);
               const demo = day === DEMO_SLOT.day && h === DEMO_SLOT.hour;
+              const isHovered = hovered?.day === day && hovered.hour === h;
               return open ? (
                 <button
                   key={h}
@@ -140,10 +147,28 @@ export function AmenityBookingStage({ amenity }: { amenity: string }) {
                   aria-label={`Book ${d.short} ${d.date}, ${hourLabel(h)}`}
                   data-ux-id={`amenity-calendar-slot-${d.date}-${h}`}
                   data-vt-name={demo ? VT.AmenityCalendarOpenSlot : undefined}
-                  onClick={() => setBooking({ day, hour: h })}
-                  className="absolute inset-x-0 border-t border-[#e5e7eb] transition-colors hover:bg-[#eef5fe]"
+                  onClick={() => {
+                    setHovered(null);
+                    setBooking({ day, hour: h });
+                  }}
+                  onMouseEnter={() => setHovered({ day, hour: h })}
+                  onMouseLeave={() => setHovered((cur) => (cur?.day === day && cur.hour === h ? null : cur))}
+                  className="absolute inset-x-0 border-t border-[#e5e7eb] p-[3px] text-left"
                   style={{ top: pct(i), height: pct(1) }}
-                />
+                >
+                  {/* The one-hour block under the pointer */}
+                  <span
+                    data-ux-id={isHovered ? "amenity-calendar-hover-slot" : undefined}
+                    className={`flex h-full flex-col justify-center rounded-[4px] border-[1.5px] border-[#4a7fe8] bg-[#eef5fe] px-[8px] transition-opacity duration-150 ${
+                      isHovered ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <span className="font-['DM_Sans:SemiBold',sans-serif] text-[12px] font-semibold leading-tight text-[#2f5bea]" style={dmSans}>
+                      {timeLabel(h)} – {timeLabel(h + 1)}
+                    </span>
+                    <span className="text-[11px] leading-tight text-[#2f5bea]">Available</span>
+                  </span>
+                </button>
               ) : (
                 <div key={h} className="absolute inset-x-0 border-t border-[#e5e7eb]" style={{ top: pct(i), height: pct(1) }} />
               );

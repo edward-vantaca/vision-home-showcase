@@ -153,6 +153,16 @@ export function CursorBeat({
       const pause = 0.55;
 
       let tl: gsap.core.Timeline | null = null;
+      // The element the pointer rests on. A scripted pointer fires no real
+      // mouse events, so send the over/out pair a mouse would (React's
+      // onMouseEnter/onMouseLeave listen for these); CSS :hover stays off.
+      let hovered: HTMLElement | null = null;
+      const hover = (next: HTMLElement | null) => {
+        if (next === hovered) return;
+        hovered?.dispatchEvent(new MouseEvent("mouseout", { bubbles: true, relatedTarget: next }));
+        next?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, relatedTarget: hovered }));
+        hovered = next;
+      };
       const run = () => {
         // Only the first stop must exist up front. Later stops are measured when
         // the cursor sets off for them, since an earlier click may be what
@@ -243,6 +253,7 @@ export function CursorBeat({
               ease: "power2.inOut",
               onComplete: () => {
                 if (point) lastCursorPoint = point;
+                hover(document.querySelector<HTMLElement>(`[data-vt-name="${stop.to}"]`));
               },
             });
 
@@ -329,6 +340,7 @@ export function CursorBeat({
         cancelled = true;
         cancelAnimationFrame(raf);
         tl?.kill();
+        hover(null);
         beatBusyRef.current = false;
       };
     },

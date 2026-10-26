@@ -399,7 +399,9 @@ centred; lift it at 1.15×; → sets it back down) → offers (click Offers in t
 sidebar, page loads; → click Home, dashboard loads) → amenity-reservation
 (click Reservations, page loads; → scroll to the Conference Room card, click
 View Availability, it lifts top-left at 1.25× beside a 9 AM–5 PM week calendar
-(`AmenityBookingStage`, walkthrough-only); → click the open Tue 27 1 PM slot,
+(`AmenityBookingStage`, walkthrough-only); → the pointer rests on the open
+Tue 27 1 PM slot (its one-hour hover block shows; CursorBeat sends mouseover on
+arrival and mouseout when the beat ends) and clicks it,
 the Book Reservation modal opens (portaled, z 300); → it all goes away and the
 card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → closing-dashboard (swipe back; still).

@@ -109,7 +109,8 @@ describe("homeVisionSequence", () => {
     expect(open.then).toEqual([expect.objectContaining({ to: VT.AmenityConferenceViewAvailability, action: "click" })]);
     expect(lift).toMatchObject({ target: VT.AmenityCardConference, position: "top-left" });
     expect(lift.aside).toBeTruthy();
-    expect(slot).toMatchObject({ to: VT.AmenityCalendarOpenSlot, reverseTo: VT.BookingModalClose, replayOnBack: true });
+    expect(slot).toMatchObject({ to: VT.AmenityCalendarOpenSlot, action: "hover", reverseTo: VT.BookingModalClose, replayOnBack: true });
+    expect(slot.then).toEqual([{ to: VT.AmenityCalendarOpenSlot, action: "click" }]);
   });
 
   it("Broadcast SMS: the notification arrives by itself, then one beat taps it, types the reply and sends", () => {

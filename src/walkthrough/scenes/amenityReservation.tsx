@@ -6,8 +6,8 @@ import { AmenityBookingStage } from "../stage-content/AmenityBookingStage";
 // Starts from whatever page the portal shows (keepPage). → clicks Reservations
 // and the page loads. → scrolls to the Conference Room card and clicks View
 // Availability: the card lifts to the top-left and its week calendar fades in
-// beside it. → clicks an open slot (Tue 27, 1 PM) and the Book Reservation
-// modal opens. → closes it all and the card settles back into the page.
+// beside it. → hovers an open slot (Tue 27, 1 PM), its one-hour block lights
+// up, and the click opens the Book Reservation modal. → closes it all and the card settles back into the page.
 export const amenityReservationScene: Scene = {
   id: "amenity-reservation",
   label: "Amenity reservation",
@@ -35,11 +35,14 @@ export const amenityReservationScene: Scene = {
       aside: <AmenityBookingStage amenity="Conference Room" />,
     },
     {
-      // The lift and calendar stay on stage while the cursor picks a slot.
+      // The lift and calendar stay on stage while the cursor picks a slot: it
+      // rests on it first so its hover block shows, then clicks.
       kind: "cursor",
       to: VT.AmenityCalendarOpenSlot,
-      action: "click",
+      action: "hover",
+      holdMs: 600,
       durationMs: 1500,
+      then: [{ to: VT.AmenityCalendarOpenSlot, action: "click" }],
       reverseTo: VT.BookingModalClose,
       replayOnBack: true,
     },

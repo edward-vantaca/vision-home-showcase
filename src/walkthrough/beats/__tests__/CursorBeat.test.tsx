@@ -204,6 +204,23 @@ describe("CursorBeat", () => {
     page.remove();
   });
 
+  it("arriving at a stop sends the element mouseover, and the beat ending sends mouseout", async () => {
+    const over = vi.fn();
+    const out = vi.fn();
+    target.addEventListener("mouseover", over);
+    target.addEventListener("mouseout", out);
+    const timeline = vi.spyOn(gsap, "timeline");
+    const { unmount } = render(<CursorBeat to={TARGET} action="hover" />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    expect(over).toHaveBeenCalledTimes(1);
+    expect(out).not.toHaveBeenCalled();
+    unmount();
+    expect(out).toHaveBeenCalledTimes(1);
+  });
+
   it("onDone fires when a forward beat finishes, never on ←", async () => {
     const timeline = vi.spyOn(gsap, "timeline");
     const done = vi.fn();
