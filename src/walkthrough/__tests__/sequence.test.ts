@@ -31,8 +31,9 @@ describe("homeVisionSequence", () => {
     expect(dashboard.beats).toHaveLength(1);
     const [tour] = dashboard.beats;
     if (tour.kind !== "cursor") throw new Error("expected a cursor beat");
+    // Opens on the scroll itself, so the pointer doesn't travel anywhere.
+    expect(tour).toMatchObject({ to: VT.DashboardPage, action: "scroll", holdMs: 3000 });
     expect(tour.then).toEqual([
-      expect.objectContaining({ to: VT.DashboardPage, action: "scroll", holdMs: 3000 }),
       expect.objectContaining({ to: VT.DashboardPage, action: "scroll", scrollToTop: true }),
     ]);
     // Same app state as Payments, so entering Payments changes nothing but the lift.

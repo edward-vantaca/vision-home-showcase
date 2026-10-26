@@ -47,7 +47,9 @@ export type Beat =
   | {
       kind: "cursor";
       to: VTName;
-      action?: "click" | "hover" | "drop";
+      /** "scroll" opens the beat on a scroll stop: the pointer stays where it is. */
+      action?: "click" | "hover" | "drop" | "scroll";
+      scrollMs?: number;
       file?: string;
       durationMs?: number;
       caption?: string;

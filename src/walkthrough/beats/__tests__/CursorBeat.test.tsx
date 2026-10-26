@@ -181,6 +181,29 @@ describe("CursorBeat", () => {
     page.remove();
   });
 
+  it("a beat that opens on a scroll scrolls without moving the pointer", async () => {
+    const PAGE = "wt-cursor-test-page" as VTName;
+    const page = document.createElement("div");
+    page.setAttribute("data-vt-name", PAGE);
+    Object.defineProperty(page, "scrollHeight", { configurable: true, value: 2400 });
+    Object.defineProperty(page, "clientHeight", { configurable: true, value: 800 });
+    document.body.appendChild(page);
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={PAGE} action="scroll" scrollMs={5000} />);
+    await nextFrames();
+    const cursor = document.querySelector<HTMLElement>('[data-testid="cursor-beat"]')!;
+    const parked = cursor.style.transform;
+    const tl = timeline.mock.results[0].value;
+    expect(tl.duration()).toBeCloseTo(5, 5);
+    act(() => {
+      tl.progress(1);
+    });
+    expect(page.scrollTop).toBe(1600);
+    expect(cursor.style.transform).toBe(parked);
+    page.remove();
+  });
+
   it("a scroll stop with scrollTo eases until that element is centred in the target", async () => {
     const PAGE = "wt-cursor-test-page" as VTName;
     const POST = "wt-cursor-test-post" as VTName;

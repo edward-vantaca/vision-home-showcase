@@ -87,6 +87,7 @@ function animationsSettled(): Promise<void> | null {
 export function CursorBeat({
   to,
   action,
+  scrollMs,
   file,
   durationMs,
   direction,
@@ -101,7 +102,8 @@ export function CursorBeat({
   pointer = "arrow",
 }: {
   to: VTName;
-  action?: "click" | "hover" | "drop";
+  action?: "click" | "hover" | "drop" | "scroll";
+  scrollMs?: number;
   file?: string;
   durationMs?: number;
   direction?: "forward" | "back";
@@ -137,7 +139,7 @@ export function CursorBeat({
       // Block arrow-key advance/back while this beat's animation is running.
       beatBusyRef.current = true;
 
-      const primary: CursorStop = { to, action, file, typeText, typeCps, holdMs, releaseStage, hideStage };
+      const primary: CursorStop = { to, action, scrollMs, file, typeText, typeCps, holdMs, releaseStage, hideStage };
       const stops: CursorStop[] = direction === "back" ? [{ to }] : [primary, ...(then ?? [])];
 
       const duration = (durationMs ?? 1000) / 1000;
@@ -322,7 +324,7 @@ export function CursorBeat({
         beatBusyRef.current = false;
       };
     },
-    { dependencies: [to, action, file, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
+    { dependencies: [to, action, scrollMs, file, durationMs, direction, typeText, typeCps, then, holdMs, releaseStage, hideStage] },
   );
 
   // Rendered into <body> rather than .wt-root so the cursor paints above the
