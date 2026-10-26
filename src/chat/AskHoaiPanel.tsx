@@ -506,7 +506,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false, restar
         <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
           <div data-ash-section="welcome">
             <h2 className="font-['DM_Sans:Bold',sans-serif] font-bold text-[22px] text-[#262630] leading-tight">
-              Welcome back, james.polk
+              Welcome back, Alex Johnson
             </h2>
             <p className="text-[13px] text-[#5a5a66] mt-1">How can I help you today?</p>
           </div>

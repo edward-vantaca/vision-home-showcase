@@ -2094,7 +2094,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                       Check Your Email
                     </p>
                     <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[12px] leading-[1.5]" style={{ fontVariationSettings: '"opsz" 14' }}>
-                      A secure voting link has been sent to <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold opacity-100">username@email.com</span>. Open the email to cast your ballot before September 15, 2026 at 5:00PM.
+                      A secure voting link has been sent to <span className="font-['DM_Sans:SemiBold',sans-serif] font-semibold opacity-100">alex.johnson@email.com</span>. Open the email to cast your ballot before September 15, 2026 at 5:00PM.
                     </p>
                     <button
                       data-ux-id="elections-ballot-resend-button"
