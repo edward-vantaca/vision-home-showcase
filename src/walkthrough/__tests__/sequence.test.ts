@@ -198,6 +198,8 @@ describe("homeVisionSequence", () => {
       [VT.SidebarScroll, "scroll"],
     ]);
     expect(nav.then?.[4].scrollToTop).toBe(true);
+    // A few seconds' rest on the last item before the scroll back up.
+    expect(nav.then?.[3].holdMs).toBeGreaterThanOrEqual(3000);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {

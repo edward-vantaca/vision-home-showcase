@@ -51,7 +51,7 @@ export const boardReviewScene: Scene = {
         { to: VT.SidebarBoardArcs, action: "hover", holdMs: 700 },
         { to: VT.SidebarBoardInvoices, action: "hover", holdMs: 700 },
         { to: VT.SidebarBoardWorkOrders, action: "hover", holdMs: 700 },
-        { to: VT.SidebarBoardReports, action: "hover", holdMs: 900 },
+        { to: VT.SidebarBoardReports, action: "hover", holdMs: 3500 },
         { to: VT.SidebarScroll, action: "scroll", scrollToTop: true, scrollMs: 1800 },
       ],
     },

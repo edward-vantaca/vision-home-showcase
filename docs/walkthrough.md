@@ -427,7 +427,7 @@ in over the still-lifted widget, holds 4 s, the X closes it, Approve on the
 third item; 1 s later `advanceAfter` moves on by itself to the last beat: the
 lift ends and the widget settles back, then the sidebar scrolls the Board
 Actions section into view, the pointer hovers ARCs, Invoices, Work Orders,
-Reports (their hover state is React state driven by mouseover/mouseout, since
+Reports, rests 3.5 s (their hover state is React state driven by mouseover/mouseout, since
 the scripted pointer can't trigger CSS `:hover`), and the sidebar scrolls back
 to the top) → closing-dashboard (still; board member view).
 
