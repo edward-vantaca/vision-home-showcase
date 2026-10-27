@@ -129,7 +129,7 @@ describe("homeVisionSequence", () => {
     expect(tap.then?.[0].typeText).toBe(SMS_REPLY);
   });
 
-  it("Elections: from the dashboard, click Elections, then scroll the page with no consent modal", () => {
+  it("Elections: from the dashboard, click Elections, scroll to the bottom and back to the top, no consent modal", () => {
     const scene = homeVisionSequence.find((s) => s.id === "elections");
     if (!scene) throw new Error("no elections scene");
     expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", electionsConsented: true });
@@ -139,7 +139,12 @@ describe("homeVisionSequence", () => {
     if (tour.kind !== "cursor") throw new Error("expected a cursor beat");
     expect(tour).toMatchObject({ to: VT.SidebarNavElections, action: "click" });
     expect(tour.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
-    expect(tour.then).toEqual([expect.objectContaining({ to: VT.ElectionsPage, action: "scroll" })]);
+    // Down to the bottom, a rest, then slowly back up to the top.
+    expect(tour.then).toEqual([
+      expect.objectContaining({ to: VT.ElectionsPage, action: "scroll" }),
+      expect.objectContaining({ to: VT.ElectionsPage, action: "scroll", scrollToTop: true }),
+    ]);
+    expect(tour.then?.[0].scrollToTop).toBeUndefined();
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {
