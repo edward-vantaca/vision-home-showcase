@@ -2,13 +2,13 @@ import type { Scene } from "../types";
 import { VT } from "../viewTransitionNames";
 import { PAGE_LOAD_MS } from "../../pageLoad";
 
-// Starts on the dashboard (where the phone scene swipes back to). One beat: the
-// cursor clicks Elections in the sidebar, the page loads, then it eases down
-// past the open ballot and the current and upcoming elections, rests at the
-// bottom, then slowly scrolls back up to the top. The next → clicks Home and
-// the dashboard loads again. The homeowner has already consented, so the electronic-consent modal stays shut.
-// The scroll happens on the elections page, not the dashboard this scene
-// starts on, so ← from the next scene re-enters at the top.
+// Starts on the dashboard (where the phone scene swipes back to). The cursor
+// clicks Elections in the sidebar, the page loads, then it eases down past the
+// open ballot and the current and upcoming elections, rests at the bottom, and
+// slowly scrolls back up to the top. The next → clicks Home and the dashboard
+// loads again. The homeowner has already consented, so the electronic-consent
+// modal stays shut. The scroll happens on the elections page, not the
+// dashboard this scene starts on, so ← from the next scene re-enters at the top.
 export const electionsScene: Scene = {
   id: "elections",
   label: "Elections",
