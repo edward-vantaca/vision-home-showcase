@@ -92,6 +92,9 @@ export default function BoardTasksWidget() {
   const [taskIndex, setTaskIndex] = useState(0);
   const [decisions, setDecisions] = useState<Record<string, "approved" | "declined">>({});
   const [detailTask, setDetailTask] = useState<BoardTask | null>(null);
+  // Closing slides the sheet back out; it unmounts when that animation ends.
+  const [detailClosing, setDetailClosing] = useState(false);
+  const closeDetail = () => setDetailClosing(true);
   const [detailTab, setDetailTab] = useState<"messages" | "ledger" | "recent">("messages");
   const [pillsExpanded, setPillsExpanded] = useState(false);
 
@@ -242,7 +245,7 @@ export default function BoardTasksWidget() {
                   </>
                 )}
                 <button
-                  onClick={(e) => { e.stopPropagation(); setDetailTask(task); setDetailTab("messages"); }}
+                  onClick={(e) => { e.stopPropagation(); setDetailTask(task); setDetailClosing(false); setDetailTab("messages"); }}
                   className="mt-[2px] flex items-center justify-center gap-[5px] px-[10px] py-[4px] rounded-[6px] border border-[#d1d5db] text-[#374151] text-[12px] font-['DM_Sans:SemiBold',sans-serif] font-semibold bg-white hover:bg-[#f9fafb] cursor-pointer transition-colors w-full sm:w-auto"
                   style={{ fontVariationSettings: '"opsz" 14' }}
                 >
@@ -335,8 +338,22 @@ export default function BoardTasksWidget() {
       {/* Detail panel portal — above the Ask HOAi sidebar panel (z 190) */}
       {detailTask && createPortal(
         <>
-          <div data-ux-id="board-task-detail-backdrop" className="fixed inset-0 bg-black/20 z-[196]" onClick={() => setDetailTask(null)} />
-          <div data-ux-id="board-task-detail-sheet" className="fixed top-0 right-0 h-full w-full max-w-[580px] bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.1)] z-[197] overflow-y-auto">
+          <div
+            data-ux-id="board-task-detail-backdrop"
+            className={`fixed inset-0 bg-black/20 z-[196] ${detailClosing ? "animate-[board-sheet-backdrop-out_250ms_ease-in_forwards]" : "animate-[board-sheet-backdrop-in_350ms_ease-out]"}`}
+            onClick={closeDetail}
+          />
+          <div
+            data-ux-id="board-task-detail-sheet"
+            className={`fixed top-0 right-0 h-full w-full max-w-[580px] bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.1)] z-[197] overflow-y-auto ${
+              detailClosing ? "animate-[board-sheet-out_250ms_ease-in_forwards]" : "animate-[board-sheet-in_350ms_cubic-bezier(0.22,1,0.36,1)]"
+            }`}
+            onAnimationEnd={(e) => {
+              if (e.target !== e.currentTarget || !detailClosing) return;
+              setDetailTask(null);
+              setDetailClosing(false);
+            }}
+          >
             <div className="flex flex-col gap-[24px] items-start pb-[60px] pt-[42px] px-[36px] w-full">
 
               <div className="flex items-start justify-between w-full shrink-0">
@@ -346,7 +363,7 @@ export default function BoardTasksWidget() {
                   </p>
                   <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>{detailTask.title}</p>
                 </div>
-                <button onClick={() => setDetailTask(null)} className="text-[#333] hover:text-black cursor-pointer p-[4px]">
+                <button onClick={closeDetail} data-ux-id="board-task-detail-close" className="text-[#333] hover:text-black cursor-pointer p-[4px]">
                   <X size={16} />
                 </button>
               </div>

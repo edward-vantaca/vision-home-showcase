@@ -311,6 +311,10 @@ the overlay from the scene flag) instead of the arrow.
   (`onboarding-loader-out`, 1250 ms, in `src/index.css`). Finite, so the next
   cursor beat waits for it.
 - **Ask HOAi attachment chip**: `askhoai-file-in` keyframes, 320 ms overshoot.
+- **Board task detail sheet** (`BoardTasksWidget`, View Details): slides in
+  from the right (`board-sheet-in`, 350 ms ease-out) as its backdrop fades up;
+  closing (X or backdrop) slides it back out (`board-sheet-out`, 250 ms) and it
+  unmounts on `animationend`.
 - **Page loaders** (`CommunityFeedPage`, `ArcFormPage`, `ReservationsPage`,
   `ElectionsPage` (its floating tab pill waits too), `OffersPage`): every
   visit shows a centred spinner (`PageLoader`) for `PAGE_LOAD_MS` (1500 ms,
