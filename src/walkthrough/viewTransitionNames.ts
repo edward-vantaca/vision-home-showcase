@@ -4,6 +4,7 @@ export const VT = {
   BoardTaskApproveBtn: "wt-board-task-approve-btn",
   BoardTaskNextBtn: "wt-board-task-next-btn",
   BoardTaskViewDetailsBtn: "wt-board-task-view-details-btn",
+  BoardTaskDetailCloseBtn: "wt-board-task-detail-close-btn",
   AmenityTilePool: "wt-amenity-tile-pool",
   InboxHoaEmail: "wt-inbox-hoa-email",
   InboxRegisterCta: "wt-inbox-register-cta",

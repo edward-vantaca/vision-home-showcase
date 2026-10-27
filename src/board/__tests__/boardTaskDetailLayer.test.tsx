@@ -2,8 +2,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import BoardTasksWidget from "../BoardTasksWidget";
 
-// Ask HOAi's sidebar form is fixed at z 190 (see docs/walkthrough.md → Z-index layers).
+// See docs/walkthrough.md → Z-index layers: Ask HOAi's sidebar form is fixed at
+// z 190; a lifted element sits at 260 (the board-review scene opens the sheet
+// with the widget still lifted).
 const ASK_HOAI_SIDEBAR_Z = 190;
+const LIFTED_Z = 260;
 
 function zOf(el: Element | null): number {
   const m = el?.className.toString().match(/(?:^|\s)z-(?:\[(\d+)\]|(\d+))(?:\s|$)/);
@@ -13,13 +16,14 @@ function zOf(el: Element | null): number {
 describe("Board task detail sheet", () => {
   afterEach(cleanup);
 
-  it("opens above the Ask HOAi panel, backdrop included", () => {
+  it("opens above the Ask HOAi panel and a lifted element, backdrop included", () => {
     const { getAllByText } = render(<BoardTasksWidget />);
     fireEvent.click(getAllByText("View Details")[0]);
     const sheet = document.querySelector('[data-ux-id="board-task-detail-sheet"]');
     const backdrop = document.querySelector('[data-ux-id="board-task-detail-backdrop"]');
     expect(sheet).not.toBeNull();
     expect(zOf(backdrop)).toBeGreaterThan(ASK_HOAI_SIDEBAR_Z);
+    expect(zOf(backdrop)).toBeGreaterThan(LIFTED_Z);
     expect(zOf(sheet)).toBeGreaterThan(zOf(backdrop));
   });
 

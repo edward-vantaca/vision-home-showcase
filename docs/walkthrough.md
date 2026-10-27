@@ -378,12 +378,12 @@ the overlay from the scene flag) instead of the arrow.
 | 180 | White canvas behind focused Ask HOAi |
 | 190 | Ask HOAi panel (sidebar form) |
 | 195 | Elections / create-post modals |
-| 196–197 | Board task detail sheet: backdrop, sheet (over the Ask HOAi sidebar panel) |
 | 200 | Ask HOAi panel (focused form); Quick Actions modal |
 | 220 | Phone layer (white, phone scenes only) |
 | 240 | Onboarding loader |
 | 250 | `.wt-root` (backdrop, cutout, expand panel) |
 | 260 | A lifted / expanded element |
+| 270–280 | Board task detail sheet: backdrop, sheet (over the lifted Board Actions widget in board-review) |
 | 300 | Payment modal |
 | 310 | HUD |
 | 400 | Scripted cursor + its file card |
@@ -422,10 +422,10 @@ appState `electionsConsented` keeps the electronic-consent modal shut and
 `hideElectionsTabToggle` hides the floating tab pill)
 → board-review (lift the Board Actions widget at 1.05×; → the beat opens with
 a reset signal so the widget is on item 1, then the pointer comes in: Approve,
-Next Item, Approve, Next Item, View Details — that click `releaseStage`s the
-widget back into the dashboard as the detail sheet (z 197, below the lift
-layer) slides in) → closing-dashboard (still; board member view; the sheet
-stays open).
+Next Item, Approve, Next Item, View Details — the detail sheet (z 280) slides
+in over the still-lifted widget, holds 1.5 s, the X closes it, Approve on the
+third item; 1 s later `advanceAfter` moves on by itself) → closing-dashboard
+(still; board member view; the widget settles back as the lift ends).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).

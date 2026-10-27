@@ -159,7 +159,7 @@ describe("homeVisionSequence", () => {
     expect(tour.then?.[0].scrollToTop).toBeUndefined();
   });
 
-  it("Board review: lift the Board Actions widget, approve two items, then View Details releases it", () => {
+  it("Board review: lift Board Actions, approve two items, View Details over the lift, close it, approve, then leave", () => {
     const scene = homeVisionSequence.find((s) => s.id === "board-review");
     if (!scene) throw new Error("no board-review scene");
     expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", dashboardView: "board" });
@@ -175,10 +175,18 @@ describe("homeVisionSequence", () => {
       [VT.BoardTaskApproveBtn, "click"],
       [VT.BoardTaskNextBtn, "click"],
       [VT.BoardTaskViewDetailsBtn, "click"],
+      [VT.BoardTaskDetailCloseBtn, "click"],
+      [VT.BoardTaskApproveBtn, "click"],
     ]);
-    // The detail sheet sits below the lift layer, so View Details lets the widget go.
     const stops = review.then ?? [];
-    expect(stops.filter((s) => s.releaseStage).map((s) => s.to)).toEqual([VT.BoardTaskViewDetailsBtn]);
+    // The sheet opens over the lifted widget: nothing lets it go mid-beat.
+    expect(stops.some((s) => s.releaseStage || s.hideStage)).toBe(false);
+    // The sheet stays up a second or two before the X.
+    expect(stops[4].holdMs).toBeGreaterThanOrEqual(1000);
+    expect(stops[4].holdMs).toBeLessThanOrEqual(2000);
+    // A second on the last Approved, then on to the next scene by itself.
+    expect(stops[6].holdMs).toBe(1000);
+    expect(review.advanceAfter).toBe(true);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {

@@ -13,6 +13,10 @@ describe("Board tasks widget — walkthrough targets", () => {
     render(<BoardTasksWidget />);
     expect(vt(VT.BoardTasksWidget)?.getAttribute("data-ux-id")).toBe("board-tasks-widget");
     expect(vt(VT.BoardTaskViewDetailsBtn)?.textContent).toBe("View Details");
+    fireEvent.click(vt(VT.BoardTaskViewDetailsBtn)!);
+    const close = vt(VT.BoardTaskDetailCloseBtn);
+    expect(close).not.toBeNull();
+    expect(close!.closest('[data-ux-id="board-task-detail-sheet"]')).not.toBeNull();
     expect(vt(VT.BoardTaskNextBtn)).toBeNull();
     fireEvent.click(vt(VT.BoardTaskApproveBtn)!);
     expect(vt(VT.BoardTaskApproveBtn)).toBeNull();

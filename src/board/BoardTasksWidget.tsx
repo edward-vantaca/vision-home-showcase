@@ -355,17 +355,18 @@ export default function BoardTasksWidget() {
         </div>
       </div>
 
-      {/* Detail panel portal — above the Ask HOAi sidebar panel (z 190) */}
+      {/* Detail panel portal — above the Ask HOAi sidebar panel (z 190) and a
+          lifted element (260: board-review opens it with the widget lifted) */}
       {detailTask && createPortal(
         <>
           <div
             data-ux-id="board-task-detail-backdrop"
-            className={`fixed inset-0 bg-black/20 z-[196] ${detailClosing ? "animate-[board-sheet-backdrop-out_250ms_ease-in_forwards]" : "animate-[board-sheet-backdrop-in_350ms_ease-out]"}`}
+            className={`fixed inset-0 bg-black/20 z-[270] ${detailClosing ? "animate-[board-sheet-backdrop-out_250ms_ease-in_forwards]" : "animate-[board-sheet-backdrop-in_350ms_ease-out]"}`}
             onClick={closeDetail}
           />
           <div
             data-ux-id="board-task-detail-sheet"
-            className={`fixed top-0 right-0 h-full w-full max-w-[580px] bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.1)] z-[197] overflow-y-auto ${
+            className={`fixed top-0 right-0 h-full w-full max-w-[580px] bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.1)] z-[280] overflow-y-auto ${
               detailClosing ? "animate-[board-sheet-out_250ms_ease-in_forwards]" : "animate-[board-sheet-in_350ms_cubic-bezier(0.22,1,0.36,1)]"
             }`}
             onAnimationEnd={(e) => {
@@ -383,7 +384,7 @@ export default function BoardTasksWidget() {
                   </p>
                   <p className="font-['DM_Sans:Regular',sans-serif] font-normal text-[#262630] text-[14px]" style={{ fontVariationSettings: '"opsz" 14' }}>{detailTask.title}</p>
                 </div>
-                <button onClick={closeDetail} data-ux-id="board-task-detail-close" className="text-[#333] hover:text-black cursor-pointer p-[4px]">
+                <button onClick={closeDetail} data-ux-id="board-task-detail-close" data-vt-name={VT.BoardTaskDetailCloseBtn} className="text-[#333] hover:text-black cursor-pointer p-[4px]">
                   <X size={16} />
                 </button>
               </div>
