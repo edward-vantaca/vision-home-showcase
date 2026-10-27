@@ -163,9 +163,9 @@ describe("homeVisionSequence", () => {
     const scene = homeVisionSequence.find((s) => s.id === "board-review");
     if (!scene) throw new Error("no board-review scene");
     expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", dashboardView: "board" });
-    expect(scene.beats.map((b) => b.kind)).toEqual(["lift", "cursor"]);
-    const [lift, review] = scene.beats;
-    if (lift.kind !== "lift" || review.kind !== "cursor") throw new Error("unexpected beats");
+    expect(scene.beats.map((b) => b.kind)).toEqual(["lift", "cursor", "cursor"]);
+    const [lift, review, nav] = scene.beats;
+    if (lift.kind !== "lift" || review.kind !== "cursor" || nav.kind !== "cursor") throw new Error("unexpected beats");
     expect(lift.target).toBe(VT.BoardTasksWidget);
     // Every play starts from the first item, however the presenter got here.
     expect(review).toMatchObject({ to: VT.BoardTasksWidget, action: "signal", signal: BOARD_REVIEW_RESET_SIGNAL });
@@ -181,12 +181,23 @@ describe("homeVisionSequence", () => {
     const stops = review.then ?? [];
     // The sheet opens over the lifted widget: nothing lets it go mid-beat.
     expect(stops.some((s) => s.releaseStage || s.hideStage)).toBe(false);
-    // The sheet stays up a second or two before the X.
-    expect(stops[4].holdMs).toBeGreaterThanOrEqual(1000);
-    expect(stops[4].holdMs).toBeLessThanOrEqual(2000);
-    // A second on the last Approved, then on to the next scene by itself.
+    // The sheet stays up a few seconds before the X.
+    expect(stops[4].holdMs).toBeGreaterThanOrEqual(3500);
+    // A second on the last Approved, then on by itself: the lift ends and the
+    // sidebar scrolls Board Actions into view, the pointer runs over a few of
+    // its items, and the sidebar scrolls back up. That ends the scene.
     expect(stops[6].holdMs).toBe(1000);
     expect(review.advanceAfter).toBe(true);
+    expect(nav).toMatchObject({ to: VT.SidebarScroll, action: "scroll", scrollTo: VT.SidebarBoardActions });
+    expect(nav.advanceAfter).toBeUndefined();
+    expect(nav.then?.map((s) => [s.to, s.action])).toEqual([
+      [VT.SidebarBoardArcs, "hover"],
+      [VT.SidebarBoardInvoices, "hover"],
+      [VT.SidebarBoardWorkOrders, "hover"],
+      [VT.SidebarBoardReports, "hover"],
+      [VT.SidebarScroll, "scroll"],
+    ]);
+    expect(nav.then?.[4].scrollToTop).toBe(true);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {

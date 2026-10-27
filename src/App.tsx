@@ -298,12 +298,23 @@ interface SidebarProps {
   onOpenQuickActions: () => void;
 }
 
+// Board Actions items the board-review scene's pointer runs over.
+const BOARD_NAV_VT: Partial<Record<string, VTName>> = {
+  ARCs: VT.SidebarBoardArcs,
+  Invoices: VT.SidebarBoardInvoices,
+  "Work Orders": VT.SidebarBoardWorkOrders,
+  Reports: VT.SidebarBoardReports,
+};
+
 function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai, onOpenQuickActions }: SidebarProps) {
   const [boardActionsOpen, setBoardActionsOpen] = useState(true);
+  // Hover follows mouseover/mouseout, so the walkthrough's scripted pointer
+  // (which fires those but can't trigger CSS :hover) shows it too.
+  const [hoveredBoardItem, setHoveredBoardItem] = useState<string | null>(null);
 
   return (
     <div data-ux-id="sidebar" className="bg-white h-screen md:h-full shrink-0 w-[280px] md:w-[265px] border-r border-[#d9ecf8] flex flex-col overflow-hidden shadow-xl md:shadow-none">
-      <div className="flex flex-col gap-[42px] items-center px-[26px] py-[40px] flex-1 overflow-y-auto">
+      <div data-vt-name={VT.SidebarScroll} className="flex flex-col gap-[42px] items-center px-[26px] py-[40px] flex-1 overflow-y-auto">
         {/* Mobile close button */}
         <button
           onClick={onClose}
@@ -379,7 +390,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           {/* Board Actions — board member view only */}
           {dashboardView === "board" && <div className="w-full border-t border-[#d9e7f0] my-[9px]" />}
           {dashboardView === "board" && (
-            <div className="flex flex-col gap-0 w-full">
+            <div data-vt-name={VT.SidebarBoardActions} className="flex flex-col gap-0 w-full">
               {/* Section header */}
               <button
                 type="button"
@@ -404,7 +415,13 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
                       key={item}
                       type="button"
                       data-ux-id={`sidebar-board-${item.toLowerCase().replace(/\s+/g, "-")}`}
-                      className="w-full text-left px-[10px] py-[7px] text-[13px] font-['DM_Sans:Medium',sans-serif] font-medium text-[#262630] hover:text-[#247ae4] hover:bg-[#f2f6fa] rounded-[6px] transition-colors cursor-pointer"
+                      data-vt-name={BOARD_NAV_VT[item]}
+                      data-hovered={hoveredBoardItem === item ? "true" : undefined}
+                      onMouseEnter={() => setHoveredBoardItem(item)}
+                      onMouseLeave={() => setHoveredBoardItem((h) => (h === item ? null : h))}
+                      className={`w-full text-left px-[10px] py-[7px] text-[13px] font-['DM_Sans:Medium',sans-serif] font-medium rounded-[6px] transition-colors cursor-pointer ${
+                        hoveredBoardItem === item ? "text-[#247ae4] bg-[#f2f6fa]" : "text-[#262630]"
+                      }`}
                       style={{ fontVariationSettings: '"opsz" 14' }}
                     >
                       {item}
