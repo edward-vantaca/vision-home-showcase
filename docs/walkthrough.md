@@ -406,7 +406,7 @@ the Book Reservation modal opens (portaled, z 300); → it all goes away and the
 card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → elections (swipe back to the dashboard; click Elections,
 page loads, slow scroll down past the ballot and the current and upcoming
-elections, rest 1.5 s, slow scroll back to the top; appState `electionsConsented` keeps the electronic-consent modal shut)
+elections, rest 1.5 s, slow scroll back to the top; → click Home, dashboard loads; appState `electionsConsented` keeps the electronic-consent modal shut)
 → closing-dashboard (still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line

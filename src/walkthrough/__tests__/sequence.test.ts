@@ -129,14 +129,17 @@ describe("homeVisionSequence", () => {
     expect(tap.then?.[0].typeText).toBe(SMS_REPLY);
   });
 
-  it("Elections: from the dashboard, click Elections, scroll to the bottom and back to the top, no consent modal", () => {
+  it("Elections: from the dashboard, click Elections, scroll to the bottom and back to the top, no consent modal, then click Home", () => {
     const scene = homeVisionSequence.find((s) => s.id === "elections");
     if (!scene) throw new Error("no elections scene");
     expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", electionsConsented: true });
     expect(scene.reenterAtStart).toBe(true);
-    expect(scene.beats.map((b) => b.kind)).toEqual(["cursor"]);
-    const [tour] = scene.beats;
-    if (tour.kind !== "cursor") throw new Error("expected a cursor beat");
+    expect(scene.beats.map((b) => b.kind)).toEqual(["cursor", "cursor"]);
+    const [tour, home] = scene.beats;
+    if (tour.kind !== "cursor" || home.kind !== "cursor") throw new Error("expected cursor beats");
+    // The next → clicks Home and the dashboard loads, instead of a cut to it.
+    expect(home).toMatchObject({ to: VT.SidebarNavHome, action: "click" });
+    expect(home.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
     expect(tour).toMatchObject({ to: VT.SidebarNavElections, action: "click" });
     expect(tour.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
     // Down to the bottom, a rest, then slowly back up to the top.
