@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { CursorBeat } from "../CursorBeat";
 import type { VTName } from "../../viewTransitionNames";
 import { DROP_FILE_EVENT } from "../../dropFile";
+import { SIGNAL_EVENT } from "../../signal";
 
 const TARGET = "wt-cursor-test" as VTName;
 
@@ -313,6 +314,29 @@ describe("CursorBeat", () => {
     });
 
     expect(dropped).toHaveBeenCalledWith("Fence Proposal.pdf");
+  });
+
+  it("a signal stop sends its signal to the target without moving the pointer", async () => {
+    const PAGE = "wt-cursor-test-page" as VTName;
+    const page = document.createElement("div");
+    page.setAttribute("data-vt-name", PAGE);
+    document.body.appendChild(page);
+    const pageHovered = vi.fn();
+    page.addEventListener("mouseover", pageHovered);
+    const signalled = vi.fn();
+    page.addEventListener(SIGNAL_EVENT, (e) => signalled((e as CustomEvent<{ name: string }>).detail.name));
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={TARGET} action="click" then={[{ to: PAGE, action: "signal", signal: "show-results" }]} />);
+    await nextFrames();
+    const tl = timeline.mock.results[0].value;
+    act(() => {
+      tl.progress(1);
+    });
+    expect(signalled).toHaveBeenCalledWith("show-results");
+    // The pointer never travels to the page (arriving at a stop hovers it).
+    expect(pageHovered).not.toHaveBeenCalled();
+    page.remove();
   });
 
   it("never runs after unmount, even if the animations finish later", async () => {

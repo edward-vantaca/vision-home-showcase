@@ -47,6 +47,7 @@ main.tsx
 | `src/walkthrough/walkthrough.css` | Backdrop, cursor, intro, file-card styles; `askhoai-*` keyframes |
 | `src/walkthrough/viewTransitionNames.ts` | `VT` — every element a beat can target (historic name; View Transitions are gone) |
 | `src/walkthrough/dropFile.ts` | `DROP_FILE_EVENT`, the event a cursor "drop" fires |
+| `src/walkthrough/signal.ts` | `SIGNAL_EVENT`, the event a cursor "signal" fires, and the signal names pages listen for |
 | `src/walkthrough/phone/phoneState.ts` | SMS copy (`SMS_SENDER`, `SMS_BROADCAST`, `SMS_PREVIEW` (the notification text, shown in full up to "flooding is possible."), `SMS_REPLY`, `SMS_ANSWER`) and the phone's state per beat |
 | `src/walkthrough/phone/PhoneStage.tsx`, `PhoneFrame.tsx` | The phone: lock screen, notification, SMS thread; `SMS_SCENE_ID` |
 | `src/walkthrough/phone/SceneSwipe.tsx` | `AppSlide` / `PhoneLayer` and `swipeFor`, the app ⇄ phone swipe |
@@ -130,6 +131,7 @@ A cursor beat is a list of stops: the beat's own fields are the first stop,
 | `"tab"` | No travel; focus the target (as if Tab was pressed), then type |
 | `"scroll"` | No travel; ease the target's own scroll to its bottom over `scrollMs` (default 4000), or with `scrollTo` until that element is centred in the target (clamped to the scroll range), or with `scrollToTop` back up to the top. Also allowed as the beat's own `action` (with `scrollMs`), so a beat can open on a scroll without the pointer moving |
 | `"drop"` | Cursor enters from off the right edge carrying a file card labelled `file`, travels to the target, lets go: fires `DROP_FILE_EVENT` (`{ name }`, bubbling) on it |
+| `"signal"` | No travel; fires `SIGNAL_EVENT` (`{ name: signal }`, bubbling) on the target, which changes itself. For scripted changes with no on-screen control (Elections → Results while its tab pill is hidden) |
 
 Per-stop extras: `typeText` + `typeCps` (types into an input via the native
 setter so React sees it), `holdMs` (pause after the stop), `hideStage` /
@@ -406,7 +408,10 @@ the Book Reservation modal opens (portaled, z 300); → it all goes away and the
 card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
 it, reply, answer) → elections (swipe back to the dashboard; click Elections,
 page loads, slow scroll down past the ballot and the current and upcoming
-elections, rest 1.5 s, slow scroll back to the top; → click Home, dashboard loads; appState `electionsConsented` keeps the electronic-consent modal shut)
+elections, rest 1.5 s, slow scroll back to the top, then a `signal` stop
+switches it to Results, which fades up; → click Home, dashboard loads;
+appState `electionsConsented` keeps the electronic-consent modal shut and
+`hideElectionsTabToggle` hides the floating tab pill)
 → closing-dashboard (still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line

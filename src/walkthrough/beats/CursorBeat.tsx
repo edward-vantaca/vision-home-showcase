@@ -6,6 +6,7 @@ import type { VTName } from "../viewTransitionNames";
 import type { CursorStop } from "../types";
 import { beatBusyRef } from "../cursor";
 import { DROP_FILE_EVENT } from "../dropFile";
+import { SIGNAL_EVENT } from "../signal";
 
 type Point = { x: number; y: number };
 
@@ -213,6 +214,15 @@ export function CursorBeat({
                 if (page) page.scrollTop = scroll.y;
               },
             });
+          } else if (stop.action === "signal") {
+            // "signal" stops don't move the cursor: the target gets a named
+            // event and changes itself (no on-screen control to click).
+            tl.call(() => {
+              document
+                .querySelector<HTMLElement>(`[data-vt-name="${stop.to}"]`)
+                ?.dispatchEvent(new CustomEvent(SIGNAL_EVENT, { bubbles: true, detail: { name: stop.signal ?? "" } }));
+            });
+            tl.to({}, { duration: 0.15 });
           } else if (stop.action === "drop") {
             // Carry the file card in from off-screen, let go over the target:
             // the card shrinks away as the drop event lands on the target.

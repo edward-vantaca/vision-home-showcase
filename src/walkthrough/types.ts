@@ -7,7 +7,7 @@ export type Point = { x: number; y: number };
 
 export type CursorStop = {
   to: VTName;
-  action?: "click" | "hover" | "tab" | "scroll" | "drop";
+  action?: "click" | "hover" | "tab" | "scroll" | "drop" | "signal";
   typeText?: string;
   typeCps?: number;
   /** "scroll" stops: how long the target takes to scroll to its bottom. */
@@ -18,6 +18,8 @@ export type CursorStop = {
   scrollToTop?: boolean;
   /** "drop" stops: the file the cursor carries in from off-screen and drops. */
   file?: string;
+  /** "signal" stops: the name sent to the target (SIGNAL_EVENT); the pointer stays put. */
+  signal?: string;
   /** Pause after this stop's action before moving on. */
   holdMs?: number;
   /**
@@ -100,6 +102,8 @@ export type SceneAppState = {
   balancePaid?: boolean;
   /** The homeowner has already given electronic election consent: the Elections page opens without its consent modal. */
   electionsConsented?: boolean;
+  /** The Elections page's floating tab pill (Nominations / Voting / Results) is hidden. */
+  hideElectionsTabToggle?: boolean;
 };
 
 export type Scene = {

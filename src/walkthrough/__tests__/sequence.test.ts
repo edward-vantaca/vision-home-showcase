@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { homeVisionSequence } from "../scenes";
 import { VT } from "../viewTransitionNames";
 import { SMS_REPLY } from "../phone/phoneState";
+import { ELECTIONS_RESULTS_SIGNAL } from "../signal";
 
 const vtValues = new Set(Object.values(VT));
 
@@ -129,10 +130,11 @@ describe("homeVisionSequence", () => {
     expect(tap.then?.[0].typeText).toBe(SMS_REPLY);
   });
 
-  it("Elections: from the dashboard, click Elections, scroll to the bottom and back to the top, no consent modal, then click Home", () => {
+  it("Elections: click Elections, scroll down and back up, switch to Results, no consent modal or tab pill, then click Home", () => {
     const scene = homeVisionSequence.find((s) => s.id === "elections");
     if (!scene) throw new Error("no elections scene");
-    expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", electionsConsented: true });
+    // No consent modal, and no floating tab pill, for the whole scene.
+    expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", electionsConsented: true, hideElectionsTabToggle: true });
     expect(scene.reenterAtStart).toBe(true);
     expect(scene.beats.map((b) => b.kind)).toEqual(["cursor", "cursor"]);
     const [tour, home] = scene.beats;
@@ -146,6 +148,8 @@ describe("homeVisionSequence", () => {
     expect(tour.then).toEqual([
       expect.objectContaining({ to: VT.ElectionsPage, action: "scroll" }),
       expect.objectContaining({ to: VT.ElectionsPage, action: "scroll", scrollToTop: true }),
+      // Back at the top, the page switches to Results.
+      expect.objectContaining({ to: VT.ElectionsPage, action: "signal", signal: ELECTIONS_RESULTS_SIGNAL }),
     ]);
     expect(tour.then?.[0].scrollToTop).toBeUndefined();
   });

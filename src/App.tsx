@@ -9,6 +9,7 @@ import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
 import { VT, type VTName } from "./walkthrough/viewTransitionNames";
+import { ELECTIONS_RESULTS_SIGNAL, SIGNAL_EVENT } from "./walkthrough/signal";
 import { usePageLoad } from "./pageLoad";
 import PageLoader from "./PageLoader";
 
@@ -1904,7 +1905,7 @@ function ParticipationBar({ voted, total, uxId = "participation-bar" }: { voted:
   );
 }
 
-function ElectionsPage({ onOpenSidebar, consented = false }: { onOpenSidebar: () => void; consented?: boolean }) {
+function ElectionsPage({ onOpenSidebar, consented = false, hideTabToggle = false }: { onOpenSidebar: () => void; consented?: boolean; hideTabToggle?: boolean }) {
   const loading = usePageLoad();
   const [ballotSent, setBallotSent] = useState(false);
   const [consentNotices, setConsentNotices] = useState(false);
@@ -1921,6 +1922,18 @@ function ElectionsPage({ onOpenSidebar, consented = false }: { onOpenSidebar: ()
     });
 
   const [activeTab, setActiveTab] = useState<"nominations" | "proxy" | "results">("proxy");
+  // The elections walkthrough scene switches to Results with a signal, since
+  // it hides the tab pill.
+  const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!page) return;
+    const onSignal = (e: Event) => {
+      if ((e as CustomEvent<{ name: string }>).detail.name === ELECTIONS_RESULTS_SIGNAL) setActiveTab("results");
+    };
+    page.addEventListener(SIGNAL_EVENT, onSignal);
+    return () => page.removeEventListener(SIGNAL_EVENT, onSignal);
+  }, []);
   const [showConsentModal, setShowConsentModal] = useState(!consentSaved);
   const daysLeft = 5;
 
@@ -1931,7 +1944,7 @@ function ElectionsPage({ onOpenSidebar, consented = false }: { onOpenSidebar: ()
   ];
 
   return (
-    <div data-ux-id="elections-page" data-vt-name={VT.ElectionsPage} className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div ref={pageRef} data-ux-id="elections-page" data-vt-name={VT.ElectionsPage} className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="elections-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
@@ -2294,13 +2307,17 @@ function ElectionsPage({ onOpenSidebar, consented = false }: { onOpenSidebar: ()
           })}
 
           {/* Results tab: closed election card */}
-          {activeTab === "results" && <CompletedElectionCard collapsed={collapsedCards.has("completed-2025")} onToggle={() => toggleCard("completed-2025")} />}
+          {activeTab === "results" && (
+            <div className="animate-[page-content-in_300ms_ease-out]">
+              <CompletedElectionCard collapsed={collapsedCards.has("completed-2025")} onToggle={() => toggleCard("completed-2025")} />
+            </div>
+          )}
 
         </div>
       )}
 
       {/* Floating elections tab pill — bottom-left */}
-      {!loading && (
+      {!loading && !hideTabToggle && (
         <div
           data-ux-id="elections-tab-toggle"
           className="fixed bottom-6 left-6 z-50 flex items-center bg-[#1a1f2e] rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.35)] p-[5px] gap-[2px]"
@@ -3331,6 +3348,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   const [dashboardLoads, setDashboardLoads] = useState(entering);
   const [balanceDue, setBalanceDue] = useState(BALANCE_DUE);
   const [electionsConsented, setElectionsConsented] = useState(false);
+  const [hideElectionsTabToggle, setHideElectionsTabToggle] = useState(false);
   const pay = (amount: string) => setBalanceDue((due) => Math.max(0, due - (Number(amount.replace(/[^0-9.]/g, "")) || 0)));
 
   // Synced to the app scene, not the cursor's: on a phone scene the app
@@ -3363,6 +3381,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
     if (typeof target.askHoaiOpen === "boolean") setAskHoaiOpen(target.askHoaiOpen);
     setBalanceDue(target.balancePaid ? 0 : BALANCE_DUE);
     setElectionsConsented(target.electionsConsented ?? false);
+    setHideElectionsTabToggle(target.hideElectionsTabToggle ?? false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appSyncKey]);
 
@@ -3406,7 +3425,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
         {activePage === "dashboard" ? (
           <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} loads={dashboardLoads} balanceDue={balanceDue} onPay={pay} />
         ) : activePage === "elections" ? (
-          <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} consented={electionsConsented} />
+          <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} consented={electionsConsented} hideTabToggle={hideElectionsTabToggle} />
         ) : activePage === "amenities" ? (
           <AmenitiesPage onOpenSidebar={() => setSidebarOpen(true)} />
         ) : activePage === "arc-form" && arcForm ? (
