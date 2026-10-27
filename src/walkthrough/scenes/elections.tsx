@@ -37,7 +37,8 @@ export const electionsScene: Scene = {
       action: "click",
       durationMs: 1200,
       // While the dashboard loads, switch to the board member view: Board
-      // Actions joins the sidebar and the board tasks widget tops the page.
+      // Actions joins the sidebar and the board tasks widget shows under the
+      // notification banner.
       then: [{ to: VT.SidebarNavHome, action: "signal", signal: BOARD_VIEW_SIGNAL, holdMs: PAGE_LOAD_MS + 500 }],
     },
   ],

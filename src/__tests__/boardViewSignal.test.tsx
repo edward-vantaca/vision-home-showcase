@@ -30,10 +30,10 @@ describe("Board member view", () => {
     expect(q(c, "board-tasks-widget")).not.toBeNull();
   });
 
-  it("puts the board tasks widget at the top of the dashboard, above the election banner", () => {
+  it("puts the board tasks widget right under the notification banner", () => {
     const c = renderApp("board");
     const widget = q(c, "board-tasks-widget")!;
     const banner = q(c, "election-banner")!;
-    expect(widget.compareDocumentPosition(banner) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(banner.nextElementSibling).toBe(widget);
   });
 });

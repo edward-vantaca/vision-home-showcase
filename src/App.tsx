@@ -1329,9 +1329,6 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
             <AddressCard />
           </div>
 
-          {/* Board Actions widget — board member view only, at the top */}
-          {view === "board" && <BoardTasksWidget />}
-
           {/* Election Alert Banner */}
           <div data-ux-id="election-banner" className="bg-white rounded-[14px] md:rounded-[18px] shadow-[0px_2px_18px_0px_rgba(18,17,48,0.07)] w-full shrink-0 flex items-center">
             <div className="flex gap-[10px] items-start md:items-center px-[16px] md:px-[26px] py-[14px] md:py-[20px] w-full">
@@ -1345,6 +1342,9 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
               </p>
             </div>
           </div>
+
+          {/* Board Actions widget — board member view only, under the banner */}
+          {view === "board" && <BoardTasksWidget />}
 
           {/* Payments + Transactions row */}
           <div className="flex flex-col md:flex-row gap-[20px] md:gap-[32px] w-full shrink-0">
