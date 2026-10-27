@@ -374,6 +374,7 @@ the overlay from the scene flag) instead of the arrow.
 | 180 | White canvas behind focused Ask HOAi |
 | 190 | Ask HOAi panel (sidebar form) |
 | 195 | Elections / create-post modals |
+| 196–197 | Board task detail sheet: backdrop, sheet (over the Ask HOAi sidebar panel) |
 | 200 | Ask HOAi panel (focused form); Quick Actions modal |
 | 220 | Phone layer (white, phone scenes only) |
 | 240 | Onboarding loader |

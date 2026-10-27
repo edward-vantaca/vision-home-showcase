@@ -332,11 +332,11 @@ export default function BoardTasksWidget() {
         </div>
       </div>
 
-      {/* Detail panel portal */}
+      {/* Detail panel portal — above the Ask HOAi sidebar panel (z 190) */}
       {detailTask && createPortal(
         <>
-          <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setDetailTask(null)} />
-          <div className="fixed top-0 right-0 h-full w-full max-w-[580px] bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.1)] z-50 overflow-y-auto">
+          <div data-ux-id="board-task-detail-backdrop" className="fixed inset-0 bg-black/20 z-[196]" onClick={() => setDetailTask(null)} />
+          <div data-ux-id="board-task-detail-sheet" className="fixed top-0 right-0 h-full w-full max-w-[580px] bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.1)] z-[197] overflow-y-auto">
             <div className="flex flex-col gap-[24px] items-start pb-[60px] pt-[42px] px-[36px] w-full">
 
               <div className="flex items-start justify-between w-full shrink-0">
