@@ -9,7 +9,7 @@ import imgBranding from "@/assets/Branding.svg";
 import imgPerkspotHero from "@/assets/perkspot-hero.jpg";
 import { useCursor } from "./walkthrough/cursor";
 import { VT, type VTName } from "./walkthrough/viewTransitionNames";
-import { ELECTIONS_RESULTS_SIGNAL, SIGNAL_EVENT } from "./walkthrough/signal";
+import { BOARD_VIEW_SIGNAL, ELECTIONS_RESULTS_SIGNAL, SIGNAL_EVENT } from "./walkthrough/signal";
 import { usePageLoad } from "./pageLoad";
 import PageLoader from "./PageLoader";
 
@@ -1329,6 +1329,9 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
             <AddressCard />
           </div>
 
+          {/* Board Actions widget — board member view only, at the top */}
+          {view === "board" && <BoardTasksWidget />}
+
           {/* Election Alert Banner */}
           <div data-ux-id="election-banner" className="bg-white rounded-[14px] md:rounded-[18px] shadow-[0px_2px_18px_0px_rgba(18,17,48,0.07)] w-full shrink-0 flex items-center">
             <div className="flex gap-[10px] items-start md:items-center px-[16px] md:px-[26px] py-[14px] md:py-[20px] w-full">
@@ -1342,9 +1345,6 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
               </p>
             </div>
           </div>
-
-          {/* Board Actions widget — board member view only */}
-          {view === "board" && <BoardTasksWidget />}
 
           {/* Payments + Transactions row */}
           <div className="flex flex-col md:flex-row gap-[20px] md:gap-[32px] w-full shrink-0">
@@ -3394,6 +3394,19 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   // that kept it focused) restarts the scene: the panel resets at once.
   const askHoaiRestart = appSceneId === "ask-hoai" && direction === "back";
 
+  // The elections scene's Home click switches to the board member view (the
+  // floating view toggle is hidden; scenes set the view).
+  const shellRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return;
+    const onSignal = (e: Event) => {
+      if ((e as CustomEvent<{ name: string }>).detail.name === BOARD_VIEW_SIGNAL) setDashboardView("board");
+    };
+    shell.addEventListener(SIGNAL_EVENT, onSignal);
+    return () => shell.removeEventListener(SIGNAL_EVENT, onSignal);
+  }, []);
+
   const navigate = (page: Page) => {
     if (page !== activePage) setDashboardLoads(page === "dashboard");
     setActivePage(page);
@@ -3401,7 +3414,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   };
 
   return (
-    <div data-ux-id="app-shell" className="bg-gradient-to-b from-[#edf9f2] to-[#ddf2ff] flex h-full w-full overflow-hidden relative">
+    <div ref={shellRef} data-ux-id="app-shell" className="bg-gradient-to-b from-[#edf9f2] to-[#ddf2ff] flex h-full w-full overflow-hidden relative">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div

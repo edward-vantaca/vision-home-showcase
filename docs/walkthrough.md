@@ -409,10 +409,13 @@ card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrive
 it, reply, answer) → elections (swipe back to the dashboard; click Elections,
 page loads, slow scroll down past the ballot and the current and upcoming
 elections, rest 1.5 s, slow scroll back to the top, then a `signal` stop
-switches it to Results, which fades up; → click Home, dashboard loads;
+switches it to Results, which fades up; → click Home, dashboard loads in the
+board member view — a `signal` stop right after the click sets it during the
+spinner, so Board Actions joins the sidebar and the board tasks widget tops the
+page;
 appState `electionsConsented` keeps the electronic-consent modal shut and
 `hideElectionsTabToggle` hides the floating tab pill)
-→ closing-dashboard (still).
+→ closing-dashboard (still; board member view).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { homeVisionSequence } from "../scenes";
 import { VT } from "../viewTransitionNames";
 import { SMS_REPLY } from "../phone/phoneState";
-import { ELECTIONS_RESULTS_SIGNAL } from "../signal";
+import { BOARD_VIEW_SIGNAL, ELECTIONS_RESULTS_SIGNAL } from "../signal";
 
 const vtValues = new Set(Object.values(VT));
 
@@ -57,6 +57,8 @@ describe("homeVisionSequence", () => {
     expect(ids.slice(-7)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
+    // Elections hands over to the board member view.
+    expect(closing.appState?.dashboardView).toBe("board");
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
@@ -139,9 +141,12 @@ describe("homeVisionSequence", () => {
     expect(scene.beats.map((b) => b.kind)).toEqual(["cursor", "cursor"]);
     const [tour, home] = scene.beats;
     if (tour.kind !== "cursor" || home.kind !== "cursor") throw new Error("expected cursor beats");
-    // The next → clicks Home and the dashboard loads, instead of a cut to it.
+    // The next → clicks Home and the dashboard loads, instead of a cut to it,
+    // in the board member view (set while the dashboard is still loading).
     expect(home).toMatchObject({ to: VT.SidebarNavHome, action: "click" });
-    expect(home.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
+    expect(home.holdMs ?? 0).toBeLessThan(PAGE_LOAD_MS);
+    expect(home.then).toEqual([expect.objectContaining({ to: VT.SidebarNavHome, action: "signal", signal: BOARD_VIEW_SIGNAL })]);
+    expect(home.then?.[0].holdMs).toBeGreaterThan(PAGE_LOAD_MS);
     expect(tour).toMatchObject({ to: VT.SidebarNavElections, action: "click" });
     expect(tour.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
     // Down to the bottom, a rest, then slowly back up to the top.

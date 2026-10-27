@@ -5,3 +5,6 @@ export const SIGNAL_EVENT = "wt:signal";
 
 /** The elections scene's signal: the Elections page switches to Results. */
 export const ELECTIONS_RESULTS_SIGNAL = "elections-results";
+
+/** The elections scene's Home click: the portal switches to the board member view. */
+export const BOARD_VIEW_SIGNAL = "board-view";
