@@ -13,6 +13,7 @@ import { offersScene } from "./offers";
 import { amenityReservationScene } from "./amenityReservation";
 import { broadcastSmsScene } from "./broadcastSms";
 import { electionsScene } from "./elections";
+import { boardReviewScene } from "./boardReview";
 import { closingDashboardScene } from "./closingDashboard";
 
 export const homeVisionSequence: Sequence = [
@@ -30,5 +31,6 @@ export const homeVisionSequence: Sequence = [
   amenityReservationScene,
   broadcastSmsScene,
   electionsScene,
+  boardReviewScene,
   closingDashboardScene,
 ];

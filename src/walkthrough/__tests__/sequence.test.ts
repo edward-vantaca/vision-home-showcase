@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { homeVisionSequence } from "../scenes";
 import { VT } from "../viewTransitionNames";
 import { SMS_REPLY } from "../phone/phoneState";
-import { BOARD_VIEW_SIGNAL, ELECTIONS_RESULTS_SIGNAL } from "../signal";
+import { BOARD_REVIEW_RESET_SIGNAL, BOARD_VIEW_SIGNAL, ELECTIONS_RESULTS_SIGNAL } from "../signal";
 
 const vtValues = new Set(Object.values(VT));
 
@@ -54,7 +54,7 @@ describe("homeVisionSequence", () => {
 
   it("ends on a still dashboard after the broadcast SMS and elections so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-7)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "closing-dashboard"]);
+    expect(ids.slice(-8)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "board-review", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
     // Elections hands over to the board member view.
@@ -157,6 +157,28 @@ describe("homeVisionSequence", () => {
       expect.objectContaining({ to: VT.ElectionsPage, action: "signal", signal: ELECTIONS_RESULTS_SIGNAL }),
     ]);
     expect(tour.then?.[0].scrollToTop).toBeUndefined();
+  });
+
+  it("Board review: lift the Board Actions widget, approve two items, then View Details releases it", () => {
+    const scene = homeVisionSequence.find((s) => s.id === "board-review");
+    if (!scene) throw new Error("no board-review scene");
+    expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", dashboardView: "board" });
+    expect(scene.beats.map((b) => b.kind)).toEqual(["lift", "cursor"]);
+    const [lift, review] = scene.beats;
+    if (lift.kind !== "lift" || review.kind !== "cursor") throw new Error("unexpected beats");
+    expect(lift.target).toBe(VT.BoardTasksWidget);
+    // Every play starts from the first item, however the presenter got here.
+    expect(review).toMatchObject({ to: VT.BoardTasksWidget, action: "signal", signal: BOARD_REVIEW_RESET_SIGNAL });
+    expect(review.then?.map((s) => [s.to, s.action])).toEqual([
+      [VT.BoardTaskApproveBtn, "click"],
+      [VT.BoardTaskNextBtn, "click"],
+      [VT.BoardTaskApproveBtn, "click"],
+      [VT.BoardTaskNextBtn, "click"],
+      [VT.BoardTaskViewDetailsBtn, "click"],
+    ]);
+    // The detail sheet sits below the lift layer, so View Details lets the widget go.
+    const stops = review.then ?? [];
+    expect(stops.filter((s) => s.releaseStage).map((s) => s.to)).toEqual([VT.BoardTaskViewDetailsBtn]);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {

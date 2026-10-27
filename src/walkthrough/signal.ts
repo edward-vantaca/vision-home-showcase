@@ -8,3 +8,6 @@ export const ELECTIONS_RESULTS_SIGNAL = "elections-results";
 
 /** The elections scene's Home click: the portal switches to the board member view. */
 export const BOARD_VIEW_SIGNAL = "board-view";
+
+/** The board-review scene's first stop: the Board Actions widget starts over (item 1, nothing decided, no sheet). */
+export const BOARD_REVIEW_RESET_SIGNAL = "board-review-reset";

@@ -87,6 +87,7 @@ export function WalkthroughOverlay() {
           scrollTo={beat.scrollTo}
           onDone={beat.advanceAfter ? advance : undefined}
           file={beat.file}
+          signal={beat.signal}
           durationMs={beat.durationMs}
           direction={direction}
           typeText={beat.typeText}

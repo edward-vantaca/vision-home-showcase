@@ -339,6 +339,19 @@ describe("CursorBeat", () => {
     page.remove();
   });
 
+  it("a beat can open on a signal stop", async () => {
+    const signalled = vi.fn();
+    target.addEventListener(SIGNAL_EVENT, (e) => signalled((e as CustomEvent<{ name: string }>).detail.name));
+    const timeline = vi.spyOn(gsap, "timeline");
+
+    render(<CursorBeat to={TARGET} action="signal" signal="reset" />);
+    await nextFrames();
+    act(() => {
+      timeline.mock.results[0].value.progress(1);
+    });
+    expect(signalled).toHaveBeenCalledWith("reset");
+  });
+
   it("never runs after unmount, even if the animations finish later", async () => {
     const morph = fakeAnimation(700);
     document.getAnimations = () => [morph.animation];

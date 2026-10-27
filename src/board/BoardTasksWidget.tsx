@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ChevronLeft, ChevronRight, ArrowRight, Check, X,
   Ruler, FileText, Wrench, Search, Paperclip, Coins, ShieldAlert, Send,
 } from "lucide-react";
+import { VT } from "../walkthrough/viewTransitionNames";
+import { BOARD_REVIEW_RESET_SIGNAL, SIGNAL_EVENT } from "../walkthrough/signal";
 
 // ─── Types & Data ─────────────────────────────────────────────────────────────
 
@@ -98,6 +100,23 @@ export default function BoardTasksWidget() {
   const [detailTab, setDetailTab] = useState<"messages" | "ledger" | "recent">("messages");
   const [pillsExpanded, setPillsExpanded] = useState(false);
 
+  // The board-review walkthrough scene starts every play from the first item.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const onSignal = (e: Event) => {
+      if ((e as CustomEvent<{ name: string }>).detail.name !== BOARD_REVIEW_RESET_SIGNAL) return;
+      setActiveFilter("my");
+      setTaskIndex(0);
+      setDecisions({});
+      setDetailTask(null);
+      setDetailClosing(false);
+    };
+    root.addEventListener(SIGNAL_EVENT, onSignal);
+    return () => root.removeEventListener(SIGNAL_EVENT, onSignal);
+  }, []);
+
   const tasks = tasksByFilter[activeFilter];
   const total = tasks.length;
   const task = tasks[taskIndex] ?? null;
@@ -115,7 +134,7 @@ export default function BoardTasksWidget() {
   };
 
   return (
-    <div data-ux-id="board-tasks-widget" className="bg-white shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex flex-col gap-[24px] items-start px-[16px] md:px-[26px] py-[20px] md:py-[24px] relative rounded-[18px] shrink-0 w-full">
+    <div ref={rootRef} data-ux-id="board-tasks-widget" data-vt-name={VT.BoardTasksWidget} className="bg-white shadow-[0px_2px_9px_rgba(18,17,48,0.07)] flex flex-col gap-[24px] items-start px-[16px] md:px-[26px] py-[20px] md:py-[24px] relative rounded-[18px] shrink-0 w-full">
 
       {/* Header */}
       <div className="flex gap-[14px] items-center relative shrink-0 w-full">
@@ -246,6 +265,7 @@ export default function BoardTasksWidget() {
                 )}
                 <button
                   onClick={(e) => { e.stopPropagation(); setDetailTask(task); setDetailClosing(false); setDetailTab("messages"); }}
+                  data-vt-name={VT.BoardTaskViewDetailsBtn}
                   className="mt-[2px] flex items-center justify-center gap-[5px] px-[10px] py-[4px] rounded-[6px] border border-[#d1d5db] text-[#374151] text-[12px] font-['DM_Sans:SemiBold',sans-serif] font-semibold bg-white hover:bg-[#f9fafb] cursor-pointer transition-colors w-full sm:w-auto"
                   style={{ fontVariationSettings: '"opsz" 14' }}
                 >
@@ -294,7 +314,7 @@ export default function BoardTasksWidget() {
                       <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold leading-[21px] text-[#3a7a2c] text-[13px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Approved</p>
                     </div>
                     {taskIndex < total - 1 && (
-                      <button onClick={() => setTaskIndex(i => i + 1)} className="bg-white flex gap-[6px] items-center justify-center px-[10px] py-[4px] rounded-[8px] shrink-0 border border-[#e1e9ef] cursor-pointer hover:bg-[#f3f4f6] transition-colors whitespace-nowrap">
+                      <button onClick={() => setTaskIndex(i => i + 1)} data-vt-name={VT.BoardTaskNextBtn} className="bg-white flex gap-[6px] items-center justify-center px-[10px] py-[4px] rounded-[8px] shrink-0 border border-[#e1e9ef] cursor-pointer hover:bg-[#f3f4f6] transition-colors whitespace-nowrap">
                         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold leading-[21px] text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Next Item</p>
                         <ChevronRight size={13} className="shrink-0 text-[#262630]" />
                       </button>
@@ -307,7 +327,7 @@ export default function BoardTasksWidget() {
                       <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold leading-[21px] text-[#d92d2d] text-[13px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Declined</p>
                     </div>
                     {taskIndex < total - 1 && (
-                      <button onClick={() => setTaskIndex(i => i + 1)} className="bg-white flex gap-[6px] items-center justify-center px-[10px] py-[4px] rounded-[8px] shrink-0 border border-[#e1e9ef] cursor-pointer hover:bg-[#f3f4f6] transition-colors whitespace-nowrap">
+                      <button onClick={() => setTaskIndex(i => i + 1)} data-vt-name={VT.BoardTaskNextBtn} className="bg-white flex gap-[6px] items-center justify-center px-[10px] py-[4px] rounded-[8px] shrink-0 border border-[#e1e9ef] cursor-pointer hover:bg-[#f3f4f6] transition-colors whitespace-nowrap">
                         <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold leading-[21px] text-[#262630] text-[13px]" style={{ fontVariationSettings: '"opsz" 14' }}>Next Item</p>
                         <ChevronRight size={13} className="shrink-0 text-[#262630]" />
                       </button>
@@ -315,7 +335,7 @@ export default function BoardTasksWidget() {
                   </>
                 ) : (
                   <>
-                    <button onClick={() => handleDecide("approved")} className="bg-white flex gap-[6px] items-center justify-center px-[10px] py-[4px] rounded-[8px] shrink-0 border border-[#e1e9ef] cursor-pointer hover:bg-[#f0faf2] transition-colors">
+                    <button onClick={() => handleDecide("approved")} data-vt-name={VT.BoardTaskApproveBtn} className="bg-white flex gap-[6px] items-center justify-center px-[10px] py-[4px] rounded-[8px] shrink-0 border border-[#e1e9ef] cursor-pointer hover:bg-[#f0faf2] transition-colors">
                       <Check size={13} className="text-[#3a7a2c] shrink-0" />
                       <p className="font-['DM_Sans:SemiBold',sans-serif] font-semibold leading-[21px] text-[#262630] text-[13px] whitespace-nowrap" style={{ fontVariationSettings: '"opsz" 14' }}>Approve</p>
                     </button>

@@ -92,6 +92,7 @@ export function CursorBeat({
   scrollTo,
   onDone,
   file,
+  signal,
   durationMs,
   direction,
   typeText,
@@ -105,12 +106,13 @@ export function CursorBeat({
   pointer = "arrow",
 }: {
   to: VTName;
-  action?: "click" | "hover" | "drop" | "scroll";
+  action?: "click" | "hover" | "drop" | "scroll" | "signal";
   scrollMs?: number;
   scrollTo?: VTName;
   /** Called when the beat's timeline finishes going forward (not on ←). */
   onDone?: () => void;
   file?: string;
+  signal?: string;
   durationMs?: number;
   direction?: "forward" | "back";
   typeText?: string;
@@ -147,7 +149,7 @@ export function CursorBeat({
       // Block arrow-key advance/back while this beat's animation is running.
       beatBusyRef.current = true;
 
-      const primary: CursorStop = { to, action, scrollMs, scrollTo, file, typeText, typeCps, holdMs, releaseStage, hideStage };
+      const primary: CursorStop = { to, action, scrollMs, scrollTo, file, signal, typeText, typeCps, holdMs, releaseStage, hideStage };
       const stops: CursorStop[] = direction === "back" ? [{ to }] : [primary, ...(then ?? [])];
 
       const duration = (durationMs ?? 1000) / 1000;

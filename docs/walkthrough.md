@@ -131,7 +131,7 @@ A cursor beat is a list of stops: the beat's own fields are the first stop,
 | `"tab"` | No travel; focus the target (as if Tab was pressed), then type |
 | `"scroll"` | No travel; ease the target's own scroll to its bottom over `scrollMs` (default 4000), or with `scrollTo` until that element is centred in the target (clamped to the scroll range), or with `scrollToTop` back up to the top. Also allowed as the beat's own `action` (with `scrollMs`), so a beat can open on a scroll without the pointer moving |
 | `"drop"` | Cursor enters from off the right edge carrying a file card labelled `file`, travels to the target, lets go: fires `DROP_FILE_EVENT` (`{ name }`, bubbling) on it |
-| `"signal"` | No travel; fires `SIGNAL_EVENT` (`{ name: signal }`, bubbling) on the target, which changes itself. For scripted changes with no on-screen control (Elections → Results while its tab pill is hidden) |
+| `"signal"` | No travel; fires `SIGNAL_EVENT` (`{ name: signal }`, bubbling) on the target, which changes itself. For scripted changes with no on-screen control (Elections → Results while its tab pill is hidden). Also allowed as the beat's own `action` (with `signal`), so a beat can open by resetting its target (board-review) |
 
 Per-stop extras: `typeText` + `typeCps` (types into an input via the native
 setter so React sees it), `holdMs` (pause after the stop), `hideStage` /
@@ -420,7 +420,12 @@ spinner, so Board Actions joins the sidebar and the board tasks widget shows
 under the notification banner;
 appState `electionsConsented` keeps the electronic-consent modal shut and
 `hideElectionsTabToggle` hides the floating tab pill)
-→ closing-dashboard (still; board member view).
+→ board-review (lift the Board Actions widget at 1.05×; → the beat opens with
+a reset signal so the widget is on item 1, then the pointer comes in: Approve,
+Next Item, Approve, Next Item, View Details — that click `releaseStage`s the
+widget back into the dashboard as the detail sheet (z 197, below the lift
+layer) slides in) → closing-dashboard (still; board member view; the sheet
+stays open).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).
