@@ -404,7 +404,10 @@ Tue 27 1 PM slot (its one-hour hover block shows; CursorBeat sends mouseover on
 arrival and mouseout when the beat ends) and clicks it,
 the Book Reservation modal opens (portaled, z 300); → it all goes away and the
 card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
-it, reply, answer) → closing-dashboard (swipe back; still).
+it, reply, answer) → elections (swipe back to the dashboard; click Elections,
+page loads, slow scroll down past the ballot and the current and upcoming
+elections; appState `electionsConsented` keeps the electronic-consent modal shut)
+→ closing-dashboard (still).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).

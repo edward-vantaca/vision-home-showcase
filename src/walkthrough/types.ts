@@ -98,6 +98,8 @@ export type SceneAppState = {
   askHoaiOpen?: boolean;
   /** The Payments scene has paid the balance: the payments widget shows $0.00. */
   balancePaid?: boolean;
+  /** The homeowner has already given electronic election consent: the Elections page opens without its consent modal. */
+  electionsConsented?: boolean;
 };
 
 export type Scene = {

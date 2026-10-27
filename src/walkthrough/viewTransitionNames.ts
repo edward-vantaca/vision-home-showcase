@@ -34,6 +34,8 @@ export const VT = {
   FeedPostForgottenIsland: "wt-feed-post-forgotten-island",
   SidebarNavHome: "wt-sidebar-nav-home",
   SidebarNavOffers: "wt-sidebar-nav-offers",
+  SidebarNavElections: "wt-sidebar-nav-elections",
+  ElectionsPage: "wt-elections-page",
   SidebarNavReservations: "wt-sidebar-nav-reservations",
   ReservationsPage: "wt-reservations-page",
   AmenityCardConference: "wt-amenity-card-conference",

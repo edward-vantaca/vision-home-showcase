@@ -342,7 +342,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           <NavItem icon={<IconInbox />} label="Inbox" badge={INBOX_UNREAD_COUNT} active={false} uxId="inbox" />
           <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" vtName={VT.SidebarNavHome} />
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
-          <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" />
+          <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" vtName={VT.SidebarNavElections} />
           <NavItem icon={<IconFeed />} label="Community Feed" active={activePage === "community"} onClick={() => onNavigate("community")} uxId="community-feed" />
           <NavItem icon={<IconBellConcierge />} label="Reservations" active={activePage === "reservations"} onClick={() => onNavigate("reservations")} uxId="reservations" vtName={VT.SidebarNavReservations} />
           {isDemoMode() ? (
@@ -1904,12 +1904,12 @@ function ParticipationBar({ voted, total, uxId = "participation-bar" }: { voted:
   );
 }
 
-function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+function ElectionsPage({ onOpenSidebar, consented = false }: { onOpenSidebar: () => void; consented?: boolean }) {
   const loading = usePageLoad();
   const [ballotSent, setBallotSent] = useState(false);
   const [consentNotices, setConsentNotices] = useState(false);
   const [consentVoting, setConsentVoting] = useState(false);
-  const [consentSaved, setConsentSaved] = useState(false);
+  const [consentSaved, setConsentSaved] = useState(consented);
   const [consentBannerDismissed, setConsentBannerDismissed] = useState(false);
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
 
@@ -1931,7 +1931,7 @@ function ElectionsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   ];
 
   return (
-    <div data-ux-id="elections-page" className="flex-1 min-w-0 h-full overflow-y-auto">
+    <div data-ux-id="elections-page" data-vt-name={VT.ElectionsPage} className="flex-1 min-w-0 h-full overflow-y-auto">
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-[16px] py-[14px] bg-white border-b border-[#d9ecf8] shrink-0">
         <button onClick={onOpenSidebar} data-ux-id="elections-mobile-menu-button" className="w-[36px] h-[36px] flex items-center justify-center rounded-[8px] hover:bg-[#f0f5fa] transition-colors" aria-label="Open menu">
@@ -3330,6 +3330,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   // Walkthrough scene jumps land on it ready, so scene targets exist at once.
   const [dashboardLoads, setDashboardLoads] = useState(entering);
   const [balanceDue, setBalanceDue] = useState(BALANCE_DUE);
+  const [electionsConsented, setElectionsConsented] = useState(false);
   const pay = (amount: string) => setBalanceDue((due) => Math.max(0, due - (Number(amount.replace(/[^0-9.]/g, "")) || 0)));
 
   // Synced to the app scene, not the cursor's: on a phone scene the app
@@ -3361,6 +3362,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
     if (target.dashboardView) setDashboardView(target.dashboardView);
     if (typeof target.askHoaiOpen === "boolean") setAskHoaiOpen(target.askHoaiOpen);
     setBalanceDue(target.balancePaid ? 0 : BALANCE_DUE);
+    setElectionsConsented(target.electionsConsented ?? false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appSyncKey]);
 
@@ -3404,7 +3406,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
         {activePage === "dashboard" ? (
           <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} loads={dashboardLoads} balanceDue={balanceDue} onPay={pay} />
         ) : activePage === "elections" ? (
-          <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} />
+          <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} consented={electionsConsented} />
         ) : activePage === "amenities" ? (
           <AmenitiesPage onOpenSidebar={() => setSidebarOpen(true)} />
         ) : activePage === "arc-form" && arcForm ? (

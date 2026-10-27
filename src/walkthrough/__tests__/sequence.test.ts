@@ -51,9 +51,9 @@ describe("homeVisionSequence", () => {
     });
   });
 
-  it("ends on a still dashboard after the broadcast SMS so the panel returns to the sidebar", () => {
+  it("ends on a still dashboard after the broadcast SMS and elections so the panel returns to the sidebar", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-6)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "closing-dashboard"]);
+    expect(ids.slice(-7)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
     expect(closing.appState?.askHoaiOpen).toBe(true);
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
@@ -127,6 +127,19 @@ describe("homeVisionSequence", () => {
     expect(tap.then?.map((s) => s.to)).toEqual([VT.SmsInput, VT.SmsSendBtn]);
     expect(tap.then?.map((s) => s.action)).toEqual(["click", "click"]);
     expect(tap.then?.[0].typeText).toBe(SMS_REPLY);
+  });
+
+  it("Elections: from the dashboard, click Elections, then scroll the page with no consent modal", () => {
+    const scene = homeVisionSequence.find((s) => s.id === "elections");
+    if (!scene) throw new Error("no elections scene");
+    expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", electionsConsented: true });
+    expect(scene.reenterAtStart).toBe(true);
+    expect(scene.beats.map((b) => b.kind)).toEqual(["cursor"]);
+    const [tour] = scene.beats;
+    if (tour.kind !== "cursor") throw new Error("expected a cursor beat");
+    expect(tour).toMatchObject({ to: VT.SidebarNavElections, action: "click" });
+    expect(tour.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
+    expect(tour.then).toEqual([expect.objectContaining({ to: VT.ElectionsPage, action: "scroll" })]);
   });
 
   it("Payments keeps the lift + blur up through the modal and releases it on the closing X", () => {
