@@ -14,7 +14,7 @@ export const communityFeedScene: Scene = {
   id: "community-feed",
   label: "Community feed",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true, arcSubmitted: true },
   reenterAtStart: true,
   beats: [
     // Travel starts once the panel's morph back has settled.

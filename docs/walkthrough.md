@@ -66,6 +66,11 @@ export const paymentsScene: Scene = {
 };
 ```
 
+`appState.arcSubmitted` puts an unread "Your ARC Request" row ("We are
+reviewing your request. Thank you for submitting!", ref XN20461) at the top of
+the dashboard Inbox widget, and the sidebar Inbox badge counts it. Every portal
+scene after ask-hoai declares it (the chat submits the request).
+
 `appState.balancePaid` sets the payments widget to $0.00 (otherwise $425.00).
 Every portal scene after Payments declares it, since the Payments scene pays
 the balance in the modal (the widget drops to $0.00 when the modal closes on a

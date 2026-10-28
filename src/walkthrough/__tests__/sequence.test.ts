@@ -248,6 +248,14 @@ describe("homeVisionSequence", () => {
     expect(send?.to).toBe(VT.AskHoaiSendBtn);
   });
 
+  it("every portal scene after Ask HOAi shows the submitted ARC request in the inbox, none before", () => {
+    const i = homeVisionSequence.findIndex((s) => s.id === "ask-hoai");
+    homeVisionSequence.forEach((scene, j) => {
+      if (scene.appState?.phase !== "portal") return;
+      expect([scene.id, scene.appState.arcSubmitted ?? false]).toEqual([scene.id, j > i]);
+    });
+  });
+
   it("Back on the dashboard after Ask HOAi, the pointer collapses the panel; it stays collapsed for the rest of the demo", () => {
     const i = homeVisionSequence.findIndex((s) => s.id === "ask-hoai");
     // Ask HOAi itself ends on the chat; the panel morphs back to the sidebar.

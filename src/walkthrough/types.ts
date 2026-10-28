@@ -105,6 +105,8 @@ export type SceneAppState = {
   electionsConsented?: boolean;
   /** The Elections page's floating tab pill (Nominations / Voting / Results) is hidden. */
   hideElectionsTabToggle?: boolean;
+  /** Ask HOAi has submitted the fence ARC request: the dashboard inbox shows it at the top. */
+  arcSubmitted?: boolean;
 };
 
 export type Scene = {

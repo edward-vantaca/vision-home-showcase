@@ -15,7 +15,7 @@ export const electionsScene: Scene = {
   id: "elections",
   label: "Elections",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true, electionsConsented: true, hideElectionsTabToggle: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true, arcSubmitted: true, electionsConsented: true, hideElectionsTabToggle: true },
   reenterAtStart: true,
   beats: [
     {

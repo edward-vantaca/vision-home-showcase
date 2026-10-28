@@ -11,7 +11,7 @@ export const offersScene: Scene = {
   id: "offers",
   label: "Offers",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true, arcSubmitted: true },
   keepPage: true,
   reenterAtStart: true,
   beats: [

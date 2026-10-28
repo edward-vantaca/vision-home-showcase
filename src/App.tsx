@@ -245,7 +245,9 @@ const INBOX_WIDGET_MESSAGES = [
   { unread: true, type: "Heads Up", title: "Package Delivery Changes", preview: "Effective immediately, all packages will be delivered to the front office. Please pick them up within 48 hours", tag: "Updated", tagBg: "transparent", date: "July 8" },
   { unread: false, type: "Reminder", title: "Board Meeting Next Week", preview: "The next board meeting is scheduled for next Wednesday at 7 PM in the clubhouse. All residents are welcome", tag: "Scheduled", tagBg: "#d9ebfa", date: "July 7" },
 ];
-const INBOX_UNREAD_COUNT = INBOX_WIDGET_MESSAGES.filter((msg) => msg.unread).length;
+// Lands at the top once Ask HOAi has submitted the fence ARC request.
+const ARC_SUBMITTED_MESSAGE = { unread: true, type: "ARC Request", title: "Your ARC Request", preview: "We are reviewing your request. Thank you for submitting! Reference XN20461 — we'll be in touch once the committee has reviewed it", tag: "Submitted", tagBg: "#d9ebfa", date: "Just now" };
+const inboxMessages = (arcSubmitted: boolean) => (arcSubmitted ? [ARC_SUBMITTED_MESSAGE, ...INBOX_WIDGET_MESSAGES] : INBOX_WIDGET_MESSAGES);
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -296,6 +298,7 @@ interface SidebarProps {
   askHoaiOpen: boolean;
   onOpenAskHoai: () => void;
   onOpenQuickActions: () => void;
+  arcSubmitted?: boolean;
 }
 
 // Board Actions items the board-review scene's pointer runs over.
@@ -306,7 +309,7 @@ const BOARD_NAV_VT: Partial<Record<string, VTName>> = {
   Reports: VT.SidebarBoardReports,
 };
 
-function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai, onOpenQuickActions }: SidebarProps) {
+function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai, onOpenQuickActions, arcSubmitted = false }: SidebarProps) {
   const [boardActionsOpen, setBoardActionsOpen] = useState(true);
   // Hover follows mouseover/mouseout, so the walkthrough's scripted pointer
   // (which fires those but can't trigger CSS :hover) shows it too.
@@ -351,7 +354,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
 
         {/* Nav Items */}
         <div data-ux-id="sidebar-nav-list" className="flex flex-col gap-[13px] w-full shrink-0">
-          <NavItem icon={<IconInbox />} label="Inbox" badge={INBOX_UNREAD_COUNT} active={false} uxId="inbox" />
+          <NavItem icon={<IconInbox />} label="Inbox" badge={inboxMessages(arcSubmitted).filter((msg) => msg.unread).length} active={false} uxId="inbox" />
           <NavItem icon={<IconHome />} label="Home" active={activePage === "dashboard"} onClick={() => onNavigate("dashboard")} uxId="home" vtName={VT.SidebarNavHome} />
           <NavItem icon={<IconPayments />} label="Payments" uxId="payments" />
           <NavItem icon={<IconVote />} label="Elections" badge={1} active={activePage === "elections"} onClick={() => onNavigate("elections")} uxId="elections" vtName={VT.SidebarNavElections} />
@@ -1314,7 +1317,7 @@ function formatUsd(amount: number): string {
   return amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
-function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onPay }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView; loads: boolean; balanceDue: number; onPay: (amount: string) => void }) {
+function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onPay, arcSubmitted = false }: { onNavigate: (page: Page) => void; onOpenSidebar: () => void; view: DashboardView; loads: boolean; balanceDue: number; onPay: (amount: string) => void; arcSubmitted?: boolean }) {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const loading = usePageLoad(loads);
   const currentBalance = formatUsd(balanceDue);
@@ -1541,7 +1544,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
               </div>
               {/* Inbox rows */}
               <div className="w-full border-t border-[#d9d9d9]">
-                {INBOX_WIDGET_MESSAGES.map((msg, i) => (
+                {inboxMessages(arcSubmitted).map((msg, i) => (
                   <div key={i} data-ux-id={`inbox-row-${msg.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`} className="border-b border-[#d9d9d9] flex items-center cursor-pointer hover:bg-[#f9fbfd]">
                     <div className="flex gap-[12px] md:gap-[29px] items-center px-[14px] md:px-[22px] py-[12px] md:py-[14px] w-full">
                       <div className="shrink-0 size-[8px]">
@@ -3370,6 +3373,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   const [balanceDue, setBalanceDue] = useState(BALANCE_DUE);
   const [electionsConsented, setElectionsConsented] = useState(false);
   const [hideElectionsTabToggle, setHideElectionsTabToggle] = useState(false);
+  const [arcSubmitted, setArcSubmitted] = useState(false);
   const pay = (amount: string) => setBalanceDue((due) => Math.max(0, due - (Number(amount.replace(/[^0-9.]/g, "")) || 0)));
 
   // Synced to the app scene, not the cursor's: on a phone scene the app
@@ -3403,6 +3407,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
     setBalanceDue(target.balancePaid ? 0 : BALANCE_DUE);
     setElectionsConsented(target.electionsConsented ?? false);
     setHideElectionsTabToggle(target.hideElectionsTabToggle ?? false);
+    setArcSubmitted(target.arcSubmitted ?? false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appSyncKey]);
 
@@ -3446,7 +3451,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
       )}
       {/* Sidebar — desktop always visible, mobile slides in as overlay */}
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} onOpenQuickActions={() => setQuickActionsView("menu")} />
+        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} onOpenQuickActions={() => setQuickActionsView("menu")} arcSubmitted={arcSubmitted} />
       </div>
       {/* AskHoaiPanel is position: fixed (so it can morph sidebar <-> focused),
           so reserve its 400px here on lg+ while it's open or focused. Same
@@ -3457,7 +3462,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
         }`}
       >
         {activePage === "dashboard" ? (
-          <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} loads={dashboardLoads} balanceDue={balanceDue} onPay={pay} />
+          <DashboardPage onNavigate={navigate} onOpenSidebar={() => setSidebarOpen(true)} view={dashboardView} loads={dashboardLoads} balanceDue={balanceDue} onPay={pay} arcSubmitted={arcSubmitted} />
         ) : activePage === "elections" ? (
           <ElectionsPage onOpenSidebar={() => setSidebarOpen(true)} consented={electionsConsented} hideTabToggle={hideElectionsTabToggle} />
         ) : activePage === "amenities" ? (
