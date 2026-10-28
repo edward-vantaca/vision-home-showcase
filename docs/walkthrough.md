@@ -406,8 +406,9 @@ form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
 community-feed (on the dashboard, once the panel has morphed back to the
 sidebar the pointer clicks its collapse button (`VT.AskHoaiCollapseBtn`); every
 later scene opens with `askHoaiOpen: false`, so it stays collapsed and the
-sidebar shows its Ask HOAi pill; → View All Posts → feed scrolls down to
-the last post, then back up until the Forgotten Island post is
+sidebar shows its Ask HOAi pill; → View All Posts → feed steps down
+post by post (1.6 s scroll, 2 s rest on each, via `scrollTo` stops) to the
+last post, then scrolls back up until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → offers (click Offers in the
 sidebar, page loads; → click Home, dashboard loads) → amenity-reservation
 (click Reservations, page loads; → scroll to the Conference Room card, click

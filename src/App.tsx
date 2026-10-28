@@ -2423,6 +2423,7 @@ const initialCommunityPosts: CommunityPost[] = [
     initials: "WC",
     image: "/assets/community-tennis.jpg",
     imageAlt: "Aerial view of neighborhood tennis courts surrounded by trees",
+    vtName: VT.FeedPostTennis,
     likes: 18,
     official: true,
     postedByBoard: true,
@@ -2440,6 +2441,7 @@ const initialCommunityPosts: CommunityPost[] = [
     initials: "WC",
     image: "/assets/community-garden.jpg",
     imageAlt: "Volunteers tending raised beds in a community garden",
+    vtName: VT.FeedPostGarden,
     likes: 31,
     official: true,
     links: [
@@ -2455,6 +2457,7 @@ const initialCommunityPosts: CommunityPost[] = [
     initials: "WC",
     image: "/assets/community-pool.jpg",
     imageAlt: "Community pool with lounge chairs and palm trees",
+    vtName: VT.FeedPostPool,
     likes: 12,
     official: true,
     links: [
@@ -2468,6 +2471,7 @@ const initialCommunityPosts: CommunityPost[] = [
     date: "07/21/2026",
     author: "Waterfront Community Association",
     initials: "WC",
+    vtName: VT.FeedPostNeighbors,
     likes: 42,
     official: true,
     links: [

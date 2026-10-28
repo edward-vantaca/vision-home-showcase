@@ -71,12 +71,18 @@ describe("homeVisionSequence", () => {
     const [, open, lift] = feed.beats;
     if (open.kind !== "cursor" || lift.kind !== "lift") throw new Error("unexpected beats");
     expect(open.to).toBe(VT.DashboardFeedViewAll);
-    // Down to the last post, then back up to Forgotten Island.
-    expect(open.then).toEqual([
-      expect.objectContaining({ to: VT.CommunityFeedPage, action: "scroll" }),
-      expect.objectContaining({ to: VT.CommunityFeedPage, action: "scroll", scrollTo: VT.FeedPostForgottenIsland }),
+    // Post by post down to the last one, pausing on each, then back up to Forgotten Island.
+    const stops = open.then ?? [];
+    expect(stops.every((s) => s.to === VT.CommunityFeedPage && s.action === "scroll")).toBe(true);
+    expect(stops.map((s) => s.scrollTo)).toEqual([
+      VT.FeedPostForgottenIsland,
+      VT.FeedPostTennis,
+      VT.FeedPostGarden,
+      VT.FeedPostPool,
+      VT.FeedPostNeighbors,
+      VT.FeedPostForgottenIsland,
     ]);
-    expect(open.then?.[0].scrollTo).toBeUndefined();
+    stops.slice(0, -1).forEach((s) => expect(s.holdMs).toBeGreaterThanOrEqual(1500));
     expect(lift.target).toBe(VT.FeedPostForgottenIsland);
   });
 
