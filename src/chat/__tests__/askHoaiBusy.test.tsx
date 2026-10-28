@@ -46,6 +46,38 @@ describe("AskHoaiPanel scripted chat holds the walkthrough busy", () => {
     }
   });
 
+  it("a few seconds after the acknowledgement, confirms the submission with a reference number, still holding busy until then", () => {
+    const { container, getByText, queryByText, unmount } = renderAndSend();
+    try {
+      const welcome = container.querySelector('[data-ash-section="welcome"]');
+      const questions = container.querySelector('[data-ash-section="questions"]');
+      act(() => {
+        gsap.getTweensOf([welcome, questions]).forEach((t) => t.progress(1));
+      });
+      // Step until the acknowledgement has fully streamed.
+      for (let i = 0; i < 400 && !queryByText("Ok, I'll get started. Just a moment."); i++) {
+        act(() => {
+          vi.advanceTimersByTime(50);
+        });
+      }
+      expect(queryByText(/submitted successfully/)).toBeNull();
+      expect(isWalkthroughBusy()).toBe(true);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(queryByText(/submitted successfully/)).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(20_000);
+      });
+      expect(getByText(/ARC request has been submitted successfully/)).toBeInTheDocument();
+      expect(getByText(/XN-\d+/)).toBeInTheDocument();
+      expect(getByText(/anything else I can help you with today\?/)).toBeInTheDocument();
+      expect(isWalkthroughBusy()).toBe(false);
+    } finally {
+      unmount();
+    }
+  });
+
   it("stopScript releases", () => {
     const { rerender, unmount } = renderAndSend();
     try {

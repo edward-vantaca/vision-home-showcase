@@ -18,6 +18,10 @@ const AGENT_FENCE_REPLY =
   "Got it — I've read your fence proposal: a 6 ft white vinyl privacy fence, about 120 linear ft along the rear property line.\n\n" +
   "It meets Waterfront's fence guidelines. Want me to fill out the Fence Installation ARC request with these details and attach your proposal?";
 
+const AGENT_SUBMITTED_REPLY =
+  "All done — your Fence Installation ARC request has been submitted successfully. Your reference number is XN-20461; you'll get updates here as the committee reviews it.\n\n" +
+  "Is there anything else I can help you with today?";
+
 // The panel morphs between three `position: fixed` forms. Every animated
 // property (left, top/bottom, width, translate) is explicit in each form so
 // CSS can interpolate it — never `auto`, and `right` is left unset in all of
@@ -412,7 +416,14 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false, restar
           later(() => setAgentTyping(true), 500);
           later(() => {
             setAgentTyping(false);
-            typeAgentMessage("Ok, I'll get started. Just a moment.", releaseScriptBusy);
+            // A few seconds "working", then the submission confirmation.
+            typeAgentMessage("Ok, I'll get started. Just a moment.", () => {
+              later(() => setAgentTyping(true), 1500);
+              later(() => {
+                setAgentTyping(false);
+                typeAgentMessage(AGENT_SUBMITTED_REPLY, releaseScriptBusy);
+              }, 3500);
+            });
           }, 1500);
         }, 500);
       }
