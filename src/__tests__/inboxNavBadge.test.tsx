@@ -53,4 +53,13 @@ describe("Inbox after the ARC request is submitted (Ask HOAi)", () => {
     );
     expect(container.querySelector('[data-ux-id="inbox-row-your-arc-request"]')).toBeNull();
   });
+
+  it("has no older ARC request row (only the submitted one, once there)", () => {
+    const { container } = render(
+      <WalkthroughProvider sequence={seq}>
+        <App />
+      </WalkthroughProvider>,
+    );
+    expect(container.querySelector('[data-ux-id="inbox-row-request-received"]')).toBeNull();
+  });
 });

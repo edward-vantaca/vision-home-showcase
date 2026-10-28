@@ -240,7 +240,6 @@ type DashboardView = "homeowner" | "board";
 /* ─── Inbox messages (dashboard widget; the sidebar badge counts its unread) ─── */
 const INBOX_WIDGET_MESSAGES = [
   { unread: true, type: "Reminder", title: "Pool Party This Weekend!", preview: "Join us this Saturday for a splashin' good time at the community pool. The fun begins", tag: "Open", tagBg: "#d9ebfa", date: "July 6" },
-  { unread: false, type: "ARC Request", title: "Request received", preview: "We are reviewing your recent request and will be in touch shortly. Please have all", tag: "Updated", tagBg: "#d9ebfa", date: "July 1" },
   { unread: true, type: "Alert", title: "Landscaping Schedule", preview: "The landscaping crew will be on site next Tuesday for regular maintenance. Please keep all pets indoors", tag: "Scheduled", tagBg: "transparent", date: "July 9" },
   { unread: true, type: "Heads Up", title: "Package Delivery Changes", preview: "Effective immediately, all packages will be delivered to the front office. Please pick them up within 48 hours", tag: "Updated", tagBg: "transparent", date: "July 8" },
   { unread: false, type: "Reminder", title: "Board Meeting Next Week", preview: "The next board meeting is scheduled for next Wednesday at 7 PM in the clubhouse. All residents are welcome", tag: "Scheduled", tagBg: "#d9ebfa", date: "July 7" },
