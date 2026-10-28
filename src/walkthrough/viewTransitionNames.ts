@@ -25,7 +25,6 @@ export const VT = {
   AskHoaiSendBtn: "wt-askhoai-send-btn",
   AskHoaiDropZone: "wt-askhoai-drop-zone",
   AskHoaiCollapseBtn: "wt-askhoai-collapse-btn",
-  SidebarAskHoaiOpen: "wt-sidebar-askhoai-open",
   PaymentsWidget: "wt-payments-widget",
   PaymentsMakePaymentBtn: "wt-payments-make-payment-btn",
   PaymentModalContinueBtn: "wt-payment-modal-continue-btn",

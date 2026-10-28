@@ -62,12 +62,12 @@ describe("homeVisionSequence", () => {
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
   });
 
-  it("Community feed: waits on the dashboard, then View All, scroll to the end and back to Forgotten Island, lift it, put it back", () => {
+  it("Community feed: collapses Ask HOAi on the dashboard, then View All, scroll to the end and back to Forgotten Island, lift it, put it back", () => {
     const feed = homeVisionSequence.find((s) => s.id === "community-feed");
     if (!feed) throw new Error("no community-feed scene");
     expect(feed.appState?.page).toBe("dashboard");
     expect(feed.reenterAtStart).toBe(true);
-    expect(feed.beats.map((b) => b.kind)).toEqual(["idle", "cursor", "lift", "idle"]);
+    expect(feed.beats.map((b) => b.kind)).toEqual(["cursor", "cursor", "lift", "idle"]);
     const [, open, lift] = feed.beats;
     if (open.kind !== "cursor" || lift.kind !== "lift") throw new Error("unexpected beats");
     expect(open.to).toBe(VT.DashboardFeedViewAll);
@@ -242,16 +242,16 @@ describe("homeVisionSequence", () => {
     expect(send?.to).toBe(VT.AskHoaiSendBtn);
   });
 
-  it("Ask HOAi closes out by clicking collapse; the panel stays collapsed for the rest of the demo", () => {
+  it("Back on the dashboard after Ask HOAi, the pointer collapses the panel; it stays collapsed for the rest of the demo", () => {
     const i = homeVisionSequence.findIndex((s) => s.id === "ask-hoai");
-    const askHoai = homeVisionSequence[i];
-    // ← from the next scene replays the chat; ← off the collapse reopens the panel.
-    expect(askHoai.reenterAtStart).toBe(true);
-    const [demo, close] = askHoai.beats;
-    if (demo?.kind !== "cursor" || close?.kind !== "cursor") throw new Error("ask-hoai needs two cursor beats");
-    expect(demo.replayOnBack).toBe(true);
-    expect([close.to, close.action, close.reverseTo]).toEqual([VT.AskHoaiCollapseBtn, "click", VT.SidebarAskHoaiOpen]);
-    homeVisionSequence.slice(i + 1).forEach((scene) => {
+    // Ask HOAi itself ends on the chat; the panel morphs back to the sidebar.
+    expect(homeVisionSequence[i].beats.map((b) => b.kind)).toEqual(["cursor"]);
+    const feed = homeVisionSequence[i + 1];
+    expect(feed.appState?.phase === "portal" && feed.appState.askHoaiOpen).toBe(true);
+    const close = feed.beats[0];
+    if (close?.kind !== "cursor") throw new Error("community-feed opens on a cursor beat");
+    expect([close.to, close.action]).toEqual([VT.AskHoaiCollapseBtn, "click"]);
+    homeVisionSequence.slice(i + 2).forEach((scene) => {
       if (scene.appState?.phase !== "portal") return;
       expect([scene.id, scene.appState.askHoaiOpen]).toEqual([scene.id, false]);
     });

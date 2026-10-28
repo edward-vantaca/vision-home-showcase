@@ -2,9 +2,10 @@ import type { Scene } from "../types";
 import { VT } from "../viewTransitionNames";
 import { PAGE_LOAD_MS } from "../../pageLoad";
 
-// Arrives on the dashboard and waits (Ask HOAi stays collapsed from here on;
-// ask-hoai closed it). The next → clicks View All Posts: the community feed loads,
-// scrolls slowly down to the last post, then back up until the Forgotten
+// Arrives on the dashboard as the Ask HOAi panel settles back into the
+// sidebar; the pointer then clicks its collapse button, and every later scene
+// keeps it collapsed (askHoaiOpen: false). The next → clicks View All Posts:
+// the community feed loads, scrolls slowly down to the last post, then back up until the Forgotten
 // Island post sits mid-screen. The post
 // lifts off the page, and the next → sets it back down in the feed. The lift
 // happens on the feed page, not the dashboard this scene starts on, so ← from
@@ -13,10 +14,11 @@ export const communityFeedScene: Scene = {
   id: "community-feed",
   label: "Community feed",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
   reenterAtStart: true,
   beats: [
-    { kind: "idle" },
+    // Travel starts once the panel's morph back has settled.
+    { kind: "cursor", to: VT.AskHoaiCollapseBtn, action: "click", durationMs: 1400 },
     {
       kind: "cursor",
       to: VT.DashboardFeedViewAll,

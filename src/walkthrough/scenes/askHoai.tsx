@@ -6,8 +6,6 @@ export const askHoaiScene: Scene = {
   label: "Ask HOAi",
   page: "dashboard",
   appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
-  // ← from the next scene (panel collapsed) comes back to the drop and replays the chat.
-  reenterAtStart: true,
   beats: [
     {
       // Once the panel has morphed into view, the cursor drags the fence
@@ -27,17 +25,6 @@ export const askHoaiScene: Scene = {
         { to: VT.AskHoaiSendBtn, action: "click" },
       ],
       caption: "Ask HOAi — your community concierge, always one message away.",
-      replayOnBack: true,
-    },
-    {
-      // Close out: collapse the panel. It stays collapsed for the rest of the
-      // demo (later scenes open with askHoaiOpen: false). ← reopens it, focused
-      // and reset, and → replays the drop and chat.
-      kind: "cursor",
-      to: VT.AskHoaiCollapseBtn,
-      action: "click",
-      durationMs: 1200,
-      reverseTo: VT.SidebarAskHoaiOpen,
     },
   ],
 };
