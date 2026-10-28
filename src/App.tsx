@@ -1583,7 +1583,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
                         )}
                       </div>
                       <p
-                        className={`hidden md:block text-[14px] w-[50px] shrink-0 ${msg.unread ? "font-['DM_Sans:Bold',sans-serif] font-bold" : "font-['DM_Sans:Regular',sans-serif] font-normal opacity-70"}`}
+                        className={`hidden md:block text-[14px] w-[64px] shrink-0 whitespace-nowrap ${msg.unread ? "font-['DM_Sans:Bold',sans-serif] font-bold" : "font-['DM_Sans:Regular',sans-serif] font-normal opacity-70"}`}
                         style={{ fontVariationSettings: '"opsz" 14' }}
                       >
                         {msg.date}
