@@ -16,7 +16,7 @@ export const boardReviewScene: Scene = {
   id: "board-review",
   label: "Board review",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "board", askHoaiOpen: true, balancePaid: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "board", askHoaiOpen: false, balancePaid: true },
   beats: [
     { kind: "lift", target: VT.BoardTasksWidget, scale: 1.05, position: "center" },
     {

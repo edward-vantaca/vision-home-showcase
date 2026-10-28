@@ -7,6 +7,6 @@ export const closingDashboardScene: Scene = {
   id: "closing-dashboard",
   label: "Back to dashboard",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "board", askHoaiOpen: true, balancePaid: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "board", askHoaiOpen: false, balancePaid: true },
   beats: [{ kind: "idle" }],
 };

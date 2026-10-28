@@ -52,11 +52,11 @@ describe("homeVisionSequence", () => {
     });
   });
 
-  it("ends on a still dashboard after the broadcast SMS and elections so the panel returns to the sidebar", () => {
+  it("ends on a still dashboard after the broadcast SMS and elections, with the panel still collapsed", () => {
     const ids = homeVisionSequence.map((s) => s.id);
     expect(ids.slice(-8)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "board-review", "closing-dashboard"]);
     const closing = homeVisionSequence[homeVisionSequence.length - 1];
-    expect(closing.appState?.askHoaiOpen).toBe(true);
+    expect(closing.appState?.askHoaiOpen).toBe(false);
     // Elections hands over to the board member view.
     expect(closing.appState?.dashboardView).toBe("board");
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
@@ -240,6 +240,21 @@ describe("homeVisionSequence", () => {
       "I have this fence proposal. Can you help me submit it as an ARC request?",
     ]);
     expect(send?.to).toBe(VT.AskHoaiSendBtn);
+  });
+
+  it("Ask HOAi closes out by clicking collapse; the panel stays collapsed for the rest of the demo", () => {
+    const i = homeVisionSequence.findIndex((s) => s.id === "ask-hoai");
+    const askHoai = homeVisionSequence[i];
+    // ← from the next scene replays the chat; ← off the collapse reopens the panel.
+    expect(askHoai.reenterAtStart).toBe(true);
+    const [demo, close] = askHoai.beats;
+    if (demo?.kind !== "cursor" || close?.kind !== "cursor") throw new Error("ask-hoai needs two cursor beats");
+    expect(demo.replayOnBack).toBe(true);
+    expect([close.to, close.action, close.reverseTo]).toEqual([VT.AskHoaiCollapseBtn, "click", VT.SidebarAskHoaiOpen]);
+    homeVisionSequence.slice(i + 1).forEach((scene) => {
+      if (scene.appState?.phase !== "portal") return;
+      expect([scene.id, scene.appState.askHoaiOpen]).toEqual([scene.id, false]);
+    });
   });
 
   it("AutoPay starts on the confirm screen Create account lands on (keeps the welcome banner)", () => {

@@ -377,6 +377,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
             <button
               type="button"
               data-ux-id="sidebar-askhoai-open"
+              data-vt-name={VT.SidebarAskHoaiOpen}
               onClick={onOpenAskHoai}
               className="w-full flex items-center justify-center gap-2 mt-[6px] px-[23px] py-[12px] rounded-full bg-[#1d70dc] hover:bg-[#165bb3] text-white transition-colors shrink-0"
             >
@@ -3405,8 +3406,9 @@ function MainApp({ onRestart, entering }: MainAppProps) {
   // The ask-hoai scene's own focus. Keyed on the app scene, so on a phone
   // scene's first beat right after ask-hoai the panel stays focused and slides
   // out exactly as the audience last saw it; from beat 1 the app scene moves
-  // on and the panel morphs back and resets off-screen.
-  const askHoaiFocused = appSceneId === "ask-hoai";
+  // on and the panel morphs back and resets off-screen. The scene closes out
+  // by clicking collapse, which unfocuses it straight to collapsed.
+  const askHoaiFocused = appSceneId === "ask-hoai" && askHoaiOpen;
   // ← landing on ask-hoai as the app scene (e.g. back out of a phone scene
   // that kept it focused) restarts the scene: the panel resets at once.
   const askHoaiRestart = appSceneId === "ask-hoai" && direction === "back";

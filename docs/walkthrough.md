@@ -215,8 +215,10 @@ the overlay from the scene flag) instead of the arrow.
 - One `position: fixed` panel with three forms — sidebar, focused (centred), and
   collapsed — each with an explicit `left` (never `auto`), so CSS morphs between
   them: `all 700ms cubic-bezier(0.65,0,0.35,1)`. Focused while the **app
-  scene** is `ask-hoai` (`askHoaiFocused = appSceneId === "ask-hoai"` in
-  `App.tsx`); a white canvas (z 180) fades in behind it (500 ms). So when a
+  scene** is `ask-hoai` and the panel is open (`askHoaiFocused = appSceneId ===
+  "ask-hoai" && askHoaiOpen` in `App.tsx`), so the scene's closing click on the
+  collapse button (`VT.AskHoaiCollapseBtn`) morphs it from focused straight to
+  collapsed off the right edge; a white canvas (z 180) fades in behind it (500 ms). So when a
   phone scene follows ask-hoai, the panel stays focused on its beat 0 and
   slides out with the app unchanged; from beat 1 the app scene moves on, the
   panel morphs back and resets off-screen behind the phone, and the app swipes
@@ -231,8 +233,8 @@ the overlay from the scene flag) instead of the arrow.
   manual Send in the sidebar takes no hold.
 - A file dropped on the input (`DROP_FILE_EVENT`) becomes an attachment chip and
   is sent with the next message.
-- Unfocusing (the app scene leaves ask-hoai: a phone scene's beat 0 → 1, or
-  any jump away): script stops at once; after
+- Unfocusing (the collapse click, or the app scene leaves ask-hoai: a phone
+  scene's beat 0 → 1, or any jump away): script stops at once; after
   the 700 ms morph back, the thread fades out (200 ms) and welcome / input /
   questions fade up (400 ms, staggered). Re-focusing before that fade has run
   resets immediately.
@@ -399,7 +401,12 @@ intro → inbox (open email, click register CTA) → onboarding (password, Creat
 account) → autopay → go-to-portal → dashboard (pointer stays put; scrolls to the bottom, rests 3 s,
 scrolls back up) → payments (lift, Make a
 Payment modal walk-through; balance $425.00 → $0.00) → arc-request (Quick Actions → ARC Request → fence
-form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat) →
+form, slow scroll) → ask-hoai (drop fence proposal, ask, scripted chat; → clicks the collapse
+button and the panel morphs off the right edge. Every later scene opens with
+`askHoaiOpen: false`, so it stays collapsed and the sidebar shows its Ask HOAi
+pill. ← off the collapse beat clicks that pill (`reverseTo`), reopening it
+focused and reset, and the drop beat is `replayOnBack`; ← from the next scene
+re-enters at the drop (`reenterAtStart`)) →
 community-feed (still on the dashboard; → View All Posts → feed scrolls down to
 the last post, then back up until the Forgotten Island post is
 centred; lift it at 1.15×; → sets it back down) → offers (click Offers in the

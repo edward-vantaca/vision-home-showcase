@@ -2,8 +2,8 @@ import type { Scene } from "../types";
 import { VT } from "../viewTransitionNames";
 import { PAGE_LOAD_MS } from "../../pageLoad";
 
-// Arrives on the dashboard and waits (the Ask HOAi panel settles back into
-// the sidebar). The next → clicks View All Posts: the community feed loads,
+// Arrives on the dashboard and waits (Ask HOAi stays collapsed from here on;
+// ask-hoai closed it). The next → clicks View All Posts: the community feed loads,
 // scrolls slowly down to the last post, then back up until the Forgotten
 // Island post sits mid-screen. The post
 // lifts off the page, and the next → sets it back down in the feed. The lift
@@ -13,7 +13,7 @@ export const communityFeedScene: Scene = {
   id: "community-feed",
   label: "Community feed",
   page: "dashboard",
-  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: true, balancePaid: true },
+  appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true },
   reenterAtStart: true,
   beats: [
     { kind: "idle" },

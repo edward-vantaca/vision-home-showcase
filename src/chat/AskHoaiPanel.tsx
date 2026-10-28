@@ -471,6 +471,7 @@ export default function AskHoaiPanel({ open, onCollapse, focused = false, restar
           <button
             type="button"
             aria-label="Collapse panel"
+            data-vt-name={VT.AskHoaiCollapseBtn}
             onClick={onCollapse}
             className="p-1.5 rounded-md border border-[#e5eaf0] text-[#262630] hover:bg-black/[0.03]"
           >
