@@ -82,7 +82,7 @@ describe("homeVisionSequence", () => {
       VT.FeedPostNeighbors,
       VT.FeedPostForgottenIsland,
     ]);
-    stops.slice(0, -1).forEach((s) => expect(s.holdMs).toBe(1000));
+    stops.slice(0, -1).forEach((s) => expect(s.holdMs).toBe(1500));
     expect(lift.target).toBe(VT.FeedPostForgottenIsland);
   });
 
