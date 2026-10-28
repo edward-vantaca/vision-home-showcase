@@ -70,7 +70,7 @@ describe("AskHoaiPanel scripted chat holds the walkthrough busy", () => {
         vi.advanceTimersByTime(20_000);
       });
       expect(getByText(/ARC request has been submitted successfully/)).toBeInTheDocument();
-      expect(getByText(/XN-\d+/)).toBeInTheDocument();
+      expect(getByText(/XN\d+/)).toBeInTheDocument();
       expect(getByText(/anything else I can help you with today\?/)).toBeInTheDocument();
       expect(isWalkthroughBusy()).toBe(false);
     } finally {

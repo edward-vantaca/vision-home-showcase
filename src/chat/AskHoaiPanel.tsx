@@ -19,7 +19,7 @@ const AGENT_FENCE_REPLY =
   "It meets Waterfront's fence guidelines. Want me to fill out the Fence Installation ARC request with these details and attach your proposal?";
 
 const AGENT_SUBMITTED_REPLY =
-  "All done — your Fence Installation ARC request has been submitted successfully. Your reference number is XN-20461; you'll get updates here as the committee reviews it.\n\n" +
+  "All done — your Fence Installation ARC request has been submitted successfully. Your reference number is XN20461; you'll get updates here as the committee reviews it.\n\n" +
   "Is there anything else I can help you with today?";
 
 // The panel morphs between three `position: fixed` forms. Every animated

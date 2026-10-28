@@ -227,7 +227,7 @@ the overlay from the scene flag) instead of the arrow.
 - Scripted conversation: typing dots at +500 ms, reply streams from +1900 ms
   (3 chars / 25 ms), follow-up typed 1.4 s later, then the acknowledgement
   ("Ok, I'll get started"); typing dots 1.5 s after it and, at +3.5 s, the
-  submission confirmation (reference XN-20461, "anything else I can help you
+  submission confirmation (reference XN20461, "anything else I can help you
   with today?"). All
   timers are tracked and cleared when the scene is left. While focused, a busy
   hold runs from Send until the script finishes, so → can't leave mid-stream. A
