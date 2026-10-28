@@ -1,4 +1,4 @@
-export const SMS_SENDER = "Waterfront Community Estates";
+export const SMS_SENDER = "Waterfront Estates";
 export const SMS_BROADCAST =
   "⚠️ Severe storms are moving through the area this evening. Local flooding is possible. Please avoid low-lying roads and stay indoors. — Waterfront Community Estates Management";
 /** The lock-screen notification shows only the warning itself. */

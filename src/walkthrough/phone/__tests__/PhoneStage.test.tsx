@@ -108,7 +108,7 @@ describe("PhoneStage", () => {
     expect(isWalkthroughBusy()).toBe(true);
     advanceBy(1);
     const n = q(container, VT.SmsNotification)!;
-    expect(n.textContent).toContain("Waterfront Community Estates");
+    expect(n.querySelector(".sms-notification-sender")?.textContent).toBe("Waterfront Estates");
     expect(n.classList.contains("sms-notification-in")).toBe(true);
     expect(isWalkthroughBusy()).toBe(true);
     fireEvent.animationEnd(n);
