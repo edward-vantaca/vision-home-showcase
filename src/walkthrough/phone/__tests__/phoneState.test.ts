@@ -65,6 +65,14 @@ describe("phoneStateOnLanding", () => {
 });
 
 describe("SMS copy", () => {
+  it("announces a clubhouse closure; the resident asks about the other amenities; gym, pool and tennis stay open", () => {
+    expect(SMS_BROADCAST).toMatch(/clubhouse/i);
+    expect(SMS_BROADCAST).toMatch(/planned maintenance/i);
+    expect(SMS_REPLY).toMatch(/other amenities/i);
+    expect(SMS_ANSWER).toMatch(/^Yes/);
+    expect(SMS_ANSWER).toMatch(/gym, pool, and tennis courts remain open/);
+  });
+
   it("carries no HOAi branding", () => {
     for (const text of [SMS_SENDER, SMS_BROADCAST, SMS_REPLY, SMS_ANSWER]) {
       expect(text).not.toMatch(/hoai|\bai\b/i);

@@ -48,7 +48,7 @@ main.tsx
 | `src/walkthrough/viewTransitionNames.ts` | `VT` — every element a beat can target (historic name; View Transitions are gone) |
 | `src/walkthrough/dropFile.ts` | `DROP_FILE_EVENT`, the event a cursor "drop" fires |
 | `src/walkthrough/signal.ts` | `SIGNAL_EVENT`, the event a cursor "signal" fires, and the signal names pages listen for |
-| `src/walkthrough/phone/phoneState.ts` | SMS copy (`SMS_SENDER`, `SMS_BROADCAST`, `SMS_PREVIEW` (the notification text, shown in full up to "flooding is possible."), `SMS_REPLY`, `SMS_ANSWER`) and the phone's state per beat |
+| `src/walkthrough/phone/phoneState.ts` | SMS copy (`SMS_SENDER`, `SMS_BROADCAST`, `SMS_PREVIEW` (the notification text, shown in full up to "planned maintenance."), `SMS_REPLY`, `SMS_ANSWER`) and the phone's state per beat |
 | `src/walkthrough/phone/PhoneStage.tsx`, `PhoneFrame.tsx` | The phone: lock screen, notification, SMS thread; `SMS_SCENE_ID` |
 | `src/walkthrough/phone/SceneSwipe.tsx` | `AppSlide` / `PhoneLayer` and `swipeFor`, the app ⇄ phone swipe |
 
@@ -422,7 +422,7 @@ View Availability, it lifts top-left at 1.25× beside a 9 AM–5 PM week calenda
 Tue 27 1 PM slot (its one-hour hover block shows; CursorBeat sends mouseover on
 arrival and mouseout when the beat ends) and clicks it,
 the Book Reservation modal opens (portaled, z 300); → it all goes away and the
-card settles back) → broadcast-sms (swipe to the phone; storm broadcast arrives by itself, tap
+card settles back) → broadcast-sms (swipe to the phone; clubhouse-closure broadcast arrives by itself, tap
 it, reply, answer) → elections (swipe back to the dashboard; click Elections,
 page loads, slow scroll down past the ballot and the current and upcoming
 elections, rest 1.5 s, slow scroll back to the top, then a `signal` stop

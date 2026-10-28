@@ -181,12 +181,12 @@ describe("PhoneStage", () => {
     expect(isWalkthroughBusy()).toBe(false);
   });
 
-  it("the lock-screen notification shows the warning up to 'flooding is possible.'", () => {
+  it("the lock-screen notification shows the closure up to 'planned maintenance.'", () => {
     const { container } = renderStage();
     jump(1);
     const preview = q(container, VT.SmsNotification)!.querySelector(".sms-notification-preview")!;
     expect(preview.textContent).toBe(SMS_PREVIEW);
-    expect(SMS_PREVIEW).toMatch(/Local flooding is possible\.$/);
+    expect(SMS_PREVIEW).toMatch(/clubhouse.*closed.*for planned maintenance\.$/i);
     expect(SMS_BROADCAST.startsWith(SMS_PREVIEW)).toBe(true);
   });
 

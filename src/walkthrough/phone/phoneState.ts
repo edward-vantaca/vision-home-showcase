@@ -1,11 +1,10 @@
 export const SMS_SENDER = "Waterfront Estates";
 export const SMS_BROADCAST =
-  "⚠️ Severe storms are moving through the area this evening. Local flooding is possible. Please avoid low-lying roads and stay indoors. — Waterfront Community Estates Management";
-/** The lock-screen notification shows only the warning itself. */
-export const SMS_PREVIEW = SMS_BROADCAST.slice(0, SMS_BROADCAST.indexOf("possible.") + "possible.".length);
-export const SMS_REPLY = "Are any of the amenities still open?";
-export const SMS_ANSWER =
-  "No, the gym, pool, and clubhouse are all closed until further notice. We'll text you as soon as they reopen.";
+  "🛠️ The Clubhouse will be closed Monday, Oct 26 through Wednesday, Oct 28 for planned maintenance. We appreciate your patience while we make these improvements. — Waterfront Community Estates Management";
+/** The lock-screen notification shows only the closure itself. */
+export const SMS_PREVIEW = SMS_BROADCAST.slice(0, SMS_BROADCAST.indexOf("maintenance.") + "maintenance.".length);
+export const SMS_REPLY = "Are the other amenities still open?";
+export const SMS_ANSWER = "Yes! The gym, pool, and tennis courts remain open during the clubhouse maintenance.";
 
 export type PhoneMessage = { from: "them" | "me"; text: string };
 
