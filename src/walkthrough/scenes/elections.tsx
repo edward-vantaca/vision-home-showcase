@@ -3,8 +3,8 @@ import { VT } from "../viewTransitionNames";
 import { PAGE_LOAD_MS } from "../../pageLoad";
 import { BOARD_VIEW_SIGNAL, ELECTIONS_RESULTS_SIGNAL } from "../signal";
 
-// Starts on the dashboard (where the phone scene swipes back to). The cursor
-// clicks Elections in the sidebar, the page loads, then it eases down past the
+// Starts on the dashboard (where the phone scene swipes back to) and waits
+// there for →. Then the cursor clicks the Elections link in the dashboard's election banner, the page loads, then it eases down past the
 // open ballot and the current and upcoming elections, rests at the bottom, and
 // slowly scrolls back up to the top, where the page switches to Results. The
 // next → clicks Home and the dashboard loads again, in the board member view. The homeowner has already
@@ -18,9 +18,12 @@ export const electionsScene: Scene = {
   appState: { phase: "portal", page: "dashboard", dashboardView: "homeowner", askHoaiOpen: false, balancePaid: true, arcSubmitted: true, electionsConsented: true, hideElectionsTabToggle: true },
   reenterAtStart: true,
   beats: [
+    // Rests on the dashboard (the phone swipes back to it) until the
+    // presenter presses → to start.
+    { kind: "idle" },
     {
       kind: "cursor",
-      to: VT.SidebarNavElections,
+      to: VT.DashboardElectionsLink,
       action: "click",
       durationMs: 1200,
       // The page loads first; the scroll starts once it has been up a moment.

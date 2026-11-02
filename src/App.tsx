@@ -12,6 +12,7 @@ import { VT, type VTName } from "./walkthrough/viewTransitionNames";
 import { BOARD_VIEW_SIGNAL, ELECTIONS_RESULTS_SIGNAL, SIGNAL_EVENT } from "./walkthrough/signal";
 import { usePageLoad } from "./pageLoad";
 import PageLoader from "./PageLoader";
+import AssociationSite from "./site/AssociationSite";
 
 const isDemoMode = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo");
 
@@ -293,6 +294,8 @@ interface SidebarProps {
   onNavigate: (page: Page) => void;
   onClose?: () => void;
   onRestart: () => void;
+  /** Log Out: redirects to the association's public home page. */
+  onLogout: () => void;
   dashboardView?: DashboardView;
   askHoaiOpen: boolean;
   onOpenAskHoai: () => void;
@@ -308,7 +311,7 @@ const BOARD_NAV_VT: Partial<Record<string, VTName>> = {
   Reports: VT.SidebarBoardReports,
 };
 
-function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, askHoaiOpen, onOpenAskHoai, onOpenQuickActions, arcSubmitted = false }: SidebarProps) {
+function Sidebar({ activePage, onNavigate, onClose, onRestart, onLogout, dashboardView, askHoaiOpen, onOpenAskHoai, onOpenQuickActions, arcSubmitted = false }: SidebarProps) {
   const [boardActionsOpen, setBoardActionsOpen] = useState(true);
   // Hover follows mouseover/mouseout, so the walkthrough's scripted pointer
   // (which fires those but can't trigger CSS :hover) shows it too.
@@ -438,7 +441,7 @@ function Sidebar({ activePage, onNavigate, onClose, onRestart, dashboardView, as
           <div className="w-full border-t border-[#d9e7f0] my-[9px]" />
 
           <NavItem icon={<IconProfile />} label="My Profile" uxId="profile" />
-          <NavItem icon={<IconLogout />} label="Log Out" onClick={onRestart} uxId="logout" />
+          <NavItem icon={<IconLogout />} label="Log Out" onClick={onLogout} uxId="logout" vtName={VT.SidebarNavLogout} />
         </div>
       </div>
     </div>
@@ -1355,7 +1358,7 @@ function DashboardPage({ onNavigate, onOpenSidebar, view, loads, balanceDue, onP
               <p className="flex-1 font-['DM_Sans:Regular',sans-serif] font-normal text-[14px] md:text-[15px] min-w-0 leading-snug" style={{ fontVariationSettings: '"opsz" 14' }}>
                 <span className="text-[#262630]">You have </span>
                 <span>a upcoming board election. Go to the </span>
-                <button onClick={() => onNavigate("elections")} data-ux-id="election-banner-link" className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline underline-offset-2 cursor-pointer" style={{ fontVariationSettings: '"opsz" 14' }}>Elections</button>
+                <button onClick={() => onNavigate("elections")} data-ux-id="election-banner-link" data-vt-name={VT.DashboardElectionsLink} className="font-['DM_Sans:SemiBold',sans-serif] font-semibold text-[#247ae4] underline underline-offset-2 cursor-pointer" style={{ fontVariationSettings: '"opsz" 14' }}>Elections</button>
                 {" "}
                 <span>page to submit your vote.</span>
               </p>
@@ -3355,11 +3358,12 @@ function ReservationsPage({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 /* ─── Main Portal (post-onboarding) ─── */
 type MainAppProps = {
   onRestart: () => void;
+  onLogout: () => void;
   /** Entered by the Go to portal click, so the dashboard "loads" first. */
   entering: boolean;
 };
 
-function MainApp({ onRestart, entering }: MainAppProps) {
+function MainApp({ onRestart, onLogout, entering }: MainAppProps) {
   const [activePage, setActivePage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<DashboardView>("homeowner");
@@ -3450,7 +3454,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
       )}
       {/* Sidebar — desktop always visible, mobile slides in as overlay */}
       <div className={`fixed md:static inset-y-0 left-0 z-50 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} onOpenQuickActions={() => setQuickActionsView("menu")} arcSubmitted={arcSubmitted} />
+        <Sidebar activePage={activePage} onNavigate={navigate} onClose={() => setSidebarOpen(false)} onRestart={onRestart} onLogout={onLogout} dashboardView={dashboardView} askHoaiOpen={askHoaiOpen} onOpenAskHoai={() => setAskHoaiOpen(true)} onOpenQuickActions={() => setQuickActionsView("menu")} arcSubmitted={arcSubmitted} />
       </div>
       {/* AskHoaiPanel is position: fixed (so it can morph sidebar <-> focused),
           so reserve its 400px here on lg+ while it's open or focused. Same
@@ -3507,7 +3511,7 @@ function MainApp({ onRestart, entering }: MainAppProps) {
 }
 
 /* ─── Root App — inbox → onboarding → resident portal ─── */
-type AppPhase = "inbox" | "onboarding" | "portal";
+type AppPhase = "inbox" | "onboarding" | "portal" | "site";
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>("inbox");
@@ -3557,6 +3561,11 @@ export default function App() {
       />
     );
   }
+  // Log Out redirects to the association's public home page; its Log In
+  // buttons go back into the portal.
+  if (phase === "site") {
+    return <AssociationSite onLogIn={() => setPhase("portal")} />;
+  }
   if (phase === "onboarding") {
     return (
       <>
@@ -3599,7 +3608,7 @@ export default function App() {
   }
   return (
     <>
-      <MainApp onRestart={() => setPhase("inbox")} entering={portalEntering} />
+      <MainApp onRestart={() => setPhase("inbox")} onLogout={() => setPhase("site")} entering={portalEntering} />
       {/* Walkthrough-only reverse hook: ArrowLeft from the Go-to-portal beat lands back on the done screen */}
       <button
         type="button"

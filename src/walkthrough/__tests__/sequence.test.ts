@@ -52,14 +52,23 @@ describe("homeVisionSequence", () => {
     });
   });
 
-  it("ends on a still dashboard after the broadcast SMS and elections, with the panel still collapsed", () => {
+  it("rests on a still dashboard after the broadcast SMS and elections, then logs out to the association's home page", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-8)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "board-review", "closing-dashboard"]);
-    const closing = homeVisionSequence[homeVisionSequence.length - 1];
+    expect(ids.slice(-9)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "board-review", "closing-dashboard", "logout"]);
+    const closing = homeVisionSequence[homeVisionSequence.length - 2];
     expect(closing.appState?.askHoaiOpen).toBe(false);
     // Elections hands over to the board member view.
     expect(closing.appState?.dashboardView).toBe("board");
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
+
+    const logout = homeVisionSequence[homeVisionSequence.length - 1];
+    expect(logout.appState).toEqual(closing.appState);
+    expect(logout.beats).toHaveLength(1);
+    const [click] = logout.beats;
+    if (click.kind !== "cursor") throw new Error("expected a cursor beat");
+    // The sidebar scrolls down to Log Out, then the click holds until the site has loaded.
+    expect(click).toMatchObject({ to: VT.SidebarScroll, action: "scroll" });
+    expect(click.then).toEqual([{ to: VT.SidebarNavLogout, action: "click", holdMs: PAGE_LOAD_MS + 500 }]);
   });
 
   it("Community feed: collapses Ask HOAi on the dashboard, then View All, scroll to the end and back to Forgotten Island, lift it, put it back", () => {
@@ -144,8 +153,9 @@ describe("homeVisionSequence", () => {
     // No consent modal, and no floating tab pill, for the whole scene.
     expect(scene.appState).toMatchObject({ phase: "portal", page: "dashboard", electionsConsented: true, hideElectionsTabToggle: true });
     expect(scene.reenterAtStart).toBe(true);
-    expect(scene.beats.map((b) => b.kind)).toEqual(["cursor", "cursor"]);
-    const [tour, home] = scene.beats;
+    // Waits on the dashboard for → before the click, so arriving from the phone doesn't run straight on.
+    expect(scene.beats.map((b) => b.kind)).toEqual(["idle", "cursor", "cursor"]);
+    const [, tour, home] = scene.beats;
     if (tour.kind !== "cursor" || home.kind !== "cursor") throw new Error("expected cursor beats");
     // The next → clicks Home and the dashboard loads, instead of a cut to it,
     // in the board member view (set while the dashboard is still loading).
@@ -153,7 +163,7 @@ describe("homeVisionSequence", () => {
     expect(home.holdMs ?? 0).toBeLessThan(PAGE_LOAD_MS);
     expect(home.then).toEqual([expect.objectContaining({ to: VT.SidebarNavHome, action: "signal", signal: BOARD_VIEW_SIGNAL })]);
     expect(home.then?.[0].holdMs).toBeGreaterThan(PAGE_LOAD_MS);
-    expect(tour).toMatchObject({ to: VT.SidebarNavElections, action: "click" });
+    expect(tour).toMatchObject({ to: VT.DashboardElectionsLink, action: "click" });
     expect(tour.holdMs).toBeGreaterThan(PAGE_LOAD_MS);
     // Down to the bottom, a rest, then slowly back up to the top.
     expect(tour.then).toEqual([

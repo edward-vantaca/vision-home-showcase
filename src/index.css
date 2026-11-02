@@ -87,6 +87,16 @@ body,
 }
 
 /* Register CTA -> onboarding: hold the loading screen ~1s, then fade it out. */
+/* Association site hero: the photo eases from a slight zoom to rest. */
+@keyframes hero-settle {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: none;
+  }
+}
+
 @keyframes page-content-in {
   from {
     opacity: 0;

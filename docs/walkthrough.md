@@ -314,6 +314,8 @@ the overlay from the scene flag) instead of the arrow.
 
 ### Smaller app-side motions
 
+- **Association site loader** (`src/site/AssociationSite.tsx`): Log Out
+  redirects there; spinner for `PAGE_LOAD_MS`, then `page-content-in`.
 - **Onboarding loader** (`App.tsx` root): the register CTA mounts onboarding
   under a white spinner overlay (z 240) that holds ~1 s and fades
   (`onboarding-loader-out`, 1250 ms, in `src/index.css`). Finite, so the next
@@ -423,7 +425,9 @@ Tue 27 1 PM slot (its one-hour hover block shows; CursorBeat sends mouseover on
 arrival and mouseout when the beat ends) and clicks it,
 the Book Reservation modal opens (portaled, z 300); → it all goes away and the
 card settles back) → broadcast-sms (swipe to the phone; clubhouse-closure broadcast arrives by itself, tap
-it, reply, answer) → elections (swipe back to the dashboard; click Elections,
+it, reply, answer) → elections (swipe back to the dashboard and rest there on an idle beat 0;
+→ clicks the Elections link in the election banner
+(`VT.DashboardElectionsLink`),
 page loads, slow scroll down past the ballot and the current and upcoming
 elections, rest 1.5 s, slow scroll back to the top, then a `signal` stop
 switches it to Results, which fades up; → click Home, dashboard loads in the
@@ -441,7 +445,13 @@ lift ends and the widget settles back, then the sidebar scrolls the Board
 Actions section into view, the pointer hovers ARCs, Invoices, Work Orders,
 Reports, rests 3.5 s (their hover state is React state driven by mouseover/mouseout, since
 the scripted pointer can't trigger CSS `:hover`), and the sidebar scrolls back
-to the top) → closing-dashboard (still; board member view).
+to the top) → closing-dashboard (still; board member view) → logout (the
+sidebar scrolls to its bottom over 1.5 s, the pointer clicks Log Out
+(`VT.SidebarNavLogout`) and the app root switches to the `"site"` phase: the
+association's public home page, Presidential Valley (`src/site/AssociationSite.tsx`,
+`VT.AssociationSitePage`), which shows a `PageLoader` for `PAGE_LOAD_MS` and
+fades up; the click holds `PAGE_LOAD_MS` + 500. Its Log In buttons go back to
+the portal. ← to closing-dashboard re-applies the portal phase).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).

@@ -86,7 +86,7 @@ export type Beat =
     }
   | { kind: "intro"; title: string; logoSrc?: string; wordmark?: string };
 
-export type AppPhase = "inbox" | "onboarding" | "portal";
+export type AppPhase = "inbox" | "onboarding" | "portal" | "site";
 export type OnboardingScreen = "account" | "confirm" | "autopay" | "done";
 export type DashboardView = "homeowner" | "board";
 
