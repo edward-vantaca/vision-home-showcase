@@ -52,16 +52,16 @@ describe("homeVisionSequence", () => {
     });
   });
 
-  it("rests on a still dashboard after the broadcast SMS and elections, then logs out to the association's home page", () => {
+  it("rests on a still dashboard after the broadcast SMS and elections, then logs out to the association's home page and closes on a thank-you card", () => {
     const ids = homeVisionSequence.map((s) => s.id);
-    expect(ids.slice(-9)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "board-review", "closing-dashboard", "logout"]);
-    const closing = homeVisionSequence[homeVisionSequence.length - 2];
+    expect(ids.slice(-10)).toEqual(["ask-hoai", "community-feed", "offers", "amenity-reservation", "broadcast-sms", "elections", "board-review", "closing-dashboard", "logout", "thank-you"]);
+    const closing = homeVisionSequence[homeVisionSequence.length - 3];
     expect(closing.appState?.askHoaiOpen).toBe(false);
     // Elections hands over to the board member view.
     expect(closing.appState?.dashboardView).toBe("board");
     expect(closing.beats.every((b) => b.kind === "idle")).toBe(true);
 
-    const logout = homeVisionSequence[homeVisionSequence.length - 1];
+    const logout = homeVisionSequence[homeVisionSequence.length - 2];
     expect(logout.appState).toEqual(closing.appState);
     expect(logout.beats).toHaveLength(1);
     const [click] = logout.beats;
@@ -69,6 +69,13 @@ describe("homeVisionSequence", () => {
     // The sidebar scrolls down to Log Out, then the click holds until the site has loaded.
     expect(click).toMatchObject({ to: VT.SidebarScroll, action: "scroll" });
     expect(click.then).toEqual([{ to: VT.SidebarNavLogout, action: "click", holdMs: PAGE_LOAD_MS + 500 }]);
+
+    // The closing card reuses the intro's logo, with "Thank you" as its title, over the association site.
+    const intro = homeVisionSequence[0].beats[0];
+    const thanks = homeVisionSequence[homeVisionSequence.length - 1];
+    expect(thanks.appState).toEqual({ phase: "site" });
+    if (intro.kind !== "intro") throw new Error("expected an intro beat");
+    expect(thanks.beats).toEqual([{ kind: "intro", title: "Thank you", logoSrc: intro.logoSrc, wordmark: intro.wordmark }]);
   });
 
   it("Community feed: collapses Ask HOAi on the dashboard, then View All, scroll to the end and back to Forgotten Island, lift it, put it back", () => {

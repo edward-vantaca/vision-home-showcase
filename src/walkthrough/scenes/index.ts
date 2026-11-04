@@ -16,6 +16,7 @@ import { electionsScene } from "./elections";
 import { boardReviewScene } from "./boardReview";
 import { closingDashboardScene } from "./closingDashboard";
 import { logoutScene } from "./logout";
+import { thankYouScene } from "./thankYou";
 
 export const homeVisionSequence: Sequence = [
   introScene,
@@ -35,4 +36,5 @@ export const homeVisionSequence: Sequence = [
   boardReviewScene,
   closingDashboardScene,
   logoutScene,
+  thankYouScene,
 ];

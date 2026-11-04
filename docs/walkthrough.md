@@ -451,7 +451,9 @@ sidebar scrolls to its bottom over 1.5 s, the pointer clicks Log Out
 association's public home page, Presidential Valley (`src/site/AssociationSite.tsx`,
 `VT.AssociationSitePage`), which shows a `PageLoader` for `PAGE_LOAD_MS` and
 fades up; the click holds `PAGE_LOAD_MS` + 500. Its Log In buttons go back to
-the portal. ← to closing-dashboard re-applies the portal phase).
+the portal. ← to closing-dashboard re-applies the portal phase) → thank-you
+(the intro's white title card and Vantaca Home logo again, titled "Thank you",
+over the association site: `appState: { phase: "site" }`).
 
 `boardActions.tsx` and `amenity.tsx` exist but are out of the sequence (one line
 each in `index.ts` to restore).
